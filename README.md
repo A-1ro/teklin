@@ -91,7 +91,7 @@ tags: [plan, product, english, ai, llm]
 | F6 | **ドメイン選択** | Web / インフラ / ML / モバイルから自分の分野を選び出題をチューニング | A |
 
 ### Phase 2 以降の拡張候補
-- **AI会話練習**: 音声入出力で技術面接シミュレーション（Azure Speech + GPT）
+- **AI会話練習**: 音声入出力で技術面接シミュレーション（Workers AI Whisper STT + LLM via AI Gateway）
 - **GitHub連携**: 自分の実PRをアプリに取り込み添削
 - **チーム機能**: 社内でスコアを競う（法人展開の種）
 - **Podcast連動**: 技術系英語Podcastのディクテーション
@@ -101,51 +101,80 @@ tags: [plan, product, english, ai, llm]
 
 ## 5. 差別化戦略
 
-### 競合の型
-- **Duolingo型**: ゲーミフィケーション強いが技術文脈ゼロ
-- **スタディサプリ型**: コンテンツ豊富だがエンジニア向けではない
-- **ELSA/Speak型**: 発音・会話に特化、ライティング弱い
-- **汎用LLMチャット**: ChatGPTで代替される懸念あり
+### 競合マップ（2026年4月時点 調査済み）
+
+| サービス | エンジニア特化 | AI会話 | 5分習慣設計 | 備考 |
+|---------|-------------|--------|-----------|------|
+| Duolingo Max | ✗ | ◎ (GPT-4o) | ◎ | $168/年。技術文脈ゼロ |
+| Speak | ✗ | ◎ (hands-free) | ○ | $99〜180/年。会話特化 |
+| EnglishCentral | △ | ○ | ✗ | 月2,000〜5,000円。習慣設計なし |
+| Bizmates | ✗ | △ (2026/4統合) | ✗ | 月14,850円〜。法人向け |
+| **エンジリッシュ** | **◎** | **✗** | **△** | **2017年開始、7年以上更新停止** |
+| Speak Tech English | ◎ | ✗ | ✗ | テキスト教材中心 |
+| **本アプリ** | **◎** | **◎** | **◎** | **この象限に競合なし** |
+
+### 核心的発見
+**「エンジニア × 毎日5分 × AI会話 × 技術英語特化」の象限は2026年時点で完全な空白地帯。**
+
+エンジリッシュが唯一の先行例だが、2017年から実質更新停止。需要がないのではなく、**プロダクト投資が入らなかっただけ**という解釈が成り立つ。
 
 ### 我々の差別化ポイント（3本柱）
-1. **文脈特化**: 学習コンテンツが100%技術現場発。コミット・PR・Issue・Docs・スタンドアップMTG
-2. **実務即用**: 学んだ表現を「今日のPR」で使えるテンプレ化。学習→即適用のループ
-3. **AI添削の深さ**: 単なる文法修正ではなく「レビュアーにどう受け取られるか」のニュアンス解説
+1. **業務シナリオ特化のAI会話**: PRコメント・Slack英語・技術面接・Issue投稿など「今日の仕事で使うシーン」でAIと練習
+2. **Duolingo式ストリーク × 技術英語**: 5分習慣設計の実績ある手法に、エンジニア文脈のコンテンツを乗せる
+3. **コミット・README・Issue英語をコアコンテンツに**: 他サービスが触れないエンジニア文化の英語表現を中核に据える
 
 ### 「なぜChatGPTで代替されないか」への回答
-- ChatGPTは万能だが「学習設計」がない。ユーザーは何を練習すべきか自分で設計できない
+- ChatGPTは万能だが「学習設計」がない。何を練習すべきか自分で設計できない
 - 本アプリは「カリキュラム×SRS×実務テンプレ」をパッケージ化し、5分に最適化されている
-- 汎用LLMには「継続を支える仕組み」がない
+- 汎用LLMには「継続を支える仕組み（ストリーク・進捗可視化）」がない
 
 ---
 
-## 6. 技術スタック候補
+## 6. 技術スタック
 
-### 選択肢A: フルTypeScript + Vercel + Azure OpenAI（**採用**）
-- **フロント**: Next.js 15 (App Router) + React 19 + Tailwind CSS
-- **バックエンド**: Next.js Route Handlers + Hono（エッジ側API）
-- **DB**: Supabase (Postgres) + Drizzle ORM
-- **認証**: Supabase Auth または Clerk
-- **LLM**: Azure OpenAI (GPT-4o系) ＋ OSSの代替系（Llama）を切替可能に
-- **音声**: Azure Speech Services（Phase2）
-- **ホスティング**: Vercel（Web）、将来的にExpoでモバイル化
-- **決済**: Stripe
-- **採用理由**:
-  - マスターの得意領域（TypeScript + Azure + LLM）と完全一致
-  - 0.1→8の推進力を最短で発揮できる構成
-  - Vercel + Supabaseで「1人で運用可能」な低コスト構成
-  - Azure OpenAIを軸にすることで将来の法人展開時にエンタープライズ信頼性の訴求が可能
+### 採用スタック: Cloudflare All-in-One（**採用**）
 
-### 選択肢B: Python + FastAPI + LangChain
-- 却下理由: フロント側で別スタックが必要になり個人開発の速度が落ちる。TypeScript一貫のほうがマスターの強みが活きる
+> **方針: 極力Cloudflareに閉じる。外部依存を最小化。**
 
-### 選択肢C: React Native + Expo (モバイルファースト)
-- 却下理由: 初期はWebで出してPMFを見極めたい。モバイルはPhase3で検討
+| レイヤー | 採用技術 | Cloudflareサービス |
+|---------|---------|-----------------|
+| フロント | Next.js 15 (App Router) + Tailwind CSS | **Cloudflare Pages** |
+| API | Hono on Workers | **Cloudflare Workers** |
+| DB | Drizzle ORM + D1 (SQLite) | **Cloudflare D1** |
+| KV / セッション | SRSスコア・ストリーク・一時キャッシュ | **Cloudflare KV** |
+| ファイルストレージ | 音声・画像・コンテンツJSON | **Cloudflare R2** |
+| LLM ルーティング | 外部プロバイダへのプロキシ・レート制限・コスト管理 | **Cloudflare AI Gateway** |
+| LLM 実行（軽量） | Workers AI (Llama 3.3 70B / Mistral) — PoC・コスト最適化用 | **Cloudflare Workers AI** |
+| LLM 実行（高品質） | OpenAI GPT-4.1 または Anthropic Claude — AI Gateway経由 | AI Gateway経由（Cloudflareに集約） |
+| 音声STT（Phase2） | Workers AI Whisper (whisper-large-v3-turbo) | **Cloudflare Workers AI** |
+| キュー / 非同期処理 | コンテンツ生成・バッチSRS更新 | **Cloudflare Queues** |
+| 認証 | Workers + D1で自前JWT（OAuthはGitHub/Google） | Workers上で実装 |
+| メール通知 | MailChannels（Cloudflare Workers無料統合） | **MailChannels via Workers** |
+| CI/CD | Cloudflare Pages Git統合（push→自動デプロイ） | **Cloudflare Pages** |
+| モニタリング | Workers Analytics + Logpush | **Cloudflare Analytics** |
+| 決済 | Stripe（不可避の外部依存、これのみ） | — |
+
+### Cloudflare外の依存（最小限）
+| サービス | 理由 | 代替可否 |
+|---------|------|---------|
+| **Stripe** | 決済。代替なし | 将来Paddle等も検討可 |
+| **OpenAI / Anthropic** | Workers AIで品質不足の場合のフォールバック | Workers AIが改善すれば段階的に移行 |
+| **GitHub** | ソースコード管理 | Cloudflare Pagesは直接zipデプロイも可 |
+
+### 採用理由
+- **1プラットフォームで完結**: 課金先・設定先・ダッシュボードがCloudflare1箇所
+- **コスト**: D1・KV・R2・Workers は無料枠が広い。個人開発フェーズはほぼ無料で回せる
+- **エッジ実行**: Workers はグローバルエッジで低レイテンシ。LLMレスポンスのストリーミングも容易
+- **AI Gatewayでプロバイダを抽象化**: OpenAI→Anthropic→Workers AIの切り替えをコード変更なしで行える
+- **Next.js on Cloudflare Pages**: `@cloudflare/next-on-pages` で App Router 対応済み
+
+### 却下した選択肢
+- **Vercel + Supabase**: 課金先が分散する。Cloudflare一本化の方針に反する
+- **Azure OpenAI直接利用**: AI Gatewayを挟む方がプロバイダロックインを避けられる
+- **React Native + Expo (モバイルファースト)**: 初期はWebでPMFを見極めたい。モバイルはPhase3で検討
 
 ### 補助ツール
-- CI/CD: GitHub Actions
-- モニタリング: Vercel Analytics + Sentry
-- LLM評価: 過去のrag-evalダッシュボード資産を流用し、プロンプト品質を数値化
+- **LLM評価**: 過去のrag-evalダッシュボード資産を流用し、プロンプト品質を数値化（Cloudflare Workers上で動作させる）
 
 ---
 
