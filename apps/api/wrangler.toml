@@ -1,0 +1,37 @@
+name = "teklin-api"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ─── D1 Database ───
+[[d1_databases]]
+binding = "DB"
+database_name = "teklin-db"
+database_id = "placeholder-replace-with-actual-id"
+
+# ─── KV Namespaces ───
+[[kv_namespaces]]
+binding = "SESSION_KV"
+id = "placeholder-replace-with-actual-id"
+
+[[kv_namespaces]]
+binding = "SRS_KV"
+id = "placeholder-replace-with-actual-id"
+
+[[kv_namespaces]]
+binding = "STREAK_KV"
+id = "placeholder-replace-with-actual-id"
+
+# ─── R2 Buckets ───
+[[r2_buckets]]
+binding = "CONTENT_BUCKET"
+bucket_name = "teklin-content"
+
+# ─── AI Gateway (via AI binding) ───
+[ai]
+binding = "AI"
+
+# ─── Environment Variables ───
+[vars]
+ENVIRONMENT = "development"
+CORS_ORIGIN = "http://localhost:3000"
