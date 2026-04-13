@@ -19,18 +19,29 @@ import {
  * Stores OAuth-authenticated user accounts.
  * level: Level, domain: Domain
  */
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  name: text("name").notNull(),
-  oauthProvider: text("oauth_provider").notNull(),
-  // Level: "L1" | "L2" | "L3" | "L4"
-  level: text("level").notNull(),
-  // Domain: "web" | "infra" | "ml" | "mobile"
-  domain: text("domain").notNull(),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const users = sqliteTable(
+  "users",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull().unique(),
+    name: text("name").notNull(),
+    oauthProvider: text("oauth_provider").notNull(),
+    oauthId: text("oauth_id").notNull(),
+    avatarUrl: text("avatar_url"),
+    // Level: "L1" | "L2" | "L3" | "L4"
+    level: text("level").notNull(),
+    // Domain: "web" | "infra" | "ml" | "mobile"
+    domain: text("domain").notNull(),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("users_oauth_provider_id_idx").on(
+      table.oauthProvider,
+      table.oauthId
+    ),
+  ]
+);
 
 /**
  * placement_results

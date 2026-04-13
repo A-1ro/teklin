@@ -1,4 +1,18 @@
+"use client";
+
+import { useRedirectIfAuth } from "@/lib/auth";
+
 export default function Home() {
+  const { isLoading } = useRedirectIfAuth();
+
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-gray-600 dark:border-t-blue-500" />
+      </main>
+    );
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="max-w-2xl text-center">
