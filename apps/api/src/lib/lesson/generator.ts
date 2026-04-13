@@ -1,0 +1,273 @@
+import type { LLMService } from "../llm";
+import type {
+  Level,
+  Domain,
+  SkillAxis,
+  RewriteContext,
+  LessonContentInternal,
+  WarmupQuestion,
+  Exercise,
+} from "@teklin/shared";
+
+// Context types to rotate through lessons
+const CONTEXTS: RewriteContext[] = [
+  "commit_message",
+  "pr_comment",
+  "github_issue",
+  "slack",
+  "general",
+];
+
+export interface GenerateOptions {
+  level: Level;
+  domain: Domain;
+  weaknesses: SkillAxis[];
+  completedLessonCount: number; // for rotation
+}
+
+/**
+ * Extract JSON from LLM response text.
+ * Handles ```json blocks and stray text around the JSON object.
+ */
+function extractJson(text: string): string {
+  // Try to extract from ```json ... ``` block
+  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+
+  // Try to find a top-level JSON object
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return text.slice(firstBrace, lastBrace + 1);
+  }
+
+  return text.trim();
+}
+
+/** Validate that parsed lesson data has the required structure */
+function isValidLessonShape(data: unknown): data is LessonContentInternal {
+  if (typeof data !== "object" || data === null) return false;
+  const d = data as Record<string, unknown>;
+  if (!d.warmup || !d.focus || !d.practice || !d.wrapup) return false;
+
+  const warmup = d.warmup as Record<string, unknown>;
+  if (!Array.isArray(warmup.questions) || warmup.questions.length === 0) {
+    return false;
+  }
+
+  const focus = d.focus as Record<string, unknown>;
+  if (
+    typeof focus.phrase !== "string" ||
+    typeof focus.explanation !== "string"
+  ) {
+    return false;
+  }
+
+  const practice = d.practice as Record<string, unknown>;
+  if (
+    !Array.isArray(practice.exercises) ||
+    practice.exercises.length === 0
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+/** Build a fallback lesson when LLM generation fails */
+function buildFallbackLesson(
+  level: Level,
+  domain: Domain,
+  context: RewriteContext
+): LessonContentInternal {
+  const domainExamples: Record<Domain, string> = {
+    web: "Fix button alignment in the login form",
+    infra: "Update Kubernetes deployment config",
+    ml: "Improve model training pipeline",
+    mobile: "Fix crash on app startup",
+  };
+
+  const example = domainExamples[domain];
+
+  const warmupQuestions: WarmupQuestion[] = [
+    {
+      id: "w1",
+      phrase: "fix",
+      translation: "修正する",
+      context: "Used in commit messages to indicate a bug fix",
+      type: "multiple_choice",
+      choices: [
+        { id: "a", text: "Fix login button alignment" },
+        { id: "b", text: "Fixed the login button alignment" },
+        { id: "c", text: "Fixing login button alignment" },
+        { id: "d", text: "Have fixed login button alignment" },
+      ],
+      correctChoiceId: "a",
+    },
+    {
+      id: "w2",
+      phrase: "add",
+      translation: "追加する",
+      context: "Used in commit messages to indicate new functionality",
+      type: "multiple_choice",
+      choices: [
+        { id: "a", text: "Added user authentication feature" },
+        { id: "b", text: "Add user authentication feature" },
+        { id: "c", text: "Adding user authentication feature" },
+        { id: "d", text: "User authentication feature add" },
+      ],
+      correctChoiceId: "b",
+    },
+    {
+      id: "w3",
+      phrase: "refactor",
+      translation: "リファクタリングする",
+      context: "Used when restructuring code without changing behavior",
+      type: "multiple_choice",
+      choices: [
+        { id: "a", text: "Refactored the authentication module" },
+        { id: "b", text: "Refactor authentication module" },
+        { id: "c", text: "Refactoring the authentication module" },
+        { id: "d", text: "Authentication module refactor" },
+      ],
+      correctChoiceId: "b",
+    },
+  ];
+
+  const exercises: Exercise[] = [
+    {
+      id: "p1",
+      type: "fill_in_blank",
+      instruction: "Fill in the blank with the correct imperative verb.",
+      sentence: `___ the ${context === "commit_message" ? "bug in" : "issue with"} ${example.toLowerCase()}`,
+      correctAnswer:
+        context === "commit_message" ? "Fix" : "Resolve",
+      acceptableAnswers: ["Fix", "Resolve", "Address"],
+    },
+    {
+      id: "p2",
+      type: "reorder",
+      instruction: "Arrange the words to form a correct commit message.",
+      words: ["button", "Fix", "alignment", "login", "the"],
+      correctAnswer: "Fix the login button alignment",
+    },
+    {
+      id: "p3",
+      type: "free_text",
+      instruction: "Write a short commit message for this change.",
+      prompt: `You just ${domain === "web" ? "fixed a CSS issue on the signup page" : "updated the deployment configuration"}.`,
+    },
+  ];
+
+  return {
+    warmup: { questions: warmupQuestions },
+    focus: {
+      phrase: "Fix <specific issue>",
+      explanation:
+        "Use the imperative mood in commit messages. Start with a verb like 'Fix', 'Add', 'Update', or 'Remove'. This is the standard convention in most open-source projects.",
+      examples: [
+        {
+          english: "Fix null pointer exception in user service",
+          japanese: "ユーザーサービスのnullポインタ例外を修正",
+          context: "commit_message",
+        },
+        {
+          english: "Add pagination to the search results",
+          japanese: "検索結果にページネーションを追加",
+          context: "commit_message",
+        },
+        {
+          english: "Update dependencies to resolve security vulnerabilities",
+          japanese: "セキュリティ脆弱性を解決するため依存関係を更新",
+          context: "commit_message",
+        },
+      ],
+      tips: [
+        "Use the imperative mood: 'Fix' not 'Fixed' or 'Fixes'",
+        "Keep the subject line under 50 characters",
+      ],
+    },
+    practice: { exercises },
+    wrapup: {
+      summary: `Today you practiced writing clear ${context.replace("_", " ")} messages using imperative verbs.`,
+      keyPoints: [
+        "Use imperative mood (Fix, Add, Update)",
+        "Be specific about what changed",
+        "Keep messages concise and clear",
+      ],
+      nextPreview: `Next time: Writing effective ${level === "L1" || level === "L2" ? "PR descriptions" : "technical documentation"}`,
+    },
+  };
+}
+
+/** Generate a personalized daily lesson using LLM */
+export async function generateLesson(
+  llm: LLMService,
+  options: GenerateOptions
+): Promise<LessonContentInternal> {
+  const contextIndex = options.completedLessonCount % CONTEXTS.length;
+  const context = CONTEXTS[contextIndex];
+
+  const weaknessText =
+    options.weaknesses.length > 0
+      ? options.weaknesses.join(", ")
+      : "general";
+
+  const { system, user } = llm.prompts.render(
+    llm.prompts.templates.daily_lesson,
+    {
+      level: options.level,
+      domain: options.domain,
+      context,
+      weaknesses: weaknessText,
+    }
+  );
+
+  try {
+    const response = await llm.router.generate(
+      user,
+      { system, temperature: 0.7, maxTokens: 3000 },
+      "quality"
+    );
+
+    const jsonText = extractJson(response.text);
+    const parsed: unknown = JSON.parse(jsonText);
+
+    if (!isValidLessonShape(parsed)) {
+      console.error(
+        "[generateLesson] LLM response failed shape validation, using fallback"
+      );
+      return buildFallbackLesson(options.level, options.domain, context);
+    }
+
+    // Ensure all warmup questions have required fields
+    const lesson = parsed as LessonContentInternal;
+    lesson.warmup.questions = lesson.warmup.questions.map((q, i) => ({
+      id: q.id ?? `w${i + 1}`,
+      phrase: q.phrase ?? "",
+      translation: q.translation ?? "",
+      context: q.context ?? "",
+      type: "multiple_choice" as const,
+      choices: Array.isArray(q.choices) ? q.choices : [],
+      correctChoiceId: q.correctChoiceId ?? "",
+    }));
+
+    lesson.practice.exercises = lesson.practice.exercises.map((e, i) => ({
+      id: e.id ?? `p${i + 1}`,
+      type: e.type ?? "free_text",
+      instruction: e.instruction ?? "",
+      sentence: e.sentence,
+      words: e.words,
+      prompt: e.prompt,
+      correctAnswer: e.correctAnswer,
+      acceptableAnswers: e.acceptableAnswers,
+    }));
+
+    return lesson;
+  } catch (err) {
+    console.error("[generateLesson] Failed to generate lesson:", err);
+    return buildFallbackLesson(options.level, options.domain, context);
+  }
+}

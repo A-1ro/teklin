@@ -98,6 +98,41 @@ export function usageKey(userId: string, date: string): UsageKvKey {
 }
 
 // ---------------------------------------------------------------------------
+// LESSON SESSION — daily lesson progress tracking
+// ---------------------------------------------------------------------------
+
+/**
+ * SESSION_KV keys: `lesson:{userId}:{YYYY-MM-DD}`
+ * Stores the user's daily lesson progress.
+ */
+export type LessonSessionKvKey = `lesson:${string}:${string}`;
+
+export interface LessonAnswerRecord {
+  step: string; // LessonStep
+  exerciseId: string;
+  answer: string;
+  correct: boolean;
+  score: number;
+  answeredAt: number;
+}
+
+export interface LessonSessionKvValue {
+  lessonId: string;
+  startedAt: number | null;
+  answers: LessonAnswerRecord[];
+  completedAt: number | null;
+  score: number | null;
+  feedback: string | null; // DifficultyFeedback
+}
+
+export function lessonSessionKey(
+  userId: string,
+  date: string
+): LessonSessionKvKey {
+  return `lesson:${userId}:${date}`;
+}
+
+// ---------------------------------------------------------------------------
 // PLACEMENT SESSION — test progress tracking
 // ---------------------------------------------------------------------------
 

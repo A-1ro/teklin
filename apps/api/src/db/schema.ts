@@ -88,6 +88,8 @@ export const lessons = sqliteTable("lessons", {
   contentJson: text("content_json").notNull(),
   // LessonType: "vocabulary" | "rewrite" | "reading" | "listening"
   type: text("type").notNull(),
+  // JSON string: SkillAxis[] e.g. '["reading","writing"]'
+  targetWeaknesses: text("target_weaknesses"),
   createdAt: integer("created_at").notNull(),
 });
 
@@ -105,8 +107,10 @@ export const userLessons = sqliteTable(
     lessonId: text("lesson_id")
       .notNull()
       .references(() => lessons.id),
-    completedAt: integer("completed_at").notNull(),
+    startedAt: integer("started_at"),
+    completedAt: integer("completed_at"),
     score: integer("score").notNull(),
+    feedback: text("feedback"),
   },
   (table) => [
     uniqueIndex("user_lessons_user_lesson_idx").on(
