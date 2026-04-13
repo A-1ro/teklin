@@ -37,3 +37,23 @@ export interface HealthResponse {
   timestamp: string;
   environment: string;
 }
+
+/** OAuth providers supported by Teklin */
+export type OAuthProvider = "github" | "google";
+
+/** Authenticated user info returned from /api/me */
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+  oauthProvider: OAuthProvider;
+  level: Level;
+  domain: Domain;
+}
+
+/** Auth token response */
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
