@@ -28,6 +28,9 @@ export type CardCategory =
   | "slack_chat"
   | "github_issues";
 
+/** Lesson content types */
+export type LessonType = "vocabulary" | "rewrite" | "reading" | "listening";
+
 /** API health check response */
 export interface HealthResponse {
   status: "ok" | "error";

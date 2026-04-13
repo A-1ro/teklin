@@ -8,6 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "teklin-db"
 database_id = "placeholder-replace-with-actual-id"
+migrations_dir = "migrations"
 
 # ─── KV Namespaces ───
 [[kv_namespaces]]
