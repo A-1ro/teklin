@@ -4,6 +4,7 @@ import {
   integer,
   real,
   uniqueIndex,
+  index,
 } from "drizzle-orm/sqlite-core";
 
 // @teklin/shared types (referenced as comments; SQLite has no enum type):
@@ -28,6 +29,7 @@ export const users = sqliteTable("users", {
   // Domain: "web" | "infra" | "ml" | "mobile"
   domain: text("domain").notNull(),
   createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
 });
 
 /**
@@ -35,21 +37,30 @@ export const users = sqliteTable("users", {
  * Stores the result of the initial placement test per user.
  * level: Level, weaknesses: JSON array of SkillAxis
  */
-export const placementResults = sqliteTable("placement_results", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  readingScore: integer("reading_score").notNull(),
-  writingScore: integer("writing_score").notNull(),
-  vocabularyScore: integer("vocabulary_score").notNull(),
-  nuanceScore: integer("nuance_score").notNull(),
-  // Level: "L1" | "L2" | "L3" | "L4"
-  level: text("level").notNull(),
-  // JSON string: SkillAxis[] e.g. '["reading","writing"]'
-  weaknesses: text("weaknesses").notNull(),
-  createdAt: integer("created_at").notNull(),
-});
+export const placementResults = sqliteTable(
+  "placement_results",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    readingScore: integer("reading_score").notNull(),
+    writingScore: integer("writing_score").notNull(),
+    vocabularyScore: integer("vocabulary_score").notNull(),
+    nuanceScore: integer("nuance_score").notNull(),
+    // Level: "L1" | "L2" | "L3" | "L4"
+    level: text("level").notNull(),
+    // JSON string: SkillAxis[] e.g. '["reading","writing"]'
+    weaknesses: text("weaknesses").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("placement_results_user_created_idx").on(
+      table.userId,
+      table.createdAt
+    ),
+  ]
+);
 
 /**
  * lessons
@@ -72,17 +83,26 @@ export const lessons = sqliteTable("lessons", {
  * user_lessons
  * Tracks lesson completion per user.
  */
-export const userLessons = sqliteTable("user_lessons", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  lessonId: text("lesson_id")
-    .notNull()
-    .references(() => lessons.id),
-  completedAt: integer("completed_at").notNull(),
-  score: integer("score").notNull(),
-});
+export const userLessons = sqliteTable(
+  "user_lessons",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    lessonId: text("lesson_id")
+      .notNull()
+      .references(() => lessons.id),
+    completedAt: integer("completed_at").notNull(),
+    score: integer("score").notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_lessons_user_lesson_idx").on(
+      table.userId,
+      table.lessonId
+    ),
+  ]
+);
 
 /**
  * phrase_cards
@@ -125,7 +145,10 @@ export const userSrs = sqliteTable(
     repetitions: integer("repetitions").notNull().default(0),
     updatedAt: integer("updated_at").notNull(),
   },
-  (table) => [uniqueIndex("user_srs_user_card_idx").on(table.userId, table.cardId)]
+  (table) => [
+    uniqueIndex("user_srs_user_card_idx").on(table.userId, table.cardId),
+    index("user_srs_user_next_review_idx").on(table.userId, table.nextReview),
+  ]
 );
 
 /**
@@ -152,11 +175,7 @@ export const aiRewriteHistory = sqliteTable("ai_rewrite_history", {
  * last_learned_at: Unix epoch ms of the most recent learning session
  */
 export const streaks = sqliteTable("streaks", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id)
-    .unique(),
+  userId: text("user_id").primaryKey().references(() => users.id),
   currentStreak: integer("current_streak").notNull().default(0),
   longestStreak: integer("longest_streak").notNull().default(0),
   lastLearnedAt: integer("last_learned_at"),
