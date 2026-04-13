@@ -1,0 +1,570 @@
+import { Hono } from "hono";
+import { eq, and, desc } from "drizzle-orm";
+import { createDb, lessons, userLessons, streaks, users } from "../db";
+import { authMiddleware, type AuthVariables } from "../middleware/auth";
+import type { Bindings } from "../types";
+import {
+  lessonSessionKey,
+  streakKey,
+  type LessonSessionKvValue,
+  type LessonAnswerRecord,
+  type StreakKvValue,
+} from "../kv";
+import { createLLMService } from "../lib/llm";
+import {
+  generateLesson,
+  scoreMultipleChoice,
+  scoreFillInBlank,
+  scoreReorder,
+  scoreFreeTextWithFeedback,
+} from "../lib/lesson";
+import type { LessonContent, LessonContentInternal } from "@teklin/shared";
+
+const LESSON_SESSION_TTL = 86400; // 24 hours
+
+/** Strip answer fields before sending lesson content to the client */
+function toClientContent(internal: LessonContentInternal): LessonContent {
+  return {
+    warmup: {
+      questions: internal.warmup.questions.map((q) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { correctChoiceId: _c, ...rest } = q;
+        return rest;
+      }),
+    },
+    focus: internal.focus,
+    practice: {
+      exercises: internal.practice.exercises.map((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { correctAnswer: _ca, acceptableAnswers: _aa, ...rest } = e;
+        return rest;
+      }),
+    },
+    wrapup: internal.wrapup,
+  };
+}
+
+/** Get today's date string in YYYY-MM-DD format */
+function todayString(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+/** Get the start-of-day timestamp (midnight UTC) for a given date string */
+function startOfDayMs(dateStr: string): number {
+  return new Date(`${dateStr}T00:00:00.000Z`).getTime();
+}
+
+export const lessonRoutes = new Hono<{
+  Bindings: Bindings;
+  Variables: AuthVariables;
+}>();
+
+// All lesson routes require auth
+lessonRoutes.use("/*", authMiddleware);
+
+// ---------------------------------------------------------------------------
+// GET /api/lessons/today — Get today's lesson (generate if needed)
+// ---------------------------------------------------------------------------
+lessonRoutes.get("/today", async (c) => {
+  const { userId } = c.get("user");
+  const today = todayString();
+  const kv = c.env.SESSION_KV;
+  const sessionKvKey = lessonSessionKey(userId, today);
+
+  // Check KV for existing session
+  const existing = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
+
+  // Retrieve streak info
+  const streakKvKey = streakKey(userId);
+  let streakData = await c.env.STREAK_KV.get<StreakKvValue>(
+    streakKvKey,
+    "json"
+  );
+  if (!streakData) {
+    streakData = { currentStreak: 0, longestStreak: 0, lastLearnedAt: null };
+  }
+
+  const streakInfo = {
+    currentStreak: streakData.currentStreak,
+    longestStreak: streakData.longestStreak,
+  };
+
+  // If already completed today, return completed status
+  if (existing?.completedAt !== null && existing?.completedAt !== undefined) {
+    const db = createDb(c.env.DB);
+    const lesson = await db
+      .select()
+      .from(lessons)
+      .where(eq(lessons.id, existing.lessonId))
+      .get();
+
+    if (lesson) {
+      const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
+      return c.json({
+        lesson: {
+          id: lesson.id,
+          domain: lesson.domain,
+          level: lesson.level,
+          type: lesson.type,
+          content: toClientContent(content),
+          createdAt: new Date(lesson.createdAt).toISOString(),
+        },
+        streak: streakInfo,
+        isCompleted: true,
+      });
+    }
+  }
+
+  // If session exists (in progress), return the cached lesson
+  if (existing) {
+    const db = createDb(c.env.DB);
+    const lesson = await db
+      .select()
+      .from(lessons)
+      .where(eq(lessons.id, existing.lessonId))
+      .get();
+
+    if (lesson) {
+      const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
+      return c.json({
+        lesson: {
+          id: lesson.id,
+          domain: lesson.domain,
+          level: lesson.level,
+          type: lesson.type,
+          content: toClientContent(content),
+          createdAt: new Date(lesson.createdAt).toISOString(),
+        },
+        streak: streakInfo,
+        isCompleted: false,
+      });
+    }
+  }
+
+  // Generate a new lesson
+  const db = createDb(c.env.DB);
+
+  // Get user profile for level and domain
+  const user = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .get();
+
+  if (!user) {
+    return c.json({ error: "User not found" }, 404);
+  }
+
+  // Count completed lessons for context rotation
+  const completedCount = await db
+    .select()
+    .from(userLessons)
+    .where(eq(userLessons.userId, userId))
+    .all();
+
+  // Get weaknesses from latest placement result
+  const { placementResults } = await import("../db/schema");
+  const latestPlacement = await db
+    .select()
+    .from(placementResults)
+    .where(eq(placementResults.userId, userId))
+    .orderBy(desc(placementResults.createdAt))
+    .limit(1)
+    .get();
+
+  const weaknesses = latestPlacement
+    ? (JSON.parse(latestPlacement.weaknesses) as string[])
+    : [];
+
+  const llm = createLLMService(c.env);
+  const lessonContent = await generateLesson(llm, {
+    level: user.level as Parameters<typeof generateLesson>[1]["level"],
+    domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
+    weaknesses:
+      weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
+    completedLessonCount: completedCount.length,
+  });
+
+  // Persist lesson to D1
+  const lessonId = crypto.randomUUID();
+  const now = Date.now();
+
+  await db.insert(lessons).values({
+    id: lessonId,
+    domain: user.domain,
+    level: user.level,
+    contentJson: JSON.stringify(lessonContent),
+    type: "rewrite",
+    targetWeaknesses: JSON.stringify(weaknesses),
+    createdAt: now,
+  });
+
+  // Create user_lessons record
+  const userLessonId = crypto.randomUUID();
+  await db.insert(userLessons).values({
+    id: userLessonId,
+    userId,
+    lessonId,
+    startedAt: null,
+    completedAt: null,
+    score: 0,
+    feedback: null,
+  });
+
+  // Cache session in KV
+  const session: LessonSessionKvValue = {
+    lessonId,
+    startedAt: null,
+    answers: [],
+    completedAt: null,
+    score: null,
+    feedback: null,
+  };
+  await kv.put(sessionKvKey, JSON.stringify(session), {
+    expirationTtl: LESSON_SESSION_TTL,
+  });
+
+  return c.json({
+    lesson: {
+      id: lessonId,
+      domain: user.domain,
+      level: user.level,
+      type: "rewrite",
+      content: toClientContent(lessonContent),
+      createdAt: new Date(now).toISOString(),
+    },
+    streak: streakInfo,
+    isCompleted: false,
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/lessons/:id/start — Record lesson start time
+// ---------------------------------------------------------------------------
+lessonRoutes.post("/:id/start", async (c) => {
+  const { userId } = c.get("user");
+  const lessonId = c.req.param("id");
+  const today = todayString();
+  const kv = c.env.SESSION_KV;
+  const sessionKvKey = lessonSessionKey(userId, today);
+
+  const session = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
+  if (!session || session.lessonId !== lessonId) {
+    return c.json({ error: "Lesson session not found" }, 404);
+  }
+
+  const now = Date.now();
+  session.startedAt = now;
+
+  await kv.put(sessionKvKey, JSON.stringify(session), {
+    expirationTtl: LESSON_SESSION_TTL,
+  });
+
+  // Update startedAt in user_lessons
+  const db = createDb(c.env.DB);
+  await db
+    .update(userLessons)
+    .set({ startedAt: now })
+    .where(
+      and(eq(userLessons.userId, userId), eq(userLessons.lessonId, lessonId))
+    );
+
+  return c.json({
+    lessonId,
+    startedAt: new Date(now).toISOString(),
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/lessons/:id/answer — Score an answer
+// ---------------------------------------------------------------------------
+lessonRoutes.post("/:id/answer", async (c) => {
+  const { userId } = c.get("user");
+  const lessonId = c.req.param("id");
+  const today = todayString();
+  const kv = c.env.SESSION_KV;
+  const sessionKvKey = lessonSessionKey(userId, today);
+
+  const session = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
+  if (!session || session.lessonId !== lessonId) {
+    return c.json({ error: "Lesson session not found" }, 404);
+  }
+
+  if (session.completedAt !== null) {
+    return c.json({ error: "Lesson already completed" }, 400);
+  }
+
+  let body: { step?: string; exerciseId?: string; answer?: string };
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid request body" }, 400);
+  }
+
+  const { step, exerciseId, answer } = body;
+  if (
+    typeof step !== "string" ||
+    typeof exerciseId !== "string" ||
+    typeof answer !== "string" ||
+    answer.length === 0
+  ) {
+    return c.json({ error: "step, exerciseId, and answer are required" }, 400);
+  }
+
+  if (answer.length > 2000) {
+    return c.json({ error: "Answer must be 2000 characters or fewer" }, 400);
+  }
+
+  // Load lesson content from D1
+  const db = createDb(c.env.DB);
+  const lesson = await db
+    .select()
+    .from(lessons)
+    .where(eq(lessons.id, lessonId))
+    .get();
+
+  if (!lesson) {
+    return c.json({ error: "Lesson not found" }, 404);
+  }
+
+  const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
+
+  let correct = false;
+  let score = 0;
+  let correctAnswer: string | undefined;
+  let feedback: string | undefined;
+
+  if (step === "warmup") {
+    const question = content.warmup.questions.find((q) => q.id === exerciseId);
+    if (!question) {
+      return c.json({ error: "Exercise not found" }, 404);
+    }
+    score = scoreMultipleChoice(question, answer);
+    correct = score === 100;
+    if (!correct) {
+      correctAnswer = question.correctChoiceId;
+    }
+  } else if (step === "practice") {
+    const exercise = content.practice.exercises.find(
+      (e) => e.id === exerciseId
+    );
+    if (!exercise) {
+      return c.json({ error: "Exercise not found" }, 404);
+    }
+
+    if (exercise.type === "fill_in_blank") {
+      score = scoreFillInBlank(exercise, answer);
+      correct = score === 100;
+      if (!correct && exercise.correctAnswer) {
+        correctAnswer = exercise.correctAnswer;
+      }
+    } else if (exercise.type === "reorder") {
+      score = scoreReorder(exercise, answer);
+      correct = score === 100;
+      if (!correct && exercise.correctAnswer) {
+        correctAnswer = exercise.correctAnswer;
+      }
+    } else if (exercise.type === "free_text") {
+      const llm = createLLMService(c.env);
+      const result = await scoreFreeTextWithFeedback(exercise, answer, llm);
+      score = result.score;
+      correct = score >= 70;
+      feedback = result.feedback || undefined;
+    }
+  } else {
+    return c.json({ error: "Invalid step. Must be warmup or practice" }, 400);
+  }
+
+  // Record answer in KV session
+  const answerRecord: LessonAnswerRecord = {
+    step,
+    exerciseId,
+    answer,
+    correct,
+    score,
+    answeredAt: Date.now(),
+  };
+  session.answers.push(answerRecord);
+
+  await kv.put(sessionKvKey, JSON.stringify(session), {
+    expirationTtl: LESSON_SESSION_TTL,
+  });
+
+  return c.json({
+    correct,
+    score,
+    ...(correctAnswer !== undefined ? { correctAnswer } : {}),
+    ...(feedback !== undefined ? { feedback } : {}),
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/lessons/:id/complete — Mark lesson as complete
+// ---------------------------------------------------------------------------
+lessonRoutes.post("/:id/complete", async (c) => {
+  const { userId } = c.get("user");
+  const lessonId = c.req.param("id");
+  const today = todayString();
+  const kv = c.env.SESSION_KV;
+  const sessionKvKey = lessonSessionKey(userId, today);
+
+  const session = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
+  if (!session || session.lessonId !== lessonId) {
+    return c.json({ error: "Lesson session not found" }, 404);
+  }
+
+  if (session.completedAt !== null) {
+    return c.json({ error: "Lesson already completed" }, 400);
+  }
+
+  // Calculate average score
+  const answeredExercises = session.answers;
+  const avgScore =
+    answeredExercises.length > 0
+      ? Math.round(
+          answeredExercises.reduce((sum, a) => sum + a.score, 0) /
+            answeredExercises.length
+        )
+      : 0;
+
+  const now = Date.now();
+  session.completedAt = now;
+  session.score = avgScore;
+
+  await kv.put(sessionKvKey, JSON.stringify(session), {
+    expirationTtl: LESSON_SESSION_TTL,
+  });
+
+  // Update user_lessons in D1
+  const db = createDb(c.env.DB);
+  await db
+    .update(userLessons)
+    .set({ completedAt: now, score: avgScore })
+    .where(
+      and(eq(userLessons.userId, userId), eq(userLessons.lessonId, lessonId))
+    );
+
+  // Update streak
+  const streakKvKey = streakKey(userId);
+  let streakData = await c.env.STREAK_KV.get<StreakKvValue>(
+    streakKvKey,
+    "json"
+  );
+  if (!streakData) {
+    streakData = { currentStreak: 0, longestStreak: 0, lastLearnedAt: null };
+  }
+
+  const todayStart = startOfDayMs(today);
+  const yesterdayStart = todayStart - 86400000;
+
+  let isNewRecord = false;
+  const prevLongest = streakData.longestStreak;
+
+  if (
+    streakData.lastLearnedAt !== null &&
+    streakData.lastLearnedAt >= todayStart
+  ) {
+    // Already updated today — no change
+  } else if (
+    streakData.lastLearnedAt !== null &&
+    streakData.lastLearnedAt >= yesterdayStart
+  ) {
+    // Continued streak from yesterday
+    streakData.currentStreak += 1;
+  } else {
+    // Streak broken or first lesson
+    streakData.currentStreak = 1;
+  }
+
+  streakData.lastLearnedAt = now;
+  if (streakData.currentStreak > streakData.longestStreak) {
+    streakData.longestStreak = streakData.currentStreak;
+    isNewRecord = streakData.longestStreak > prevLongest;
+  }
+
+  // Persist streak to KV
+  await c.env.STREAK_KV.put(streakKvKey, JSON.stringify(streakData));
+
+  // Persist streak to D1
+  const existingStreak = await db
+    .select()
+    .from(streaks)
+    .where(eq(streaks.userId, userId))
+    .get();
+
+  if (existingStreak) {
+    await db
+      .update(streaks)
+      .set({
+        currentStreak: streakData.currentStreak,
+        longestStreak: streakData.longestStreak,
+        lastLearnedAt: now,
+      })
+      .where(eq(streaks.userId, userId));
+  } else {
+    await db.insert(streaks).values({
+      userId,
+      currentStreak: streakData.currentStreak,
+      longestStreak: streakData.longestStreak,
+      lastLearnedAt: now,
+    });
+  }
+
+  return c.json({
+    score: avgScore,
+    streak: {
+      currentStreak: streakData.currentStreak,
+      longestStreak: streakData.longestStreak,
+      isNewRecord,
+    },
+    completedAt: new Date(now).toISOString(),
+  });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/lessons/:id/feedback — Record difficulty feedback
+// ---------------------------------------------------------------------------
+lessonRoutes.post("/:id/feedback", async (c) => {
+  const { userId } = c.get("user");
+  const lessonId = c.req.param("id");
+  const today = todayString();
+  const kv = c.env.SESSION_KV;
+  const sessionKvKey = lessonSessionKey(userId, today);
+
+  const session = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
+  if (!session || session.lessonId !== lessonId) {
+    return c.json({ error: "Lesson session not found" }, 404);
+  }
+
+  let body: { difficulty?: string };
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid request body" }, 400);
+  }
+
+  const { difficulty } = body;
+  const validFeedback = ["too_easy", "just_right", "too_hard"];
+  if (!difficulty || !validFeedback.includes(difficulty)) {
+    return c.json(
+      { error: "difficulty must be too_easy, just_right, or too_hard" },
+      400
+    );
+  }
+
+  session.feedback = difficulty;
+  await kv.put(sessionKvKey, JSON.stringify(session), {
+    expirationTtl: LESSON_SESSION_TTL,
+  });
+
+  // Also persist feedback to D1 user_lessons
+  const db = createDb(c.env.DB);
+  await db
+    .update(userLessons)
+    .set({ feedback: difficulty })
+    .where(
+      and(eq(userLessons.userId, userId), eq(userLessons.lessonId, lessonId))
+    );
+
+  return c.json({ recorded: true });
+});
