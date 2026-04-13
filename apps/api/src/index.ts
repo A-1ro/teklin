@@ -4,6 +4,7 @@ import { logger } from "hono/logger";
 import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
 import { placementRoutes } from "./routes/placement";
+import { lessonRoutes } from "./routes/lessons";
 import type { Bindings } from "./types";
 
 export type { Bindings };
@@ -27,6 +28,7 @@ app.use(
 app.route("/auth", authRoutes);
 app.route("/api", meRoutes);
 app.route("/api/placement", placementRoutes);
+app.route("/api/lessons", lessonRoutes);
 
 // Health check
 app.get("/api/health", (c) => {

@@ -31,6 +31,141 @@ export type CardCategory =
 /** Lesson content types */
 export type LessonType = "vocabulary" | "rewrite" | "reading" | "listening";
 
+/** Difficulty feedback from the user */
+export type DifficultyFeedback = "too_easy" | "just_right" | "too_hard";
+
+/** Exercise types within a lesson */
+export type ExerciseType = "fill_in_blank" | "reorder" | "free_text";
+
+// ---------------------------------------------------------------------------
+// Lesson types
+// ---------------------------------------------------------------------------
+
+/** A single warm-up review quiz question */
+export interface WarmupQuestion {
+  id: string;
+  phrase: string;
+  translation: string;
+  context: string;
+  type: "multiple_choice";
+  choices: { id: string; text: string }[];
+  correctChoiceId: string;
+}
+
+/** Today's focus content — a phrase/pattern to learn */
+export interface FocusContent {
+  phrase: string;
+  explanation: string;
+  examples: { english: string; japanese: string; context: RewriteContext }[];
+  tips: string[];
+}
+
+/** A practice exercise */
+export interface Exercise {
+  id: string;
+  type: ExerciseType;
+  instruction: string;
+  /** For fill_in_blank: sentence with ___ blank */
+  sentence?: string;
+  /** For reorder: shuffled words */
+  words?: string[];
+  /** For free_text: the prompt/scenario */
+  prompt?: string;
+  /** Correct answer (for fill_in_blank and reorder) */
+  correctAnswer?: string;
+  /** Acceptable answers (for fill_in_blank, multiple valid options) */
+  acceptableAnswers?: string[];
+}
+
+/** Wrap-up summary content */
+export interface WrapupContent {
+  summary: string;
+  keyPoints: string[];
+  nextPreview: string;
+}
+
+/** Full lesson content stored as JSON in D1 */
+export interface LessonContent {
+  warmup: { questions: Omit<WarmupQuestion, "correctChoiceId">[] };
+  focus: FocusContent;
+  practice: { exercises: Omit<Exercise, "correctAnswer" | "acceptableAnswers">[] };
+  wrapup: WrapupContent;
+}
+
+/** Internal lesson content with answers (server-side only) */
+export interface LessonContentInternal {
+  warmup: { questions: WarmupQuestion[] };
+  focus: FocusContent;
+  practice: { exercises: Exercise[] };
+  wrapup: WrapupContent;
+}
+
+/** Lesson step identifiers */
+export type LessonStep = "warmup" | "focus" | "practice" | "wrapup";
+
+// ---------------------------------------------------------------------------
+// Lesson API types
+// ---------------------------------------------------------------------------
+
+/** Response from GET /api/lessons/today */
+export interface TodayLessonResponse {
+  lesson: {
+    id: string;
+    domain: Domain;
+    level: Level;
+    type: LessonType;
+    content: LessonContent;
+    createdAt: string;
+  } | null;
+  streak: {
+    currentStreak: number;
+    longestStreak: number;
+  };
+  isCompleted: boolean;
+}
+
+/** Response from POST /api/lessons/:id/start */
+export interface LessonStartResponse {
+  lessonId: string;
+  startedAt: string;
+}
+
+/** Request body for POST /api/lessons/:id/answer */
+export interface LessonAnswerPayload {
+  step: LessonStep;
+  exerciseId: string;
+  answer: string;
+}
+
+/** Response from POST /api/lessons/:id/answer */
+export interface LessonAnswerResponse {
+  correct: boolean;
+  score: number;
+  correctAnswer?: string;
+  feedback?: string;
+}
+
+/** Response from POST /api/lessons/:id/complete */
+export interface LessonCompleteResponse {
+  score: number;
+  streak: {
+    currentStreak: number;
+    longestStreak: number;
+    isNewRecord: boolean;
+  };
+  completedAt: string;
+}
+
+/** Request body for POST /api/lessons/:id/feedback */
+export interface LessonFeedbackPayload {
+  difficulty: DifficultyFeedback;
+}
+
+/** Response from POST /api/lessons/:id/feedback */
+export interface LessonFeedbackResponse {
+  recorded: boolean;
+}
+
 /** API health check response */
 export interface HealthResponse {
   status: "ok" | "error";
