@@ -57,3 +57,9 @@ export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
 }
+
+/** LLM provider identifiers */
+export type LLMProvider = "workers-ai" | "openai" | "anthropic";
+
+/** LLM task types for routing decisions */
+export type LLMTaskType = "lightweight" | "quality";
