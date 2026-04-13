@@ -71,3 +71,27 @@ export function srsKey(userId: string): SrsKvKey {
 export function streakKey(userId: string): StreakKvKey {
   return `streak:${userId}`;
 }
+
+// ---------------------------------------------------------------------------
+// USAGE_KV — token usage tracking per user per day
+// ---------------------------------------------------------------------------
+
+/**
+ * USAGE_KV keys: `usage:{userId}:{YYYY-MM-DD}`
+ * Stores daily LLM token consumption per user.
+ */
+export type UsageKvKey = `usage:${string}:${string}`;
+
+/** Value stored under USAGE_KV `usage:{userId}:{YYYY-MM-DD}` */
+export interface UsageKvValue {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  requestCount: number;
+  /** ISO 8601 timestamp of last update */
+  updatedAt: string;
+}
+
+export function usageKey(userId: string, date: string): UsageKvKey {
+  return `usage:${userId}:${date}`;
+}

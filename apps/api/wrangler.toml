@@ -23,6 +23,10 @@ id = "placeholder-replace-with-actual-id"
 binding = "STREAK_KV"
 id = "placeholder-replace-with-actual-id"
 
+[[kv_namespaces]]
+binding = "USAGE_KV"
+id = "placeholder-replace-with-actual-id"
+
 # ─── R2 Buckets ───
 [[r2_buckets]]
 binding = "CONTENT_BUCKET"
@@ -36,3 +40,10 @@ binding = "AI"
 [vars]
 ENVIRONMENT = "development"
 CORS_ORIGIN = "http://localhost:3000"
+AI_GATEWAY_ACCOUNT_ID = "placeholder-replace-with-actual-account-id"
+AI_GATEWAY_ID = "placeholder-replace-with-actual-gateway-id"
+LLM_DAILY_TOKEN_LIMIT = "100000"
+
+# ─── Secrets (set via `wrangler secret put`) ───
+# wrangler secret put OPENAI_API_KEY
+# wrangler secret put ANTHROPIC_API_KEY
