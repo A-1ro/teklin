@@ -75,6 +75,7 @@ export const lessons = sqliteTable("lessons", {
   level: text("level").notNull(),
   // JSON string containing lesson content
   contentJson: text("content_json").notNull(),
+  // LessonType: "vocabulary" | "rewrite" | "reading" | "listening"
   type: text("type").notNull(),
   createdAt: integer("created_at").notNull(),
 });
