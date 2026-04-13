@@ -20,25 +20,25 @@ export function NavBar() {
         >
           <a
             href="#features"
-            className="transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+            className="rounded transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600 dark:hover:text-gray-100"
           >
             機能
           </a>
           <a
             href="#why"
-            className="transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+            className="rounded transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600 dark:hover:text-gray-100"
           >
             なぜTeklin
           </a>
           <a
             href="#personas"
-            className="transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+            className="rounded transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600 dark:hover:text-gray-100"
           >
             対象ユーザー
           </a>
           <a
             href="#pricing"
-            className="transition-colors hover:text-gray-900 dark:hover:text-gray-100"
+            className="rounded transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600 dark:hover:text-gray-100"
           >
             料金
           </a>

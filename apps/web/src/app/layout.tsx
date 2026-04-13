@@ -6,7 +6,12 @@ const siteTitle = "Teklin - 技術英語特化AI学習アプリ";
 const siteDescription =
   "コードを書くように、英語を書けるエンジニアになる。1日5分、AIが伴走する技術英語特化アプリ。PR・コミット・Slack・GitHub Issue の英語をエンジニアに最適化して学べます。";
 
+// OGP / Twitter Card の絶対 URL 解決や将来追加するカスタム OG 画像の
+// ベース URL として使う。本番ドメイン確定後に差し替える。
+const siteUrl = "https://teklin.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: siteTitle,
     template: "%s | Teklin",
@@ -27,6 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ja_JP",
+    url: siteUrl,
     siteName: "Teklin",
     title: siteTitle,
     description: siteDescription,
