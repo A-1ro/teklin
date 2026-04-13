@@ -1,25 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/auth/auth-provider";
+import { useRedirectIfAuth } from "@/lib/auth";
 
 /**
  * Silently redirects authenticated users to /dashboard.
  *
- * Unlike `useRedirectIfAuth`, this renders nothing visible while the auth
- * state is loading, so the server-rendered landing page content stays
- * immediately visible to first-time visitors and search engine crawlers.
+ * A thin wrapper around `useRedirectIfAuth` that renders nothing,
+ * so the server-rendered landing page content stays immediately
+ * visible to first-time visitors and search engine crawlers.
+ *
+ * Use the `useRedirectIfAuth` hook directly when you need access
+ * to `isLoading` / `user` state (e.g. to show a loading spinner).
  */
 export function AuthRedirect() {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      router.replace("/dashboard");
-    }
-  }, [user, isLoading, router]);
-
+  useRedirectIfAuth();
   return null;
 }
