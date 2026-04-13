@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
+import { placementRoutes } from "./routes/placement";
 import type { Bindings } from "./types";
 
 export type { Bindings };
@@ -25,6 +26,7 @@ app.use(
 // Routes
 app.route("/auth", authRoutes);
 app.route("/api", meRoutes);
+app.route("/api/placement", placementRoutes);
 
 // Health check
 app.get("/api/health", (c) => {
