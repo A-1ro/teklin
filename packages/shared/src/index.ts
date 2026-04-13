@@ -63,3 +63,46 @@ export type LLMProvider = "workers-ai" | "openai" | "anthropic";
 
 /** LLM task types for routing decisions */
 export type LLMTaskType = "lightweight" | "quality";
+
+// ---------------------------------------------------------------------------
+// Placement test types
+// ---------------------------------------------------------------------------
+
+/** Placement question types */
+export type PlacementQuestionType = "multiple_choice" | "free_text";
+
+/** A single placement test question */
+export interface PlacementQuestion {
+  id: string;
+  axis: SkillAxis;
+  difficulty: 1 | 2 | 3;
+  type: PlacementQuestionType;
+  prompt: string;
+  context?: string;
+  choices?: { id: string; text: string }[];
+}
+
+/** Client-facing question (no correct answer) */
+export type PlacementQuestionClient = PlacementQuestion;
+
+/** Answer submitted by the user */
+export interface PlacementAnswerPayload {
+  questionId: string;
+  answer: string;
+}
+
+/** Result of the placement test */
+export interface PlacementResultResponse {
+  level: Level;
+  scores: Record<SkillAxis, number>;
+  weaknesses: SkillAxis[];
+  totalQuestions: number;
+  completedAt: string;
+}
+
+/** Response from start/answer endpoints */
+export interface PlacementNextResponse {
+  question: PlacementQuestionClient | null;
+  progress: { current: number; total: number };
+  isComplete: boolean;
+}

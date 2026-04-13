@@ -1,4 +1,5 @@
 // KV namespace key schema and type definitions for Teklin.
+import type { SkillAxis } from "@teklin/shared";
 //
 // Bindings:
 //   SESSION_KV  — user session data
@@ -94,4 +95,32 @@ export interface UsageKvValue {
 
 export function usageKey(userId: string, date: string): UsageKvKey {
   return `usage:${userId}:${date}`;
+}
+
+// ---------------------------------------------------------------------------
+// PLACEMENT SESSION — test progress tracking
+// ---------------------------------------------------------------------------
+
+export type PlacementSessionKvKey = `placement:${string}`;
+
+export interface PlacementAnswerRecord {
+  questionId: string;
+  answer: string;
+  axis: SkillAxis;
+  difficulty: 1 | 2 | 3;
+  score: number;
+  answeredAt: number;
+}
+
+export interface PlacementSessionKvValue {
+  userId: string;
+  questionOrder: string[];
+  answers: PlacementAnswerRecord[];
+  currentIndex: number;
+  startedAt: number;
+  status: "in_progress" | "completed";
+}
+
+export function placementSessionKey(userId: string): PlacementSessionKvKey {
+  return `placement:${userId}`;
 }
