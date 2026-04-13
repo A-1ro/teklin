@@ -2,10 +2,44 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
 
+const siteTitle = "Teklin - 技術英語特化AI学習アプリ";
+const siteDescription =
+  "コードを書くように、英語を書けるエンジニアになる。1日5分、AIが伴走する技術英語特化アプリ。PR・コミット・Slack・GitHub Issue の英語をエンジニアに最適化して学べます。";
+
 export const metadata: Metadata = {
-  title: "Teklin - 技術英語特化AI学習アプリ",
-  description:
-    "コードを書くように、英語を書けるエンジニアになる。1日5分、AIが伴走する技術英語特化アプリ。",
+  title: {
+    default: siteTitle,
+    template: "%s | Teklin",
+  },
+  description: siteDescription,
+  applicationName: "Teklin",
+  keywords: [
+    "技術英語",
+    "英語学習",
+    "エンジニア",
+    "AI",
+    "PR",
+    "コミットメッセージ",
+    "GitHub",
+    "Teklin",
+  ],
+  authors: [{ name: "Teklin" }],
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName: "Teklin",
+    title: siteTitle,
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
