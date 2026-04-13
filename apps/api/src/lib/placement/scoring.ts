@@ -13,6 +13,15 @@ export function scoreMultipleChoice(
   return answer === q.correctChoiceId ? 100 : 0;
 }
 
+/**
+ * Sanitize user text before embedding it in an LLM prompt.
+ * Escapes the delimiter markers so the user cannot break out of
+ * the user-text section.
+ */
+function sanitizeForPrompt(text: string): string {
+  return text.replace(/---/g, "—");
+}
+
 /** Score a writing answer using LLM (0-100) */
 export async function scoreWriting(
   questionId: string,
@@ -22,9 +31,16 @@ export async function scoreWriting(
   const q = PLACEMENT_QUESTIONS.find((q) => q.id === questionId);
   if (!q) return 0;
 
+  const sanitizedAnswer = sanitizeForPrompt(answer);
+
+  // Append question-specific scoring criteria to the user prompt
+  const criteria = q.scoringCriteria
+    ? `\n\nScoring criteria: ${q.scoringCriteria}`
+    : "";
+
   const { system, user } = llm.prompts.render(
     llm.prompts.templates.placement,
-    { text: answer }
+    { text: sanitizedAnswer + criteria }
   );
 
   const response = await llm.router.generate(
@@ -34,9 +50,20 @@ export async function scoreWriting(
   );
 
   try {
-    const result = JSON.parse(response.text) as { score?: unknown };
+    const result = JSON.parse(response.text) as {
+      score?: unknown;
+      level?: unknown;
+    };
     const score = typeof result.score === "number" ? result.score : 0;
-    return Math.max(0, Math.min(100, score));
+    const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
+
+    // Validate that level, if present, is a known value
+    const validLevels = new Set(["L1", "L2", "L3", "L4"]);
+    if (result.level && !validLevels.has(String(result.level))) {
+      return 50; // suspicious response
+    }
+
+    return clampedScore;
   } catch {
     return 50; // fallback if LLM returns invalid JSON
   }

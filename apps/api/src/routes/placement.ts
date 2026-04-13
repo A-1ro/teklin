@@ -25,13 +25,9 @@ import type { QuestionData } from "../lib/placement/questions";
 function toClientQuestion(
   q: QuestionData
 ): Omit<QuestionData, "correctChoiceId" | "scoringCriteria"> {
-  const entries = Object.entries(q).filter(
-    ([k]) => k !== "correctChoiceId" && k !== "scoringCriteria"
-  );
-  return Object.fromEntries(entries) as Omit<
-    QuestionData,
-    "correctChoiceId" | "scoringCriteria"
-  >;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { correctChoiceId: _c, scoringCriteria: _s, ...rest } = q;
+  return rest;
 }
 
 export const placementRoutes = new Hono<{
@@ -50,15 +46,25 @@ function generateQuestionOrder(): string[] {
   const axes: SkillAxis[] = ["reading", "writing", "vocabulary", "nuance"];
   const order: string[] = [];
 
+  const usedIds = new Set<string>();
+
   // 5 rounds × 4 axes = 20 questions; start with medium difficulty
   for (let round = 0; round < 5; round++) {
     for (const axis of axes) {
+      // Prefer medium, then fall back to any unused question for this axis
       const candidates = PLACEMENT_QUESTIONS.filter(
-        (q) => q.axis === axis && q.difficulty === 2
+        (q) =>
+          q.axis === axis &&
+          q.difficulty === 2 &&
+          !usedIds.has(q.id)
       );
-      const pick = candidates[round % candidates.length];
+      const fallback = PLACEMENT_QUESTIONS.filter(
+        (q) => q.axis === axis && !usedIds.has(q.id)
+      );
+      const pick = candidates[0] ?? fallback[0];
       if (pick) {
         order.push(pick.id);
+        usedIds.add(pick.id);
       }
     }
   }
@@ -114,6 +120,7 @@ function selectNextQuestion(
 
 const TOTAL_QUESTIONS = 20;
 const SESSION_TTL = 3600; // 1 hour
+const MAX_ANSWER_LENGTH = 2000;
 
 // ---------------------------------------------------------------------------
 // POST /placement/start — Start or resume a placement test
@@ -180,8 +187,35 @@ placementRoutes.post("/answer", async (c) => {
     return c.json({ error: "No active placement session" }, 400);
   }
 
-  const body = await c.req.json<{ questionId: string; answer: string }>();
+  let body: { questionId?: string; answer?: string };
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid request body" }, 400);
+  }
+
   const { questionId, answer } = body;
+
+  if (
+    typeof questionId !== "string" ||
+    typeof answer !== "string" ||
+    answer.length === 0
+  ) {
+    return c.json({ error: "questionId and answer are required" }, 400);
+  }
+
+  if (answer.length > MAX_ANSWER_LENGTH) {
+    return c.json(
+      { error: `Answer must be ${MAX_ANSWER_LENGTH} characters or fewer` },
+      400
+    );
+  }
+
+  // Ensure the submitted questionId matches the expected current question
+  const expectedId = session.questionOrder[session.currentIndex];
+  if (questionId !== expectedId) {
+    return c.json({ error: "Unexpected question ID" }, 400);
+  }
 
   const question = PLACEMENT_QUESTIONS.find((q) => q.id === questionId);
   if (!question) {
@@ -264,10 +298,7 @@ placementRoutes.post("/complete", async (c) => {
     return c.json({ error: "No placement session found" }, 400);
   }
 
-  if (
-    session.status !== "completed" &&
-    session.answers.length < TOTAL_QUESTIONS
-  ) {
+  if (session.status !== "completed") {
     return c.json({ error: "Test is not yet complete" }, 400);
   }
 
@@ -276,11 +307,15 @@ placementRoutes.post("/complete", async (c) => {
   const level = determineLevel(scores);
   const weaknesses = identifyWeaknesses(scores);
 
-  // Persist to D1
   const db = createDb(c.env.DB);
-  const resultId = crypto.randomUUID();
   const now = Date.now();
 
+  // Delete the KV session first to prevent duplicate requests from
+  // re-entering this block while the D1 write is in flight.
+  await kv.delete(key);
+
+  // Persist to D1
+  const resultId = crypto.randomUUID();
   await db.insert(placementResults).values({
     id: resultId,
     userId,
@@ -298,9 +333,6 @@ placementRoutes.post("/complete", async (c) => {
     .update(users)
     .set({ level, updatedAt: now })
     .where(eq(users.id, userId));
-
-  // Clean up KV session
-  await kv.delete(key);
 
   return c.json({
     level,

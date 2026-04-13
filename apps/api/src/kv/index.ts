@@ -2,7 +2,7 @@
 import type { SkillAxis } from "@teklin/shared";
 //
 // Bindings:
-//   SESSION_KV  — user session data
+//   SESSION_KV  — user session data + placement test sessions
 //   SRS_KV      — cached SRS card state per user
 //   STREAK_KV   — streak counters per user
 
