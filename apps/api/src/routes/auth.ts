@@ -18,18 +18,8 @@ import {
 } from "../lib/oauth";
 import { sessionKey } from "../kv";
 import type { SessionKvValue } from "../kv";
-
-type Bindings = {
-  DB: D1Database;
-  SESSION_KV: KVNamespace;
-  JWT_SECRET: string;
-  GITHUB_CLIENT_ID: string;
-  GITHUB_CLIENT_SECRET: string;
-  GOOGLE_CLIENT_ID: string;
-  GOOGLE_CLIENT_SECRET: string;
-  APP_URL: string;
-  ENVIRONMENT: string;
-};
+import type { Bindings } from "../types";
+import { rateLimitMiddleware } from "../middleware/rate-limit";
 
 const REFRESH_TOKEN_TTL_SEC = 7 * 24 * 60 * 60; // 7 days
 const OAUTH_STATE_TTL_SEC = 600; // 10 minutes
@@ -47,11 +37,20 @@ function cookieOptions(env: string): CookieOptions {
 
 export const authRoutes = new Hono<{ Bindings: Bindings }>();
 
+authRoutes.use("/*", rateLimitMiddleware);
+
 // GET /auth/github — Start GitHub OAuth
 authRoutes.get("/github", async (c) => {
   const state = crypto.randomUUID();
   await c.env.SESSION_KV.put(`oauth_state:${state}`, "1", {
     expirationTtl: OAUTH_STATE_TTL_SEC,
+  });
+  setCookie(c, "oauth_state", state, {
+    httpOnly: true,
+    secure: c.env.ENVIRONMENT === "production",
+    sameSite: "Lax",
+    path: "/",
+    maxAge: OAUTH_STATE_TTL_SEC,
   });
 
   const config = getGitHubConfig();
@@ -74,6 +73,13 @@ authRoutes.get("/github/callback", async (c) => {
   if (!code || !state) {
     return c.json({ error: "Missing code or state" }, 400);
   }
+
+  // Verify CSRF double-submit cookie
+  const cookieState = getCookie(c, "oauth_state");
+  if (!cookieState || cookieState !== state) {
+    return c.json({ error: "State mismatch" }, 400);
+  }
+  deleteCookie(c, "oauth_state", { path: "/" });
 
   // Verify and consume state
   const storedState = await c.env.SESSION_KV.get(`oauth_state:${state}`);
@@ -177,6 +183,13 @@ authRoutes.get("/google", async (c) => {
   await c.env.SESSION_KV.put(`oauth_state:${state}`, "1", {
     expirationTtl: OAUTH_STATE_TTL_SEC,
   });
+  setCookie(c, "oauth_state", state, {
+    httpOnly: true,
+    secure: c.env.ENVIRONMENT === "production",
+    sameSite: "Lax",
+    path: "/",
+    maxAge: OAUTH_STATE_TTL_SEC,
+  });
 
   const config = getGoogleConfig();
   const redirectUri =
@@ -200,6 +213,13 @@ authRoutes.get("/google/callback", async (c) => {
   if (!code || !state) {
     return c.json({ error: "Missing code or state" }, 400);
   }
+
+  // Verify CSRF double-submit cookie
+  const cookieState = getCookie(c, "oauth_state");
+  if (!cookieState || cookieState !== state) {
+    return c.json({ error: "State mismatch" }, 400);
+  }
+  deleteCookie(c, "oauth_state", { path: "/" });
 
   // Verify and consume state
   const storedState = await c.env.SESSION_KV.get(`oauth_state:${state}`);
@@ -323,6 +343,10 @@ authRoutes.post("/refresh", async (c) => {
 
   const session = JSON.parse(sessionRaw) as SessionKvValue;
 
+  if (session.userId !== userId) {
+    return c.json({ error: "Session mismatch" }, 401);
+  }
+
   // Delete old session
   await c.env.SESSION_KV.delete(sessionKey(jti));
 
@@ -377,8 +401,8 @@ authRoutes.post("/logout", async (c) => {
   }
 
   const opts = cookieOptions(c.env.ENVIRONMENT);
-  deleteCookie(c, "access_token", { path: opts.path });
-  deleteCookie(c, "refresh_token", { path: opts.path });
+  deleteCookie(c, "access_token", opts);
+  deleteCookie(c, "refresh_token", opts);
 
   return c.json({ ok: true });
 });

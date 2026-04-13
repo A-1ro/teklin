@@ -2,11 +2,7 @@ import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { createDb, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
-
-type Bindings = {
-  DB: D1Database;
-  JWT_SECRET: string;
-};
+import type { Bindings } from "../types";
 
 export const meRoutes = new Hono<{
   Bindings: Bindings;
