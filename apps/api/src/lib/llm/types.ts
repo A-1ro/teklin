@@ -30,7 +30,7 @@ export interface LLMAdapter {
 export class LLMError extends Error {
   constructor(
     message: string,
-    public readonly provider: LLMProvider,
+    public readonly provider: LLMProvider | null,
     public readonly cause?: unknown
   ) {
     super(message);

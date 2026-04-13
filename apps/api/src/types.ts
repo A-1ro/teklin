@@ -16,8 +16,8 @@ export type Bindings = {
   APP_URL: string;
   AI_GATEWAY_ACCOUNT_ID: string;
   AI_GATEWAY_ID: string;
-  OPENAI_API_KEY: string;
-  ANTHROPIC_API_KEY: string;
+  OPENAI_API_KEY?: string;
+  ANTHROPIC_API_KEY?: string;
   /** Daily token limit per user. Defaults to "100000" if not set. */
-  LLM_DAILY_TOKEN_LIMIT: string;
+  LLM_DAILY_TOKEN_LIMIT?: string;
 };

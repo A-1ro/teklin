@@ -13,6 +13,11 @@ function todayUtc(): string {
 
 /**
  * Increment the daily token usage counters for a user.
+ *
+ * Note: KV Read-Modify-Write is not atomic. Under concurrent requests for the
+ * same user, counts may be slightly inaccurate. This is acceptable for a
+ * learning app with low per-user concurrency. For strict counting, migrate to
+ * D1 with INSERT ... ON CONFLICT DO UPDATE or Durable Objects.
  */
 export async function trackUsage(
   kv: KVNamespace,

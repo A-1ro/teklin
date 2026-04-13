@@ -51,8 +51,9 @@ export const templates = {
     user: [
       "Context: {{context}}",
       "",
-      "Original text:",
+      "---BEGIN USER TEXT---",
       "{{original}}",
+      "---END USER TEXT---",
       "",
       "Please rewrite the above text and explain the improvements.",
     ].join("\n"),
@@ -68,9 +69,11 @@ export const templates = {
       "score (0-100), level (L1|L2|L3|L4), and feedback (string).",
     ].join(" "),
     user: [
-      "Evaluate the following text written by a software engineer:",
+      "Evaluate the following text:",
       "",
+      "---BEGIN USER TEXT---",
       "{{text}}",
+      "---END USER TEXT---",
       "",
       'Return only valid JSON: {"score": <number>, "level": "<L1|L2|L3|L4>",',
       '"feedback": "<string>"}',

@@ -75,10 +75,11 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
       }
 
       if (!res.ok) {
-        const text = await res.text().catch(() => "");
+        const body = await res.text().catch(() => "");
         throw new LLMError(
-          `Anthropic returned ${res.status}: ${text}`,
-          "anthropic"
+          `Anthropic request failed with status ${res.status}`,
+          "anthropic",
+          { status: res.status, body }
         );
       }
 
@@ -141,11 +142,12 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
         }
 
         if (!res.ok || !res.body) {
-          const text = await res.text().catch(() => "");
+          const body = await res.text().catch(() => "");
           await writer.abort(
             new LLMError(
-              `Anthropic stream returned ${res.status}: ${text}`,
-              "anthropic"
+              `Anthropic stream request failed with status ${res.status}`,
+              "anthropic",
+              { status: res.status, body }
             )
           );
           return;

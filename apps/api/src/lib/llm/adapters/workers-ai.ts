@@ -27,7 +27,7 @@ export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
 
       let result: WorkersAiTextResponse;
       try {
-        result = (await (ai as Ai).run(DEFAULT_MODEL, {
+        result = (await ai.run(DEFAULT_MODEL, {
           messages,
           max_tokens: options.maxTokens ?? 1024,
           temperature: options.temperature ?? 0.7,
@@ -68,7 +68,7 @@ export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
 
       (async () => {
         try {
-          const stream = (await (ai as Ai).run(DEFAULT_MODEL, {
+          const stream = (await ai.run(DEFAULT_MODEL, {
             messages,
             max_tokens: options.maxTokens ?? 1024,
             temperature: options.temperature ?? 0.7,

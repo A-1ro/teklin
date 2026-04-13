@@ -20,16 +20,18 @@ import { createWorkersAiAdapter } from "./adapters/workers-ai";
 import { createOpenAiAdapter } from "./adapters/openai";
 import { createAnthropicAdapter } from "./adapters/anthropic";
 import type { LLMUsage } from "./types";
+import type { Bindings } from "../../types";
 
-interface LLMServiceBindings {
-  AI: Ai;
-  USAGE_KV: KVNamespace;
-  AI_GATEWAY_ACCOUNT_ID: string;
-  AI_GATEWAY_ID: string;
-  OPENAI_API_KEY: string;
-  ANTHROPIC_API_KEY: string;
-  LLM_DAILY_TOKEN_LIMIT?: string;
-}
+type LLMServiceBindings = Pick<
+  Bindings,
+  | "AI"
+  | "USAGE_KV"
+  | "AI_GATEWAY_ACCOUNT_ID"
+  | "AI_GATEWAY_ID"
+  | "OPENAI_API_KEY"
+  | "ANTHROPIC_API_KEY"
+  | "LLM_DAILY_TOKEN_LIMIT"
+>;
 
 export interface LLMService {
   router: LLMRouter;

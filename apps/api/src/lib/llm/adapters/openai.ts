@@ -82,10 +82,11 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
       }
 
       if (!res.ok) {
-        const text = await res.text().catch(() => "");
+        const body = await res.text().catch(() => "");
         throw new LLMError(
-          `OpenAI returned ${res.status}: ${text}`,
-          "openai"
+          `OpenAI request failed with status ${res.status}`,
+          "openai",
+          { status: res.status, body }
         );
       }
 
@@ -139,9 +140,13 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
         }
 
         if (!res.ok || !res.body) {
-          const text = await res.text().catch(() => "");
+          const body = await res.text().catch(() => "");
           await writer.abort(
-            new LLMError(`OpenAI stream returned ${res.status}: ${text}`, "openai")
+            new LLMError(
+              `OpenAI stream request failed with status ${res.status}`,
+              "openai",
+              { status: res.status, body }
+            )
           );
           return;
         }

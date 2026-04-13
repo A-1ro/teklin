@@ -66,7 +66,7 @@ export function createLLMRouter(
     ): Promise<LLMResponse> {
       const candidates = resolveAdapter(taskType);
       if (candidates.length === 0) {
-        throw new LLMError("No LLM adapters available", "workers-ai");
+        throw new LLMError("No LLM adapters available", null);
       }
 
       let lastError: unknown;
@@ -95,12 +95,15 @@ export function createLLMRouter(
       if (candidates.length === 0) {
         const { readable, writable } = new TransformStream<string, string>();
         const writer = writable.getWriter();
-        writer.abort(new LLMError("No LLM adapters available", "workers-ai"));
+        writer.abort(new LLMError("No LLM adapters available", null));
         return readable;
       }
 
-      // For streaming, try the first available adapter.
-      // Fallback on stream is complex; use the preferred adapter only.
+      // Streaming fallback is not supported: once a stream begins, switching
+      // providers mid-stream is not feasible. If the preferred adapter fails
+      // before streaming starts (e.g., network error), the error propagates
+      // to the caller. Consider retrying with generate() as a fallback
+      // strategy at the call site if stream reliability is critical.
       return candidates[0].stream(prompt, options);
     },
   };
