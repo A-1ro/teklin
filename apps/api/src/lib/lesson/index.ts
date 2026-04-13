@@ -4,6 +4,5 @@ export {
   scoreMultipleChoice,
   scoreFillInBlank,
   scoreReorder,
-  scoreFreeText,
   scoreFreeTextWithFeedback,
 } from "./scoring";

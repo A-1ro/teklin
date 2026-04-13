@@ -2,7 +2,7 @@ import type { LLMService } from "../llm";
 import type { Exercise, WarmupQuestion } from "@teklin/shared";
 
 /**
- * Sanitize user text before embedding it in an LLM prompt.
+ * Sanitize text before embedding it in an LLM prompt.
  * Escapes delimiter markers to prevent prompt injection.
  */
 function sanitizeForPrompt(text: string): string {
@@ -48,57 +48,8 @@ export function scoreReorder(exercise: Exercise, answer: string): number {
 }
 
 /**
- * Score a free_text exercise using LLM (0-100).
+ * Score a free_text exercise using LLM and return both score and feedback.
  * Follows the same pattern as placement/scoring.ts scoreWriting.
- */
-export async function scoreFreeText(
-  exercise: Exercise,
-  answer: string,
-  llm: LLMService
-): Promise<number> {
-  const sanitizedAnswer = sanitizeForPrompt(answer);
-  const context = exercise.prompt ? `\n\nExercise prompt: ${exercise.prompt}` : "";
-
-  const system = [
-    "You are an English writing evaluator for software engineers.",
-    "Assess the given text for technical accuracy, grammar, clarity, and",
-    "professional tone appropriate for engineering communication.",
-    "Return a JSON object with fields:",
-    "score (0-100) and feedback (string).",
-  ].join(" ");
-
-  const user = [
-    "Evaluate the following response to a technical English exercise:",
-    "",
-    `Exercise instruction: ${exercise.instruction}${context}`,
-    "",
-    "---BEGIN USER RESPONSE---",
-    sanitizedAnswer,
-    "---END USER RESPONSE---",
-    "",
-    'Return only valid JSON: {"score": <number 0-100>, "feedback": "<brief feedback string>"}',
-  ].join("\n");
-
-  try {
-    const response = await llm.router.generate(
-      user,
-      { system, maxTokens: 256, temperature: 0.1 },
-      "quality"
-    );
-
-    const result = JSON.parse(response.text) as {
-      score?: unknown;
-      feedback?: unknown;
-    };
-    const score = typeof result.score === "number" ? result.score : 50;
-    return Math.max(0, Math.min(100, Math.round(score)));
-  } catch {
-    return 50; // fallback if LLM returns invalid JSON
-  }
-}
-
-/**
- * Score a free_text exercise and return both score and feedback.
  */
 export async function scoreFreeTextWithFeedback(
   exercise: Exercise,
@@ -106,7 +57,10 @@ export async function scoreFreeTextWithFeedback(
   llm: LLMService
 ): Promise<{ score: number; feedback: string }> {
   const sanitizedAnswer = sanitizeForPrompt(answer);
-  const context = exercise.prompt ? `\n\nExercise prompt: ${exercise.prompt}` : "";
+  const sanitizedInstruction = sanitizeForPrompt(exercise.instruction);
+  const context = exercise.prompt
+    ? `\n\nExercise prompt: ${sanitizeForPrompt(exercise.prompt)}`
+    : "";
 
   const system = [
     "You are an English writing evaluator for software engineers.",
@@ -119,7 +73,7 @@ export async function scoreFreeTextWithFeedback(
   const user = [
     "Evaluate the following response to a technical English exercise:",
     "",
-    `Exercise instruction: ${exercise.instruction}${context}`,
+    `Exercise instruction: ${sanitizedInstruction}${context}`,
     "",
     "---BEGIN USER RESPONSE---",
     sanitizedAnswer,

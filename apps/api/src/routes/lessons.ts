@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { createDb, lessons, userLessons, streaks, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -89,33 +89,7 @@ lessonRoutes.get("/today", async (c) => {
     longestStreak: streakData.longestStreak,
   };
 
-  // If already completed today, return completed status
-  if (existing?.completedAt !== null && existing?.completedAt !== undefined) {
-    const db = createDb(c.env.DB);
-    const lesson = await db
-      .select()
-      .from(lessons)
-      .where(eq(lessons.id, existing.lessonId))
-      .get();
-
-    if (lesson) {
-      const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
-      return c.json({
-        lesson: {
-          id: lesson.id,
-          domain: lesson.domain,
-          level: lesson.level,
-          type: lesson.type,
-          content: toClientContent(content),
-          createdAt: new Date(lesson.createdAt).toISOString(),
-        },
-        streak: streakInfo,
-        isCompleted: true,
-      });
-    }
-  }
-
-  // If session exists (in progress), return the cached lesson
+  // If session exists in KV, try to load the lesson from D1
   if (existing) {
     const db = createDb(c.env.DB);
     const lesson = await db
@@ -126,6 +100,8 @@ lessonRoutes.get("/today", async (c) => {
 
     if (lesson) {
       const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
+      const isCompleted =
+        existing.completedAt !== null && existing.completedAt !== undefined;
       return c.json({
         lesson: {
           id: lesson.id,
@@ -136,9 +112,12 @@ lessonRoutes.get("/today", async (c) => {
           createdAt: new Date(lesson.createdAt).toISOString(),
         },
         streak: streakInfo,
-        isCompleted: false,
+        isCompleted,
       });
     }
+
+    // KV session is orphaned (D1 record missing) — clean up before generating
+    await kv.delete(sessionKvKey);
   }
 
   // Generate a new lesson
@@ -156,11 +135,12 @@ lessonRoutes.get("/today", async (c) => {
   }
 
   // Count completed lessons for context rotation
-  const completedCount = await db
-    .select()
+  const countResult = await db
+    .select({ value: count() })
     .from(userLessons)
     .where(eq(userLessons.userId, userId))
-    .all();
+    .get();
+  const completedCount = countResult?.value ?? 0;
 
   // Get weaknesses from latest placement result
   const { placementResults } = await import("../db/schema");
@@ -182,7 +162,7 @@ lessonRoutes.get("/today", async (c) => {
     domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
     weaknesses:
       weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
-    completedLessonCount: completedCount.length,
+    completedLessonCount: completedCount,
   });
 
   // Persist lesson to D1
@@ -200,9 +180,8 @@ lessonRoutes.get("/today", async (c) => {
   });
 
   // Create user_lessons record
-  const userLessonId = crypto.randomUUID();
   await db.insert(userLessons).values({
-    id: userLessonId,
+    id: crypto.randomUUID(),
     userId,
     lessonId,
     startedAt: null,
@@ -313,6 +292,14 @@ lessonRoutes.post("/:id/answer", async (c) => {
 
   if (answer.length > 2000) {
     return c.json({ error: "Answer must be 2000 characters or fewer" }, 400);
+  }
+
+  // Check for duplicate answers
+  const alreadyAnswered = session.answers.find(
+    (a) => a.exerciseId === exerciseId && a.step === step
+  );
+  if (alreadyAnswered) {
+    return c.json({ error: "Already answered this exercise" }, 400);
   }
 
   // Load lesson content from D1
@@ -534,6 +521,10 @@ lessonRoutes.post("/:id/feedback", async (c) => {
   const session = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
   if (!session || session.lessonId !== lessonId) {
     return c.json({ error: "Lesson session not found" }, 404);
+  }
+
+  if (session.completedAt === null || session.completedAt === undefined) {
+    return c.json({ error: "Lesson not yet completed" }, 400);
   }
 
   let body: { difficulty?: string };

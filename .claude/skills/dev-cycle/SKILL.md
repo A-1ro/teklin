@@ -9,10 +9,10 @@ effort: max
 
 # 開発サイクルスキル
 
-対象 issue 番号: !`echo "${ARGUMENTS:-$(gh issue list --state open --limit 1 --json number --jq '.[0].number')}"`
+対象 issue 番号: $ARGUMENTS
 
 GitHub issue の開発サイクルを以下の手順で実行する。
-**引数が指定されていない場合は、最も番号が小さい open issue を自動選択する。**
+**引数が指定されていない場合は、`gh issue list --state open --limit 1 --json number --jq '.[0].number'` を実行して最も番号が小さい open issue を自動選択する。**
 基本的に自律的に進行し、ユーザーへの確認は重要な判断（要件の認識合わせ、設計方針の大きな分岐、レビューの確認事項）のみに限定する。
 軽微な修正、検討推奨事項の対応判断、APPROVE 後のマージなどは確認なしで進める。
 

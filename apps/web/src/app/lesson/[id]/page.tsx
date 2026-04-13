@@ -111,9 +111,6 @@ export default function LessonPage() {
       .then((res) => {
         if (res.lesson && res.lesson.id === lessonId) {
           setContent(res.lesson.content);
-        } else if (res.lesson) {
-          // Lesson found but different ID -- still show it
-          setContent(res.lesson.content);
         } else {
           setError("Lesson not found.");
         }
