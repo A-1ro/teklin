@@ -166,6 +166,74 @@ export interface LessonFeedbackResponse {
   recorded: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Card / SRS API types
+// ---------------------------------------------------------------------------
+
+/** UI-facing card rating (maps to SM-2 quality internally) */
+export type CardRating = "again" | "hard" | "good" | "easy";
+
+/** Phrase card with optional SRS state */
+export interface PhraseCardWithSrs {
+  id: string;
+  phrase: string;
+  translation: string;
+  context: string;
+  domain: Domain;
+  level: Level;
+  category: CardCategory;
+  srs: {
+    interval: number;
+    easeFactor: number;
+    nextReview: string;
+    repetitions: number;
+  } | null;
+}
+
+/** Response from GET /api/cards/review */
+export interface ReviewCardsResponse {
+  cards: PhraseCardWithSrs[];
+  totalDue: number;
+}
+
+/** Response from GET /api/cards/deck/:category */
+export interface DeckCardsResponse {
+  cards: PhraseCardWithSrs[];
+  category: CardCategory;
+  total: number;
+}
+
+/** Request body for POST /api/cards/:id/answer */
+export interface CardAnswerPayload {
+  rating: CardRating;
+}
+
+/** Response from POST /api/cards/:id/answer */
+export interface CardAnswerResponse {
+  nextReview: string;
+  interval: number;
+  easeFactor: number;
+  repetitions: number;
+}
+
+/** Per-category stats */
+export interface CategoryStats {
+  total: number;
+  mastered: number;
+  learning: number;
+  unseen: number;
+}
+
+/** Response from GET /api/cards/stats */
+export interface CardStatsResponse {
+  total: number;
+  mastered: number;
+  learning: number;
+  unseen: number;
+  dueToday: number;
+  byCategory: Record<CardCategory, CategoryStats>;
+}
+
 /** API health check response */
 export interface HealthResponse {
   status: "ok" | "error";

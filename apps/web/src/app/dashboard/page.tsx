@@ -159,13 +159,11 @@ export default function DashboardPage() {
         {/* Quick links */}
         <div className="mt-6 grid grid-cols-2 gap-4">
           <Link
-            href="/placement"
-            className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center transition-colors hover:border-gray-700 hover:bg-gray-800"
+            href="/cards"
+            className="rounded-xl border border-emerald-800/30 bg-emerald-950/20 p-4 text-center transition-colors hover:border-emerald-700/40 hover:bg-emerald-950/30"
           >
-            <p className="text-sm font-semibold text-gray-200">
-              Placement Test
-            </p>
-            <p className="mt-1 text-xs text-gray-500">Retake or view results</p>
+            <p className="text-sm font-semibold text-gray-200">Phrase Cards</p>
+            <p className="mt-1 text-xs text-gray-500">SRS flashcard review</p>
           </Link>
           <Link
             href="/lesson"
@@ -173,6 +171,15 @@ export default function DashboardPage() {
           >
             <p className="text-sm font-semibold text-gray-200">All Lessons</p>
             <p className="mt-1 text-xs text-gray-500">View lesson details</p>
+          </Link>
+          <Link
+            href="/placement"
+            className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center transition-colors hover:border-gray-700 hover:bg-gray-800"
+          >
+            <p className="text-sm font-semibold text-gray-200">
+              Placement Test
+            </p>
+            <p className="mt-1 text-xs text-gray-500">Retake or view results</p>
           </Link>
         </div>
       </div>
