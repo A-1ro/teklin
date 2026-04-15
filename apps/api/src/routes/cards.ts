@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, and, lte, sql, inArray } from "drizzle-orm";
+import { eq, and, lte, sql, inArray, count } from "drizzle-orm";
 import { createDb, phraseCards, userSrs, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -202,19 +202,7 @@ cardRoutes.get("/deck/:category", async (c) => {
 
   // Query phrase_cards left-joined with user_srs, filtered by category and level
   const rows = await db
-    .select({
-      id: phraseCards.id,
-      phrase: phraseCards.phrase,
-      translation: phraseCards.translation,
-      context: phraseCards.context,
-      domain: phraseCards.domain,
-      level: phraseCards.level,
-      category: phraseCards.category,
-      srsInterval: userSrs.interval,
-      srsEaseFactor: userSrs.easeFactor,
-      srsNextReview: userSrs.nextReview,
-      srsRepetitions: userSrs.repetitions,
-    })
+    .select(reviewSelectColumns)
     .from(phraseCards)
     .leftJoin(
       userSrs,
@@ -230,27 +218,7 @@ cardRoutes.get("/deck/:category", async (c) => {
       )
     );
 
-  const cards: PhraseCardWithSrs[] = rows.map((row) => ({
-    id: row.id,
-    phrase: row.phrase,
-    translation: row.translation,
-    context: row.context,
-    domain: row.domain as Domain,
-    level: row.level as Level,
-    category: row.category as CardCategory,
-    srs:
-      row.srsInterval !== null &&
-      row.srsEaseFactor !== null &&
-      row.srsNextReview !== null &&
-      row.srsRepetitions !== null
-        ? {
-            interval: row.srsInterval,
-            easeFactor: row.srsEaseFactor,
-            nextReview: new Date(row.srsNextReview).toISOString(),
-            repetitions: row.srsRepetitions,
-          }
-        : null,
-  }));
+  const cards: PhraseCardWithSrs[] = rows.map(mapRowToCard);
 
   const response: DeckCardsResponse = {
     cards,
@@ -361,6 +329,7 @@ cardRoutes.post("/:id/answer", async (c) => {
 cardRoutes.get("/stats", async (c) => {
   const { userId } = c.get("user");
   const now = Date.now();
+  const db = createDb(c.env.DB);
 
   const byCategory: Record<CardCategory, CategoryStats> = {
     commit_messages: { total: 0, mastered: 0, learning: 0, unseen: 0 },
@@ -370,44 +339,37 @@ cardRoutes.get("/stats", async (c) => {
     github_issues: { total: 0, mastered: 0, learning: 0, unseen: 0 },
   };
 
-  // SQL GROUP BY aggregation per category
-  const statsResult = await c.env.DB.prepare(
-    `
-    SELECT
-      pc.category,
-      COUNT(*) as total,
-      SUM(CASE WHEN us.interval IS NULL THEN 1 ELSE 0 END) as unseen,
-      SUM(CASE WHEN us.interval IS NOT NULL AND us.interval < 21 THEN 1 ELSE 0 END) as learning,
-      SUM(CASE WHEN us.interval >= 21 THEN 1 ELSE 0 END) as mastered
-    FROM phrase_cards pc
-    LEFT JOIN user_srs us ON pc.id = us.card_id AND us.user_id = ?
-    GROUP BY pc.category
-  `
-  )
-    .bind(userId)
-    .all<{
-      category: string;
-      total: number;
-      unseen: number;
-      learning: number;
-      mastered: number;
-    }>();
+  // Drizzle GROUP BY aggregation per category
+  const statsRows = await db
+    .select({
+      category: phraseCards.category,
+      total: count(),
+      unseen:
+        sql<number>`SUM(CASE WHEN ${userSrs.interval} IS NULL THEN 1 ELSE 0 END)`,
+      learning:
+        sql<number>`SUM(CASE WHEN ${userSrs.interval} IS NOT NULL AND ${userSrs.interval} < 21 THEN 1 ELSE 0 END)`,
+      mastered:
+        sql<number>`SUM(CASE WHEN ${userSrs.interval} >= 21 THEN 1 ELSE 0 END)`,
+    })
+    .from(phraseCards)
+    .leftJoin(
+      userSrs,
+      and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
+    )
+    .groupBy(phraseCards.category);
 
-  const dueResult = await c.env.DB.prepare(
-    `
-    SELECT COUNT(*) as count FROM user_srs
-    WHERE user_id = ? AND next_review <= ?
-  `
-  )
-    .bind(userId, now)
-    .first<{ count: number }>();
+  const dueCountRow = await db
+    .select({ value: count() })
+    .from(userSrs)
+    .where(and(eq(userSrs.userId, userId), lte(userSrs.nextReview, now)))
+    .get();
 
   let total = 0;
   let totalMastered = 0;
   let totalLearning = 0;
   let totalUnseen = 0;
 
-  for (const row of statsResult.results) {
+  for (const row of statsRows) {
     const cat = row.category as CardCategory;
     if (!(cat in byCategory)) continue;
 
@@ -422,7 +384,7 @@ cardRoutes.get("/stats", async (c) => {
     totalUnseen += row.unseen;
   }
 
-  const dueToday = dueResult?.count ?? 0;
+  const dueToday = dueCountRow?.value ?? 0;
 
   const response: CardStatsResponse = {
     total,
