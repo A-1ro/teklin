@@ -5,6 +5,7 @@ import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
 import { placementRoutes } from "./routes/placement";
 import { lessonRoutes } from "./routes/lessons";
+import { cardRoutes } from "./routes/cards";
 import type { Bindings } from "./types";
 
 export type { Bindings };
@@ -29,6 +30,7 @@ app.route("/auth", authRoutes);
 app.route("/api", meRoutes);
 app.route("/api/placement", placementRoutes);
 app.route("/api/lessons", lessonRoutes);
+app.route("/api/cards", cardRoutes);
 
 // Health check
 app.get("/api/health", (c) => {
