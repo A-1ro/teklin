@@ -48,7 +48,7 @@ function getSrsStatus(card: PhraseCardWithSrs): {
       color: "bg-gray-700/50 text-gray-400",
     };
   }
-  if (card.srs.repetitions >= 5 && card.srs.interval >= 21) {
+  if (card.srs.interval >= 21) {
     return {
       label: "習得済み",
       color: "bg-emerald-500/20 text-emerald-400",

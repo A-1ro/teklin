@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, and, lte, sql } from "drizzle-orm";
+import { eq, and, lte, sql, inArray } from "drizzle-orm";
 import { createDb, phraseCards, userSrs, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -20,7 +20,6 @@ import type {
 
 const SRS_CACHE_TTL = 3600; // 1 hour in seconds
 const SRS_CACHE_MAX_AGE_MS = 3600 * 1000; // 1 hour in ms
-const MASTERED_INTERVAL = 21; // days
 
 const VALID_CATEGORIES: CardCategory[] = [
   "commit_messages",
@@ -32,6 +31,58 @@ const VALID_CATEGORIES: CardCategory[] = [
 
 function isValidCategory(value: string): value is CardCategory {
   return VALID_CATEGORIES.includes(value as CardCategory);
+}
+
+// Shared select columns for review queries
+const reviewSelectColumns = {
+  id: phraseCards.id,
+  phrase: phraseCards.phrase,
+  translation: phraseCards.translation,
+  context: phraseCards.context,
+  domain: phraseCards.domain,
+  level: phraseCards.level,
+  category: phraseCards.category,
+  srsInterval: userSrs.interval,
+  srsEaseFactor: userSrs.easeFactor,
+  srsNextReview: userSrs.nextReview,
+  srsRepetitions: userSrs.repetitions,
+};
+
+// Helper to map DB rows to PhraseCardWithSrs
+function mapRowToCard(row: {
+  id: string;
+  phrase: string;
+  translation: string;
+  context: string;
+  domain: string;
+  level: string;
+  category: string;
+  srsInterval: number | null;
+  srsEaseFactor: number | null;
+  srsNextReview: number | null;
+  srsRepetitions: number | null;
+}): PhraseCardWithSrs {
+  return {
+    id: row.id,
+    phrase: row.phrase,
+    translation: row.translation,
+    context: row.context,
+    domain: row.domain as Domain,
+    level: row.level as Level,
+    category: row.category as CardCategory,
+    srs:
+      row.srsInterval !== null &&
+      row.srsEaseFactor !== null &&
+      row.srsNextReview !== null &&
+      row.srsRepetitions !== null
+        ? {
+            interval: row.srsInterval,
+            easeFactor: row.srsEaseFactor,
+            nextReview: new Date(row.srsNextReview).toISOString(),
+            repetitions: row.srsRepetitions,
+          }
+        : null,
+  };
 }
 
 export const cardRoutes = new Hono<{
@@ -59,106 +110,38 @@ cardRoutes.get("/review", async (c) => {
   let dueCards: PhraseCardWithSrs[];
 
   if (isFresh && cached !== null) {
-    // Load full card data for cached IDs
+    // Cache hit: use cached dueCardIds as the filter
     if (cached.dueCardIds.length === 0) {
       dueCards = [];
     } else {
-      // Fetch cards with their SRS state for the cached due IDs
       const rows = await db
-        .select({
-          id: phraseCards.id,
-          phrase: phraseCards.phrase,
-          translation: phraseCards.translation,
-          context: phraseCards.context,
-          domain: phraseCards.domain,
-          level: phraseCards.level,
-          category: phraseCards.category,
-          srsInterval: userSrs.interval,
-          srsEaseFactor: userSrs.easeFactor,
-          srsNextReview: userSrs.nextReview,
-          srsRepetitions: userSrs.repetitions,
-        })
+        .select(reviewSelectColumns)
         .from(phraseCards)
         .innerJoin(userSrs, eq(phraseCards.id, userSrs.cardId))
         .where(
           and(
             eq(userSrs.userId, userId),
-            lte(userSrs.nextReview, now)
+            inArray(phraseCards.id, cached.dueCardIds)
           )
         );
 
-      dueCards = rows.map((row) => ({
-        id: row.id,
-        phrase: row.phrase,
-        translation: row.translation,
-        context: row.context,
-        domain: row.domain as Domain,
-        level: row.level as Level,
-        category: row.category as CardCategory,
-        srs:
-          row.srsInterval !== null &&
-          row.srsEaseFactor !== null &&
-          row.srsNextReview !== null &&
-          row.srsRepetitions !== null
-            ? {
-                interval: row.srsInterval,
-                easeFactor: row.srsEaseFactor,
-                nextReview: new Date(row.srsNextReview).toISOString(),
-                repetitions: row.srsRepetitions,
-              }
-            : null,
-      }));
+      dueCards = rows.map(mapRowToCard);
     }
   } else {
     // Cache miss or stale — query D1
     const rows = await db
-      .select({
-        id: phraseCards.id,
-        phrase: phraseCards.phrase,
-        translation: phraseCards.translation,
-        context: phraseCards.context,
-        domain: phraseCards.domain,
-        level: phraseCards.level,
-        category: phraseCards.category,
-        srsInterval: userSrs.interval,
-        srsEaseFactor: userSrs.easeFactor,
-        srsNextReview: userSrs.nextReview,
-        srsRepetitions: userSrs.repetitions,
-      })
+      .select(reviewSelectColumns)
       .from(phraseCards)
       .innerJoin(userSrs, eq(phraseCards.id, userSrs.cardId))
       .where(
-        and(
-          eq(userSrs.userId, userId),
-          lte(userSrs.nextReview, now)
-        )
+        and(eq(userSrs.userId, userId), lte(userSrs.nextReview, now))
       );
 
-    dueCards = rows.map((row) => ({
-      id: row.id,
-      phrase: row.phrase,
-      translation: row.translation,
-      context: row.context,
-      domain: row.domain as Domain,
-      level: row.level as Level,
-      category: row.category as CardCategory,
-      srs:
-        row.srsInterval !== null &&
-        row.srsEaseFactor !== null &&
-        row.srsNextReview !== null &&
-        row.srsRepetitions !== null
-          ? {
-              interval: row.srsInterval,
-              easeFactor: row.srsEaseFactor,
-              nextReview: new Date(row.srsNextReview).toISOString(),
-              repetitions: row.srsRepetitions,
-            }
-          : null,
-    }));
+    dueCards = rows.map(mapRowToCard);
 
     // Refresh KV cache
     const cacheValue: SrsKvValue = {
-      dueCardIds: dueCards.map((c) => c.id),
+      dueCardIds: dueCards.map((card) => card.id),
       cachedAt: now,
     };
     await kv.put(kvKey, JSON.stringify(cacheValue), {
@@ -284,6 +267,10 @@ cardRoutes.post("/:id/answer", async (c) => {
   const { userId } = c.get("user");
   const cardId = c.req.param("id");
 
+  if (!cardId) {
+    return c.json({ error: "Card ID is required" }, 400);
+  }
+
   let body: CardAnswerPayload;
   try {
     body = await c.req.json<CardAnswerPayload>();
@@ -374,34 +361,6 @@ cardRoutes.post("/:id/answer", async (c) => {
 cardRoutes.get("/stats", async (c) => {
   const { userId } = c.get("user");
   const now = Date.now();
-  // End of today UTC (23:59:59.999)
-  const todayEnd = new Date();
-  todayEnd.setUTCHours(23, 59, 59, 999);
-  const todayEndMs = todayEnd.getTime();
-
-  const db = createDb(c.env.DB);
-
-  // Aggregate per card: join phrase_cards with user_srs (left join)
-  const rows = await db
-    .select({
-      cardId: phraseCards.id,
-      category: phraseCards.category,
-      srsInterval: userSrs.interval,
-      srsNextReview: userSrs.nextReview,
-    })
-    .from(phraseCards)
-    .leftJoin(
-      userSrs,
-      and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
-    );
-
-  const allCategories: CardCategory[] = [
-    "commit_messages",
-    "pr_comments",
-    "code_review",
-    "slack_chat",
-    "github_issues",
-  ];
 
   const byCategory: Record<CardCategory, CategoryStats> = {
     commit_messages: { total: 0, mastered: 0, learning: 0, unseen: 0 },
@@ -411,40 +370,59 @@ cardRoutes.get("/stats", async (c) => {
     github_issues: { total: 0, mastered: 0, learning: 0, unseen: 0 },
   };
 
+  // SQL GROUP BY aggregation per category
+  const statsResult = await c.env.DB.prepare(
+    `
+    SELECT
+      pc.category,
+      COUNT(*) as total,
+      SUM(CASE WHEN us.interval IS NULL THEN 1 ELSE 0 END) as unseen,
+      SUM(CASE WHEN us.interval IS NOT NULL AND us.interval < 21 THEN 1 ELSE 0 END) as learning,
+      SUM(CASE WHEN us.interval >= 21 THEN 1 ELSE 0 END) as mastered
+    FROM phrase_cards pc
+    LEFT JOIN user_srs us ON pc.id = us.card_id AND us.user_id = ?
+    GROUP BY pc.category
+  `
+  )
+    .bind(userId)
+    .all<{
+      category: string;
+      total: number;
+      unseen: number;
+      learning: number;
+      mastered: number;
+    }>();
+
+  const dueResult = await c.env.DB.prepare(
+    `
+    SELECT COUNT(*) as count FROM user_srs
+    WHERE user_id = ? AND next_review <= ?
+  `
+  )
+    .bind(userId, now)
+    .first<{ count: number }>();
+
+  let total = 0;
   let totalMastered = 0;
   let totalLearning = 0;
   let totalUnseen = 0;
-  let dueToday = 0;
 
-  for (const row of rows) {
+  for (const row of statsResult.results) {
     const cat = row.category as CardCategory;
-    if (!allCategories.includes(cat)) continue;
+    if (!(cat in byCategory)) continue;
 
-    byCategory[cat].total += 1;
+    byCategory[cat].total = row.total;
+    byCategory[cat].unseen = row.unseen;
+    byCategory[cat].learning = row.learning;
+    byCategory[cat].mastered = row.mastered;
 
-    if (row.srsInterval === null || row.srsNextReview === null) {
-      // No SRS record — unseen
-      byCategory[cat].unseen += 1;
-      totalUnseen += 1;
-    } else if (row.srsInterval >= MASTERED_INTERVAL) {
-      byCategory[cat].mastered += 1;
-      totalMastered += 1;
-    } else {
-      byCategory[cat].learning += 1;
-      totalLearning += 1;
-    }
-
-    // Due today: has SRS record and nextReview <= end of today
-    if (
-      row.srsNextReview !== null &&
-      row.srsNextReview <= todayEndMs &&
-      row.srsNextReview <= now
-    ) {
-      dueToday += 1;
-    }
+    total += row.total;
+    totalMastered += row.mastered;
+    totalLearning += row.learning;
+    totalUnseen += row.unseen;
   }
 
-  const total = rows.length;
+  const dueToday = dueResult?.count ?? 0;
 
   const response: CardStatsResponse = {
     total,

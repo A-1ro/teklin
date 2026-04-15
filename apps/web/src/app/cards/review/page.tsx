@@ -301,6 +301,7 @@ export default function ReviewPage() {
 
   // Active review
   const card = cards[currentIndex];
+  if (!card) return null;
   const progress = cards.length > 0 ? currentIndex + 1 : 0;
   const levelMeta = LEVEL_META[card.level];
 
