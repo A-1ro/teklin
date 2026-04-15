@@ -7,25 +7,25 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "teklin-db"
-database_id = "placeholder-replace-with-actual-id"
+database_id = "9cbca9c6-5b2f-4107-accf-6a991677314d"
 migrations_dir = "migrations"
 
 # ─── KV Namespaces ───
 [[kv_namespaces]]
 binding = "SESSION_KV"
-id = "placeholder-replace-with-actual-id"
+id = "39da33960bcb4abd9ccf754089013227"
 
 [[kv_namespaces]]
 binding = "SRS_KV"
-id = "placeholder-replace-with-actual-id"
+id = "038a412f9d384cd8b9f4eec6cb27f125"
 
 [[kv_namespaces]]
 binding = "STREAK_KV"
-id = "placeholder-replace-with-actual-id"
+id = "4b3f594daba749a9863543f8653ceb39"
 
 [[kv_namespaces]]
 binding = "USAGE_KV"
-id = "placeholder-replace-with-actual-id"
+id = "50d730b4541a47cf9c39ae3f552338f6"
 
 # ─── R2 Buckets ───
 [[r2_buckets]]
