@@ -44,8 +44,8 @@ binding = "AI"
 
 # ─── Environment Variables ───
 [vars]
-ENVIRONMENT = "development"
-APP_URL = "http://localhost:8787"
+ENVIRONMENT = "production"
+APP_URL = "https://teklin.app"
 AI_GATEWAY_ACCOUNT_ID = "placeholder-replace-with-actual-account-id"
 AI_GATEWAY_ID = "placeholder-replace-with-actual-gateway-id"
 LLM_DAILY_TOKEN_LIMIT = "100000"
