@@ -359,6 +359,37 @@ export interface PlacementAnswerPayload {
   answer: string;
 }
 
+export type WritingRating = "Excellent!!!" | "Good!" | "OK" | "Bad...";
+
+export type PlacementAnswerFeedback =
+  | { type: "multiple_choice"; isCorrect: boolean; correctChoiceId: string }
+  | { type: "free_text"; score: number; rating: WritingRating; advice: string };
+
+/** Response from start/answer endpoints */
+export interface PlacementNextResponse {
+  question: PlacementQuestionClient | null;
+  progress: { current: number; total: number };
+  isComplete: boolean;
+  /** Present after submitting an answer (absent from start response and skips) */
+  feedback?: PlacementAnswerFeedback;
+}
+
+/** Per-question review entry included in the placement result */
+export interface PlacementAnswerReview {
+  questionId: string;
+  axis: SkillAxis;
+  type: PlacementQuestionType;
+  prompt: string;
+  userAnswer: string;
+  score: number;
+  isSkip: boolean;
+  /** Multiple-choice only */
+  choices?: { id: string; text: string }[];
+  correctChoiceId?: string;
+  /** Free-text only — one-point advice from the LLM */
+  advice?: string;
+}
+
 /** Result of the placement test */
 export interface PlacementResultResponse {
   level: Level;
@@ -366,11 +397,5 @@ export interface PlacementResultResponse {
   weaknesses: SkillAxis[];
   totalQuestions: number;
   completedAt: string;
-}
-
-/** Response from start/answer endpoints */
-export interface PlacementNextResponse {
-  question: PlacementQuestionClient | null;
-  progress: { current: number; total: number };
-  isComplete: boolean;
+  answers?: PlacementAnswerReview[];
 }

@@ -18,8 +18,34 @@ import {
   determineLevel,
   identifyWeaknesses,
 } from "../lib/placement";
-import type { SkillAxis } from "@teklin/shared";
+import type { PlacementAnswerFeedback, PlacementAnswerReview, SkillAxis, WritingRating } from "@teklin/shared";
 import type { QuestionData } from "../lib/placement/questions";
+
+const SKIP_ANSWER = "__skip__";
+
+/** Build answer review objects for the result page */
+function buildAnswerReviews(
+  records: PlacementAnswerRecord[]
+): PlacementAnswerReview[] {
+  return records
+    .map((rec) => {
+      const q = PLACEMENT_QUESTIONS.find((q) => q.id === rec.questionId);
+      if (!q) return null;
+      return {
+        questionId: rec.questionId,
+        axis: rec.axis,
+        type: q.type,
+        prompt: q.prompt,
+        userAnswer: rec.answer,
+        score: rec.score,
+        isSkip: rec.answer === SKIP_ANSWER,
+        choices: q.choices,
+        correctChoiceId: q.correctChoiceId,
+        advice: rec.advice,
+      };
+    })
+    .filter((r): r is PlacementAnswerReview => r !== null);
+}
 
 /** Strip internal-only fields before sending a question to the client */
 function toClientQuestion(
@@ -57,7 +83,8 @@ function generateQuestionOrder(): string[] {
       const fallback = PLACEMENT_QUESTIONS.filter(
         (q) => q.axis === axis && !usedIds.has(q.id)
       );
-      const pick = candidates[0] ?? fallback[0];
+      const pool = candidates.length > 0 ? candidates : fallback;
+      const pick = pool[Math.floor(Math.random() * pool.length)];
       if (pick) {
         order.push(pick.id);
         usedIds.add(pick.id);
@@ -104,11 +131,11 @@ function selectNextQuestion(
     );
   }
 
-  return candidates[0]?.id ?? null;
+  if (candidates.length === 0) return null;
+  return candidates[Math.floor(Math.random() * candidates.length)].id;
 }
 
 const TOTAL_QUESTIONS = 12;
-const SKIP_ANSWER = "__skip__";
 const SESSION_TTL = 3600; // 1 hour
 const MAX_ANSWER_LENGTH = 2000;
 
@@ -214,22 +241,36 @@ placementRoutes.post("/answer", async (c) => {
 
   // Score the answer ("わからない" skip counts as 0)
   let score: number;
+  let feedback: PlacementAnswerFeedback | undefined;
   if (answer === SKIP_ANSWER) {
     score = 0;
+    // No feedback for skips
   } else if (question.type === "multiple_choice") {
     score = scoreMultipleChoice(questionId, answer);
+    feedback = {
+      type: "multiple_choice",
+      isCorrect: score === 100,
+      correctChoiceId: question.correctChoiceId ?? "",
+    };
   } else {
     const llm = createLLMService(c.env);
-    score = await scoreWriting(questionId, answer, llm);
+    const writingResult = await scoreWriting(questionId, answer, llm);
+    score = writingResult.score;
+    const rating: WritingRating =
+      score >= 80 ? "Excellent!!!" : score >= 60 ? "Good!" : score >= 40 ? "OK" : "Bad...";
+    feedback = { type: "free_text", score, rating, advice: writingResult.advice };
   }
 
   // Record the answer
+  const writingAdvice =
+    feedback?.type === "free_text" ? feedback.advice : undefined;
   const answerRecord: PlacementAnswerRecord = {
     questionId,
     answer,
     axis: question.axis,
     difficulty: question.difficulty,
     score,
+    ...(writingAdvice !== undefined && { advice: writingAdvice }),
     answeredAt: Date.now(),
   };
   session.answers.push(answerRecord);
@@ -244,6 +285,7 @@ placementRoutes.post("/answer", async (c) => {
       question: null,
       progress: { current: TOTAL_QUESTIONS, total: TOTAL_QUESTIONS },
       isComplete: true,
+      feedback,
     });
   }
 
@@ -274,6 +316,7 @@ placementRoutes.post("/answer", async (c) => {
       total: TOTAL_QUESTIONS,
     },
     isComplete: false,
+    feedback,
   });
 });
 
@@ -317,6 +360,7 @@ placementRoutes.post("/complete", async (c) => {
     nuanceScore: scores.nuance,
     level,
     weaknesses: JSON.stringify(weaknesses),
+    answers: JSON.stringify(session.answers),
     createdAt: now,
   });
 
@@ -326,12 +370,15 @@ placementRoutes.post("/complete", async (c) => {
     .set({ level, updatedAt: now })
     .where(eq(users.id, userId));
 
+  const answerReviews = buildAnswerReviews(session.answers);
+
   return c.json({
     level,
     scores,
     weaknesses,
     totalQuestions: session.answers.length,
     completedAt: new Date(now).toISOString(),
+    answers: answerReviews,
   });
 });
 
@@ -354,6 +401,10 @@ placementRoutes.get("/result", async (c) => {
     return c.json({ error: "No placement result found" }, 404);
   }
 
+  const storedAnswers = result.answers
+    ? (JSON.parse(result.answers) as PlacementAnswerRecord[])
+    : [];
+
   return c.json({
     level: result.level,
     scores: {
@@ -365,5 +416,6 @@ placementRoutes.get("/result", async (c) => {
     weaknesses: JSON.parse(result.weaknesses) as string[],
     totalQuestions: TOTAL_QUESTIONS,
     completedAt: new Date(result.createdAt).toISOString(),
+    answers: buildAnswerReviews(storedAnswers),
   });
 });

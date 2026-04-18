@@ -144,6 +144,7 @@ export interface PlacementAnswerRecord {
   axis: SkillAxis;
   difficulty: 1 | 2 | 3;
   score: number;
+  advice?: string;
   answeredAt: number;
 }
 

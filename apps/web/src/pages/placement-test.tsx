@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type {
+  PlacementAnswerFeedback,
   PlacementNextResponse,
   PlacementQuestionClient,
   SkillAxis,
@@ -32,6 +33,8 @@ export function PlacementTestPage() {
   const [isComplete, setIsComplete] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<PlacementAnswerFeedback | null>(null);
+  const [pendingNext, setPendingNext] = useState<PlacementNextResponse | null>(null);
 
   // Load the first question on mount
   useEffect(() => {
@@ -70,7 +73,11 @@ export function PlacementTestPage() {
         }
       );
 
-      if (data.isComplete) {
+      const isSkip = answer === "__skip__";
+      if (data.feedback && !isSkip) {
+        setFeedback(data.feedback);
+        setPendingNext(data);
+      } else if (data.isComplete) {
         setIsComplete(true);
       } else {
         setQuestion(data.question);
@@ -84,6 +91,20 @@ export function PlacementTestPage() {
       setIsSubmitting(false);
     }
   }, [question, isSubmitting]);
+
+  const dismissFeedback = useCallback(() => {
+    if (!pendingNext) return;
+    setFeedback(null);
+    setPendingNext(null);
+    if (pendingNext.isComplete) {
+      setIsComplete(true);
+    } else {
+      setQuestion(pendingNext.question);
+      setProgress(pendingNext.progress);
+      setSelectedChoice(null);
+      setFreeText("");
+    }
+  }, [pendingNext]);
 
   const handleSubmit = useCallback(async () => {
     if (!question) return;
@@ -234,20 +255,56 @@ export function PlacementTestPage() {
             </div>
           )}
 
+          {/* Writing feedback banner */}
+          {feedback?.type === "free_text" && (
+            <div
+              className={`mb-6 rounded-xl border px-5 py-4 ${
+                feedback.rating === "Excellent!!!"
+                  ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
+                  : feedback.rating === "Good!"
+                    ? "border-green-500/40 bg-green-500/10 text-green-300"
+                    : feedback.rating === "OK"
+                      ? "border-blue-500/40 bg-blue-500/10 text-blue-300"
+                      : "border-red-500/40 bg-red-500/10 text-red-400"
+              }`}
+            >
+              <p className="text-center text-2xl font-bold">{feedback.rating}</p>
+              {feedback.advice && (
+                <p className="mt-2 text-center text-sm opacity-80">{feedback.advice}</p>
+              )}
+            </div>
+          )}
+
           {/* Answer input */}
           {question.type === "multiple_choice" && question.choices ? (
-            <fieldset className="mb-6 space-y-3">
+            <fieldset className="mb-6 space-y-3" disabled={!!feedback}>
               <legend className="sr-only">Select your answer</legend>
               {question.choices.map((choice) => {
                 const isSelected = selectedChoice === choice.id;
+                const mcFeedback =
+                  feedback?.type === "multiple_choice" ? feedback : null;
+                const isCorrectChoice =
+                  mcFeedback?.correctChoiceId === choice.id;
+                const isWrongSelected =
+                  mcFeedback && isSelected && !mcFeedback.isCorrect;
+
+                let borderColor = "border-gray-700 bg-gray-950 hover:border-gray-600";
+                if (mcFeedback) {
+                  if (isCorrectChoice)
+                    borderColor = "border-green-500 bg-green-950/30";
+                  else if (isWrongSelected)
+                    borderColor = "border-red-500 bg-red-950/30";
+                  else borderColor = "border-gray-700 bg-gray-950";
+                } else if (isSelected) {
+                  borderColor = "border-blue-500 bg-blue-950/30";
+                }
+
                 return (
                   <label
                     key={choice.id}
-                    className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition-colors ${
-                      isSelected
-                        ? "border-blue-500 bg-blue-950/30"
-                        : "border-gray-700 bg-gray-950 hover:border-gray-600"
-                    }`}
+                    className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors ${
+                      mcFeedback ? "cursor-default" : "cursor-pointer"
+                    } ${borderColor}`}
                   >
                     <input
                       type="radio"
@@ -256,17 +313,23 @@ export function PlacementTestPage() {
                       checked={isSelected}
                       onChange={() => setSelectedChoice(choice.id)}
                       className="sr-only"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !!feedback}
                     />
                     <span
                       className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                        isSelected
-                          ? "border-blue-500 bg-blue-500"
-                          : "border-gray-600"
+                        mcFeedback
+                          ? isCorrectChoice
+                            ? "border-green-500 bg-green-500"
+                            : isWrongSelected
+                              ? "border-red-500 bg-red-500"
+                              : "border-gray-600"
+                          : isSelected
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-600"
                       }`}
                       aria-hidden="true"
                     >
-                      {isSelected && (
+                      {(isSelected || (mcFeedback && isCorrectChoice)) && (
                         <span className="h-2 w-2 rounded-full bg-white" />
                       )}
                     </span>
@@ -285,7 +348,7 @@ export function PlacementTestPage() {
                 value={freeText}
                 onChange={(e) => setFreeText(e.target.value)}
                 placeholder="答えを入力..."
-                disabled={isSubmitting}
+                disabled={isSubmitting || !!feedback}
                 rows={4}
                 className="w-full resize-none rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-gray-100 placeholder-gray-500 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
               />
@@ -302,37 +365,48 @@ export function PlacementTestPage() {
             </div>
           )}
 
-          {/* Submit button */}
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {isSubmitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <span
-                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
-                  aria-hidden="true"
-                />
-                送信中...
-              </span>
-            ) : progress.current === progress.total - 1 ? (
-              "完了"
-            ) : (
-              "次へ"
-            )}
-          </button>
+          {/* Submit / Next button */}
+          {feedback ? (
+            <button
+              onClick={dismissFeedback}
+              className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+            >
+              次へ
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    aria-hidden="true"
+                  />
+                  採点中...
+                </span>
+              ) : progress.current === progress.total - 1 ? (
+                "完了"
+              ) : (
+                "回答する"
+              )}
+            </button>
+          )}
 
           {/* Skip button */}
-          <div className="mt-3 text-center">
-            <button
-              onClick={handleSkip}
-              disabled={isSubmitting}
-              className="text-sm text-gray-600 underline-offset-2 transition-colors hover:text-gray-400 hover:underline disabled:cursor-not-allowed"
-            >
-              わからない
-            </button>
-          </div>
+          {!feedback && (
+            <div className="mt-3 text-center">
+              <button
+                onClick={handleSkip}
+                disabled={isSubmitting}
+                className="text-sm text-gray-600 underline-offset-2 transition-colors hover:text-gray-400 hover:underline disabled:cursor-not-allowed"
+              >
+                わからない
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </main>

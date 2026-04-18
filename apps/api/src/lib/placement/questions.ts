@@ -546,4 +546,474 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     ],
     correctChoiceId: "C",
   },
+
+  // -------------------------------------------------------------------------
+  // READING — difficulty 1 (easy) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "r-easy-3",
+    axis: "reading",
+    difficulty: 1,
+    type: "multiple_choice",
+    prompt: "コードレビューで「nit:」から始まるコメントは何を意味しますか？",
+    context: [
+      "From a GitHub PR review:",
+      "",
+      "> nit: This variable name could be more descriptive.",
+      "> Maybe `userSessionToken` instead of `t`?",
+    ].join("\n"),
+    choices: [
+      { id: "A", text: "些細な指摘で、修正は必須ではない" },
+      { id: "B", text: "重大なバグの可能性を指摘している" },
+      { id: "C", text: "セキュリティ上のリスクがあると警告している" },
+      { id: "D", text: "即座にPRをブロックしている" },
+    ],
+    correctChoiceId: "A",
+  },
+  {
+    id: "r-easy-4",
+    axis: "reading",
+    difficulty: 1,
+    type: "multiple_choice",
+    prompt: "このSlackメッセージの意味は何ですか？",
+    context: [
+      "From a team Slack channel:",
+      "",
+      "> Heads up — deploying the auth fix to staging in ~10 min.",
+      "> Shouldn't affect anything else, but flagging just in case.",
+    ].join("\n"),
+    choices: [
+      { id: "A", text: "認証のバグ修正を本番にデプロイ済みだと報告している" },
+      { id: "B", text: "デプロイの承認をチームに求めている" },
+      { id: "C", text: "10分後にステージングへデプロイ予定で、念のため共有している" },
+      { id: "D", text: "ステージングで障害が発生したため助けを求めている" },
+    ],
+    correctChoiceId: "C",
+  },
+
+  // -------------------------------------------------------------------------
+  // READING — difficulty 2 (medium) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "r-med-3",
+    axis: "reading",
+    difficulty: 2,
+    type: "multiple_choice",
+    prompt: "このコードレビューコメントで指摘されている問題は何ですか？",
+    context: [
+      "From a GitHub PR review:",
+      "",
+      "> Each order is fetching its associated user separately.",
+      "> For 500 orders, that's 500 DB calls. We should join or",
+      "> batch-load users instead.",
+    ].join("\n"),
+    choices: [
+      { id: "A", text: "データベースのインデックスが設定されていない" },
+      { id: "B", text: "クエリが本番DBではなく開発DBに向いている" },
+      { id: "C", text: "ユーザーデータのキャッシュの有効期限が短すぎる" },
+      { id: "D", text: "注文ごとに個別のDBクエリが発行されており非効率" },
+    ],
+    correctChoiceId: "D",
+  },
+  {
+    id: "r-med-4",
+    axis: "reading",
+    difficulty: 2,
+    type: "multiple_choice",
+    prompt: "このRFCで提案されている解決策は何ですか？",
+    context: [
+      "From an internal RFC:",
+      "",
+      "> **Problem**: All teams deploy together, causing frequent",
+      "> merge conflicts and coordination overhead.",
+      ">",
+      "> **Proposed Solution**: Give each team its own deployment",
+      "> pipeline so they can ship independently.",
+    ].join("\n"),
+    choices: [
+      { id: "A", text: "チームごとに独立したデプロイパイプラインを持つ" },
+      { id: "B", text: "デプロイ頻度を週1回に制限してコンフリクトを減らす" },
+      { id: "C", text: "モノレポをやめてマルチリポ構成に移行する" },
+      { id: "D", text: "ステージングと本番を分離する" },
+    ],
+    correctChoiceId: "A",
+  },
+
+  // -------------------------------------------------------------------------
+  // READING — difficulty 3 (hard) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "r-hard-3",
+    axis: "reading",
+    difficulty: 3,
+    type: "multiple_choice",
+    prompt: "このコードレビューコメントが暗に示していることは何ですか？",
+    context: [
+      "From a code review:",
+      "",
+      "> This is technically correct, but I wonder if future you",
+      "> will thank you for this.",
+    ].join("\n"),
+    choices: [
+      { id: "A", text: "コードはマージできる品質だが、テストが不足している" },
+      { id: "B", text: "今後担当者が変わるため、コメントを追加すべき" },
+      { id: "C", text: "動作はするが、将来のメンテナンス性に懸念がある" },
+      { id: "D", text: "別のフレームワークで書き直すべき" },
+    ],
+    correctChoiceId: "C",
+  },
+  {
+    id: "r-hard-4",
+    axis: "reading",
+    difficulty: 3,
+    type: "multiple_choice",
+    prompt:
+      "このアーキテクチャ決定記録（ADR）に記載された主なトレードオフは何ですか？",
+    context: [
+      "From an Architecture Decision Record:",
+      "",
+      "> **Decision**: Adopt GraphQL over REST for the public API.",
+      ">",
+      "> **Positive**: Flexible queries; clients fetch only what they need.",
+      ">",
+      "> **Negative**: Schema design overhead and a steeper learning",
+      "> curve for new contributors.",
+    ].join("\n"),
+    choices: [
+      { id: "A", text: "GraphQLはRESTよりも常に高速でスケーラブルである" },
+      { id: "B", text: "スキーマがないため将来の変更が難しい" },
+      { id: "C", text: "REST APIと比べてセキュリティリスクが高い" },
+      { id: "D", text: "柔軟なクエリが可能だが、スキーマ設計と学習コストが増える" },
+    ],
+    correctChoiceId: "D",
+  },
+
+  // -------------------------------------------------------------------------
+  // WRITING — difficulty 1 (easy) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "w-easy-3",
+    axis: "writing",
+    difficulty: 1,
+    type: "free_text",
+    prompt:
+      "以下の変更内容に対して、英語のgitコミットメッセージを1行で書いてください。",
+    context: [
+      "変更内容:",
+      "検索機能にカテゴリフィルターと日付範囲フィルターを追加した。",
+    ].join("\n"),
+    scoringCriteria: [
+      "Score based on: imperative mood (e.g. 'Add' not 'Added'), specificity about",
+      "what was added, conciseness (ideally under 72 characters), no trailing period.",
+      "A response like 'Add category and date range filters to search' scores 90-100.",
+      "Vague responses like 'add feature' score 10-30.",
+    ].join(" "),
+  },
+  {
+    id: "w-easy-4",
+    axis: "writing",
+    difficulty: 1,
+    type: "free_text",
+    prompt:
+      "以下のパフォーマンス問題について、GitHub Issue のタイトルを英語で1行書いてください。",
+    context: [
+      "問題内容:",
+      "ダッシュボードページの初回読み込みに8秒以上かかる。",
+      "Chrome + 低速3G回線での測定。",
+    ].join("\n"),
+    scoringCriteria: [
+      "Score based on: specificity (what is slow, how slow, under what condition),",
+      "conciseness, and clarity.",
+      "A response like 'Dashboard initial load takes 8+ seconds on slow 3G' scores 90-100.",
+      "Vague titles like 'Performance issue' score 10-30.",
+    ].join(" "),
+  },
+
+  // -------------------------------------------------------------------------
+  // WRITING — difficulty 2 (medium) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "w-med-3",
+    axis: "writing",
+    difficulty: 2,
+    type: "free_text",
+    prompt:
+      "以下のコードに対して、建設的なPRレビューコメントを英語で1文書いてください。",
+    context: [
+      "レビュー対象のコード（Python）:",
+      "```py",
+      "def get_users():",
+      '    users = db.query("SELECT * FROM users")',
+      "    return users",
+      "```",
+      "気になる点: SELECT * を使っており、不要なカラムも全て取得している。",
+    ].join("\n"),
+    scoringCriteria: [
+      "Score based on: constructive and polite tone, actionable suggestion",
+      "(e.g. select only needed columns), professional phrasing.",
+      "Responses that suggest avoiding SELECT * politely score 80-100.",
+      "Blunt commands like 'Don't use SELECT *.' score 30-50.",
+    ].join(" "),
+  },
+  {
+    id: "w-med-4",
+    axis: "writing",
+    difficulty: 2,
+    type: "free_text",
+    prompt:
+      "本番へのデプロイを他チームに事前通知する、英語のSlackメッセージを1〜2文で書いてください。",
+    context: [
+      "状況:",
+      "決済フローの改修を本番環境にデプロイ予定。",
+      "今日の午後3時（JST）を予定。他チームに影響がないか確認してほしい。",
+    ].join("\n"),
+    scoringCriteria: [
+      "Score based on: clear information (what, when), polite tone,",
+      "inviting feedback without being demanding.",
+      "Responses that mention the feature, timing, and ask if it's a bad time score 80-100.",
+      "Overly terse messages like 'Deploying at 3pm.' score 20-40.",
+    ].join(" "),
+  },
+
+  // -------------------------------------------------------------------------
+  // WRITING — difficulty 3 (hard) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "w-hard-3",
+    axis: "writing",
+    difficulty: 3,
+    type: "free_text",
+    prompt:
+      "以下のbreaking changeについて、PRの説明文に書く英文を1文で書いてください。変更内容と呼び出し元が取るべきアクションが伝わるようにしてください。",
+    context: [
+      "変更内容:",
+      "`createOrder(userId, items)` の引数を",
+      "`createOrder(params: OrderParams)` に変更した。",
+      "OrderParams = { userId, items, currency }。currency は必須フィールド。",
+      "既存の呼び出し箇所はすべて更新が必要。",
+    ].join("\n"),
+    scoringCriteria: [
+      "Score based on: clarity about what changed (old signature vs new),",
+      "required currency field, actionable guidance for callers.",
+      "A response clearly describing the signature change and required migration scores 85-100.",
+      "Vague responses like 'createOrder API has been updated.' score 10-30.",
+    ].join(" "),
+  },
+  {
+    id: "w-hard-4",
+    axis: "writing",
+    difficulty: 3,
+    type: "free_text",
+    prompt:
+      "以下の機能要望に対して、丁寧に断るGitHubコメントを英語で1〜2文書いてください。",
+    context: [
+      "機能要望:",
+      "「オフライン対応（PWA）にしてほしい」というIssueが上がっている。",
+      "現時点ではロードマップに含まれておらず、対応予定はない。",
+      "ただし、ブラウザのキャッシュ設定でオフライン閲覧を部分的に実現できる。",
+    ].join("\n"),
+    scoringCriteria: [
+      "Score based on: grateful and respectful tone, clear but kind declination,",
+      "mentioning the browser cache workaround, leaving door open for future.",
+      "Responses that thank the requester, explain out-of-scope, and suggest the workaround score 85-100.",
+      "Blunt rejections like 'We will not implement this.' score 10-30.",
+    ].join(" "),
+  },
+
+  // -------------------------------------------------------------------------
+  // VOCABULARY — difficulty 1 (easy) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "v-easy-3",
+    axis: "vocabulary",
+    difficulty: 1,
+    type: "multiple_choice",
+    prompt: '「LGTM」の意味は？',
+    choices: [
+      { id: "A", text: "変更を確認して問題ないと承認する" },
+      { id: "B", text: "バグが見つかったため修正が必要" },
+      { id: "C", text: "大規模なリファクタリングが必要" },
+      { id: "D", text: "テストが不足していて承認できない" },
+    ],
+    correctChoiceId: "A",
+  },
+  {
+    id: "v-easy-4",
+    axis: "vocabulary",
+    difficulty: 1,
+    type: "multiple_choice",
+    prompt: '「WIP」の意味は？',
+    choices: [
+      { id: "A", text: "完成してレビュー待ちの状態" },
+      { id: "B", text: "リリース可能な安定バージョン" },
+      { id: "C", text: "テストが通過したことを示すラベル" },
+      { id: "D", text: "まだ作業中で未完成の状態" },
+    ],
+    correctChoiceId: "D",
+  },
+
+  // -------------------------------------------------------------------------
+  // VOCABULARY — difficulty 2 (medium) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "v-med-3",
+    axis: "vocabulary",
+    difficulty: 2,
+    type: "multiple_choice",
+    prompt: '「flaky test」の意味は？',
+    choices: [
+      { id: "A", text: "実行に非常に時間がかかるテスト" },
+      { id: "B", text: "カバレッジが低く信頼性が低いテスト" },
+      { id: "C", text: "コードを変更していないのに通ったり落ちたりする不安定なテスト" },
+      { id: "D", text: "本番環境でしか再現しない問題を検知するテスト" },
+    ],
+    correctChoiceId: "C",
+  },
+  {
+    id: "v-med-4",
+    axis: "vocabulary",
+    difficulty: 2,
+    type: "multiple_choice",
+    prompt: '「tech debt」の意味は？',
+    choices: [
+      { id: "A", text: "短期的な判断で積み重なった、将来の改善コストを伴うコードの問題" },
+      { id: "B", text: "外部ライブラリへの依存が多すぎる状態" },
+      { id: "C", text: "セキュリティパッチを当てていない古いシステム" },
+      { id: "D", text: "テストが不足しているコードのこと" },
+    ],
+    correctChoiceId: "A",
+  },
+
+  // -------------------------------------------------------------------------
+  // VOCABULARY — difficulty 3 (hard) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "v-hard-3",
+    axis: "vocabulary",
+    difficulty: 3,
+    type: "multiple_choice",
+    prompt: '「idempotency key」の意味は？',
+    choices: [
+      { id: "A", text: "APIのレートリミットを管理するためのトークン" },
+      { id: "B", text: "認証リクエストのセッションIDとして使われるキー" },
+      { id: "C", text: "データベーストランザクションの一意識別子" },
+      { id: "D", text: "同じリクエストを複数回送っても重複処理されないようにするキー" },
+    ],
+    correctChoiceId: "D",
+  },
+  {
+    id: "v-hard-4",
+    axis: "vocabulary",
+    difficulty: 3,
+    type: "multiple_choice",
+    prompt: '「canary deployment」の意味は？',
+    choices: [
+      { id: "A", text: "デプロイ前に自動テストを全件実行する手法" },
+      { id: "B", text: "本番障害時に前バージョンに即座に切り戻す手法" },
+      { id: "C", text: "一部のユーザーにだけ新バージョンをリリースしてリスクを限定する手法" },
+      { id: "D", text: "全サーバーを同時に新バージョンに切り替える手法" },
+    ],
+    correctChoiceId: "C",
+  },
+
+  // -------------------------------------------------------------------------
+  // NUANCE — difficulty 1 (easy) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "n-easy-3",
+    axis: "nuance",
+    difficulty: 1,
+    type: "multiple_choice",
+    prompt:
+      "同僚が「That's one way to do it.」と言いました。この発言が示している可能性が最も高いのはどれですか？",
+    choices: [
+      { id: "A", text: "あなたのアプローチを心から支持している" },
+      { id: "B", text: "他にもっと良い方法があると暗示しているが、直接は言っていない" },
+      { id: "C", text: "どのアプローチでも結果は同じだと言っている" },
+      { id: "D", text: "詳細な説明を求めている" },
+    ],
+    correctChoiceId: "B",
+  },
+  {
+    id: "n-easy-4",
+    axis: "nuance",
+    difficulty: 1,
+    type: "multiple_choice",
+    prompt:
+      "コードレビューで「I might be wrong here, but...」という前置きがある場合、何を意味しますか？",
+    choices: [
+      { id: "A", text: "レビュアーがそのコードを理解できていない" },
+      { id: "B", text: "ブロッカーではないがコメントを残したかっただけ" },
+      { id: "C", text: "謙虚な表現で実際の懸念を柔らかく伝えている" },
+      { id: "D", text: "レビュアーが確信を持ってバグを指摘している" },
+    ],
+    correctChoiceId: "C",
+  },
+
+  // -------------------------------------------------------------------------
+  // NUANCE — difficulty 2 (medium) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "n-med-3",
+    axis: "nuance",
+    difficulty: 2,
+    type: "multiple_choice",
+    prompt:
+      "PRの説明に「Feel free to push back if you disagree.」と書いてある場合、作者は何を伝えていますか？",
+    choices: [
+      { id: "A", text: "異論があれば遠慮なく反論してほしいと促している" },
+      { id: "B", text: "このPRに自信がなく承認を求めている" },
+      { id: "C", text: "既に上長に承認を得ているので変更は難しい" },
+      { id: "D", text: "変更を取り消す可能性があると事前に警告している" },
+    ],
+    correctChoiceId: "A",
+  },
+  {
+    id: "n-med-4",
+    axis: "nuance",
+    difficulty: 2,
+    type: "multiple_choice",
+    prompt: '「Let\'s circle back on this after the release.」という発言の意味は？',
+    choices: [
+      { id: "A", text: "リリースをキャンセルして今すぐこの問題を解決すべき" },
+      { id: "B", text: "リリース後にこの問題は自然に解決する" },
+      { id: "C", text: "このトピックは重要度が低いので後回しにする" },
+      { id: "D", text: "リリースが落ち着いてからこのトピックに戻って議論しよう" },
+    ],
+    correctChoiceId: "D",
+  },
+
+  // -------------------------------------------------------------------------
+  // NUANCE — difficulty 3 (hard) — additional
+  // -------------------------------------------------------------------------
+  {
+    id: "n-hard-3",
+    axis: "nuance",
+    difficulty: 3,
+    type: "multiple_choice",
+    prompt:
+      "シニアエンジニアが「I want to make sure we're solving the right problem here.」とコメントしました。この発言が最も意味することは？",
+    choices: [
+      { id: "A", text: "コードの実装品質に問題があると指摘している" },
+      { id: "B", text: "そもそもの問題設定や解決アプローチが正しいか疑問を呈している" },
+      { id: "C", text: "要件定義を改めてステークホルダーと確認するよう促している" },
+      { id: "D", text: "このPRのスコープが大きすぎるため分割するよう求めている" },
+    ],
+    correctChoiceId: "B",
+  },
+  {
+    id: "n-hard-4",
+    axis: "nuance",
+    difficulty: 3,
+    type: "multiple_choice",
+    prompt:
+      "チームメートが「I'll defer to you on this one.」と言いました。この発言の意味は？",
+    choices: [
+      { id: "A", text: "この件についてはあなたの判断を尊重して従う" },
+      { id: "B", text: "この問題をあなたに引き継いで自分は担当しない" },
+      { id: "C", text: "上司にエスカレーションしてほしいと頼んでいる" },
+      { id: "D", text: "この技術領域の専門知識がないため答えられない" },
+    ],
+    correctChoiceId: "A",
+  },
 ];
