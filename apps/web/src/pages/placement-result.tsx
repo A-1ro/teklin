@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type { PlacementResultResponse, SkillAxis } from "@teklin/shared";
@@ -115,7 +113,7 @@ function scoreBadgeColor(score: number): string {
   return "text-red-400";
 }
 
-export default function PlacementResultPage() {
+export function PlacementResultPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
   const [result, setResult] = useState<PlacementResultResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -152,7 +150,7 @@ export default function PlacementResultPage() {
         <div className="text-center">
           <p className="mb-4 text-gray-400">{error || "No results found."}</p>
           <Link
-            href="/placement"
+            to="/placement"
             className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
             Take the Test
@@ -177,7 +175,7 @@ export default function PlacementResultPage() {
         <header className="mb-8 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-100">Teklin</h1>
           <Link
-            href="/dashboard"
+            to="/dashboard"
             className="rounded-lg px-4 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
           >
             Dashboard
@@ -265,13 +263,13 @@ export default function PlacementResultPage() {
         {/* CTAs */}
         <div className="space-y-3">
           <Link
-            href="/dashboard"
+            to="/dashboard"
             className="block w-full rounded-lg bg-blue-600 px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
           >
             Start Learning
           </Link>
           <Link
-            href="/placement"
+            to="/placement"
             className="block w-full rounded-lg border border-gray-700 px-6 py-3 text-center text-sm text-gray-400 transition-colors hover:border-gray-600 hover:text-gray-300"
           >
             Retake Test

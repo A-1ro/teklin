@@ -1,8 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch, ApiError } from "@/lib/api";
 import type { PlacementNextResponse } from "@teklin/shared";
@@ -98,9 +95,9 @@ const SKILL_AXES = [
   },
 ] as const;
 
-export default function PlacementPage() {
+export function PlacementPage() {
   const { user, isLoading } = useRequireAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [isStarting, setIsStarting] = useState(false);
   const [hasResult, setHasResult] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -123,7 +120,7 @@ export default function PlacementPage() {
       await apiFetch<PlacementNextResponse>("/api/placement/start", {
         method: "POST",
       });
-      router.push("/placement/test");
+      navigate("/placement/test");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -157,7 +154,7 @@ export default function PlacementPage() {
         <header className="mb-8 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-100">Teklin</h1>
           <Link
-            href="/dashboard"
+            to="/dashboard"
             className="rounded-lg px-4 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
           >
             Dashboard
@@ -262,7 +259,7 @@ export default function PlacementPage() {
           {hasResult && (
             <div className="mt-4 text-center">
               <Link
-                href="/placement/result"
+                to="/placement/result"
                 className="text-sm text-blue-400 underline-offset-4 transition-colors hover:text-blue-300 hover:underline"
               >
                 View Previous Result

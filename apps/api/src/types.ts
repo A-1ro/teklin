@@ -6,8 +6,8 @@ export type Bindings = {
   USAGE_KV: KVNamespace;
   CONTENT_BUCKET: R2Bucket;
   AI: Ai;
+  ASSETS: Fetcher;
   ENVIRONMENT: string;
-  CORS_ORIGIN: string;
   JWT_SECRET: string;
   GITHUB_CLIENT_ID: string;
   GITHUB_CLIENT_SECRET: string;
