@@ -5,6 +5,7 @@ import { meRoutes } from "./routes/me";
 import { placementRoutes } from "./routes/placement";
 import { lessonRoutes } from "./routes/lessons";
 import { cardRoutes } from "./routes/cards";
+import { rewriteRoutes } from "./routes/rewrite";
 import type { Bindings } from "./types";
 
 export type { Bindings };
@@ -20,6 +21,7 @@ app.route("/api", meRoutes);
 app.route("/api/placement", placementRoutes);
 app.route("/api/lessons", lessonRoutes);
 app.route("/api/cards", cardRoutes);
+app.route("/api/rewrite", rewriteRoutes);
 
 // Health check
 app.get("/api/health", (c) => {
