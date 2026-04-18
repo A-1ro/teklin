@@ -149,6 +149,15 @@ export function DashboardPage() {
 
         <div className="mt-6 grid grid-cols-2 gap-4">
           <Link
+            to="/rewrite"
+            className="rounded-xl border border-violet-800/30 bg-violet-950/20 p-4 text-center transition-colors hover:border-violet-700/40 hover:bg-violet-950/30"
+          >
+            <p className="text-sm font-semibold text-gray-200">AI Rewrite</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Polish your technical English
+            </p>
+          </Link>
+          <Link
             to="/cards"
             className="rounded-xl border border-emerald-800/30 bg-emerald-950/20 p-4 text-center transition-colors hover:border-emerald-700/40 hover:bg-emerald-950/30"
           >

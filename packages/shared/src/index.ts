@@ -261,6 +261,71 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+// ---------------------------------------------------------------------------
+// Rewrite API types
+// ---------------------------------------------------------------------------
+
+/** Tone assessment for rewritten text */
+export type RewriteTone =
+  | "friendly"
+  | "professional"
+  | "too_casual"
+  | "too_formal"
+  | "neutral";
+
+/** A single change made during rewrite */
+export interface RewriteChange {
+  original: string;
+  corrected: string;
+  reason: string;
+}
+
+/** Request body for POST /api/rewrite */
+export interface RewriteRequestPayload {
+  text: string;
+  context: RewriteContext;
+}
+
+/** Streamed rewrite result (final JSON) */
+export interface RewriteResult {
+  rewritten: string;
+  changes: RewriteChange[];
+  tone: RewriteTone;
+  tips: string[];
+}
+
+/** A single history entry (list view) */
+export interface RewriteHistoryItem {
+  id: string;
+  originalText: string;
+  rewrittenText: string;
+  context: RewriteContext;
+  createdAt: string;
+}
+
+/** Response from GET /api/rewrite/history */
+export interface RewriteHistoryResponse {
+  items: RewriteHistoryItem[];
+  total: number;
+}
+
+/** Detailed history entry */
+export interface RewriteHistoryDetail {
+  id: string;
+  originalText: string;
+  rewrittenText: string;
+  explanation: string;
+  context: RewriteContext;
+  createdAt: string;
+}
+
+/** Response from GET /api/rewrite/remaining */
+export interface RewriteRemainingResponse {
+  remaining: number;
+  limit: number;
+  resetsAt: string;
+}
+
 /** LLM provider identifiers */
 export type LLMProvider = "workers-ai" | "openai" | "anthropic";
 
