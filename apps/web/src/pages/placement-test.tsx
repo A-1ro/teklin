@@ -9,13 +9,13 @@ import type {
 } from "@teklin/shared";
 
 const AXIS_META: Record<SkillAxis, { label: string; color: string }> = {
-  reading: { label: "Reading", color: "bg-blue-500/20 text-blue-400" },
-  writing: { label: "Writing", color: "bg-green-500/20 text-green-400" },
+  reading: { label: "リーディング", color: "bg-blue-500/20 text-blue-400" },
+  writing: { label: "ライティング", color: "bg-green-500/20 text-green-400" },
   vocabulary: {
-    label: "Vocabulary",
+    label: "ボキャブラリー",
     color: "bg-purple-500/20 text-purple-400",
   },
-  nuance: { label: "Nuance", color: "bg-amber-500/20 text-amber-400" },
+  nuance: { label: "ニュアンス", color: "bg-amber-500/20 text-amber-400" },
 };
 
 export function PlacementTestPage() {
@@ -49,7 +49,7 @@ export function PlacementTestPage() {
         }
       })
       .catch(() => {
-        setError("Failed to load the test. Please try again.");
+        setError("テストの読み込みに失敗しました。もう一度お試しください。");
       })
       .finally(() => {
         setIsInitializing(false);
@@ -84,7 +84,7 @@ export function PlacementTestPage() {
         setFreeText("");
       }
     } catch {
-      setError("Failed to submit answer. Please try again.");
+      setError("回答の送信に失敗しました。もう一度お試しください。");
     } finally {
       setIsSubmitting(false);
     }
@@ -125,9 +125,9 @@ export function PlacementTestPage() {
           <div
             className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
             role="status"
-            aria-label="Loading test"
+            aria-label="テストを読み込み中"
           />
-          <p className="text-sm text-gray-400">Loading...</p>
+          <p className="text-sm text-gray-400">読み込み中...</p>
         </div>
       </main>
     );
@@ -146,9 +146,9 @@ export function PlacementTestPage() {
           <div
             className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
             role="status"
-            aria-label="Saving results"
+            aria-label="結果を保存中"
           />
-          <p className="text-sm text-gray-400">Calculating results...</p>
+          <p className="text-sm text-gray-400">結果を計算中...</p>
         </div>
       </main>
     );
@@ -161,13 +161,13 @@ export function PlacementTestPage() {
       <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
         <div className="text-center">
           <p className="mb-4 text-gray-400">
-            {error || "Failed to load question."}
+            {error || "問題の読み込みに失敗しました。"}
           </p>
           <button
             onClick={() => navigate("/placement")}
             className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
-            Back to Start
+            最初に戻る
           </button>
         </div>
       </main>
@@ -277,7 +277,7 @@ export function PlacementTestPage() {
                 id="free-text-answer"
                 value={freeText}
                 onChange={(e) => setFreeText(e.target.value)}
-                placeholder="Type your answer..."
+                placeholder="答えを入力..."
                 disabled={isSubmitting}
                 rows={4}
                 className="w-full resize-none rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-gray-100 placeholder-gray-500 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
@@ -307,12 +307,12 @@ export function PlacementTestPage() {
                   className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
                   aria-hidden="true"
                 />
-                Submitting...
+                送信中...
               </span>
             ) : progress.current === progress.total - 1 ? (
-              "Finish"
+              "完了"
             ) : (
-              "Next"
+              "次へ"
             )}
           </button>
         </div>

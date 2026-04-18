@@ -67,7 +67,7 @@ export function LessonPage() {
         setLesson(data);
         return apiFetch(`/api/lessons/${lessonId}/start`, { method: "POST" });
       })
-      .catch(() => setError("Failed to load lesson."))
+      .catch(() => setError("レッスンの読み込みに失敗しました。"))
       .finally(() => setIsLoading(false));
   }, [authLoading, user, lessonId, started]);
 
@@ -101,9 +101,9 @@ export function LessonPage() {
           <div
             className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
             role="status"
-            aria-label="Loading lesson"
+            aria-label="レッスンを読み込み中"
           />
-          <p className="text-sm text-gray-400">Loading lesson...</p>
+          <p className="text-sm text-gray-400">レッスンを読み込み中...</p>
         </div>
       </main>
     );
@@ -117,12 +117,12 @@ export function LessonPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">{error || "Lesson not found."}</p>
+          <p className="mb-4 text-gray-400">{error || "レッスンが見つかりませんでした。"}</p>
           <Link
             to="/lesson"
             className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
-            Back to Lessons
+            レッスン一覧に戻る
           </Link>
         </div>
       </main>
@@ -198,11 +198,11 @@ function LessonShell({
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
 
   const STEP_LABELS: Record<StepId, string> = {
-    warmup: "Warm-up",
-    focus: "Focus",
-    practice: "Practice",
-    wrapup: "Wrap-up",
-    complete: "Complete",
+    warmup: "ウォームアップ",
+    focus: "フォーカス",
+    practice: "練習",
+    wrapup: "まとめ",
+    complete: "完了",
   };
 
   return (
@@ -228,7 +228,7 @@ function LessonShell({
                 d="M15.75 19.5L8.25 12l7.5-7.5"
               />
             </svg>
-            Exit
+            終了
           </Link>
 
           <div className="flex items-center gap-2">
@@ -341,7 +341,7 @@ function WarmupStep({
 
   if (!question) {
     return (
-      <div className="text-center text-gray-400">No warm-up questions.</div>
+      <div className="text-center text-gray-400">ウォームアップ問題がありません。</div>
     );
   }
 
@@ -349,10 +349,10 @@ function WarmupStep({
     <div>
       <div className="mb-6">
         <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-          Warm-up · {currentIdx + 1} / {questions.length}
+          ウォームアップ · {currentIdx + 1} / {questions.length}
         </p>
         <h2 className="text-lg font-semibold text-gray-100">
-          Which meaning matches this phrase?
+          このフレーズの意味はどれ？
         </h2>
       </div>
 
@@ -415,14 +415,14 @@ function WarmupStep({
           <p
             className={`mb-1 text-sm font-semibold ${result.correct ? "text-green-400" : "text-red-400"}`}
           >
-            {result.correct ? "Correct!" : "Not quite."}
+            {result.correct ? "正解！" : "惜しい！"}
           </p>
           {result.feedback && (
             <p className="text-sm text-gray-400">{result.feedback}</p>
           )}
           {!result.correct && result.correctAnswer && (
             <p className="mt-1 text-sm text-gray-400">
-              Correct answer:{" "}
+              正解：{" "}
               <span className="font-medium text-gray-200">
                 {
                   question.choices.find((c) => c.id === result.correctAnswer)
@@ -439,7 +439,7 @@ function WarmupStep({
           onClick={handleNext}
           className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
         >
-          {currentIdx < questions.length - 1 ? "Next Question" : "Continue"}
+          {currentIdx < questions.length - 1 ? "次の問題" : "次へ"}
         </button>
       )}
     </div>
@@ -471,10 +471,10 @@ function FocusStep({
     <div>
       <div className="mb-6">
         <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-          Focus
+          フォーカス
         </p>
         <h2 className="text-lg font-semibold text-gray-100">
-          Today&apos;s Key Phrase
+          今日のキーフレーズ
         </h2>
       </div>
 
@@ -490,7 +490,7 @@ function FocusStep({
       {focus.examples.length > 0 && (
         <div className="mb-6">
           <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
-            Examples
+            例文
           </p>
           <div className="rounded-xl border border-gray-700 bg-gray-900 p-5">
             <div className="mb-2 flex items-center gap-2">
@@ -514,7 +514,7 @@ function FocusStep({
                 disabled={exampleIdx === 0}
                 className="rounded-lg px-3 py-1.5 text-xs text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 disabled:opacity-30"
               >
-                Previous
+                前へ
               </button>
               <span className="text-xs text-gray-600">
                 {exampleIdx + 1} / {focus.examples.length}
@@ -528,7 +528,7 @@ function FocusStep({
                 disabled={exampleIdx === focus.examples.length - 1}
                 className="rounded-lg px-3 py-1.5 text-xs text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 disabled:opacity-30"
               >
-                Next
+                次へ
               </button>
             </div>
           )}
@@ -539,7 +539,7 @@ function FocusStep({
       {focus.tips.length > 0 && (
         <div className="mb-6 rounded-xl border border-amber-800/30 bg-amber-950/10 p-5">
           <p className="mb-3 text-xs font-medium uppercase tracking-wider text-amber-600">
-            Tips
+            ヒント
           </p>
           <ul className="flex flex-col gap-2">
             {focus.tips.map((tip, i) => (
@@ -558,7 +558,7 @@ function FocusStep({
         onClick={onComplete}
         className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
       >
-        Got it — Let&apos;s Practice
+        わかった！練習しよう
       </button>
     </div>
   );
@@ -601,7 +601,7 @@ function PracticeStep({
 
   if (!exercise) {
     return (
-      <div className="text-center text-gray-400">No practice exercises.</div>
+      <div className="text-center text-gray-400">練習問題がありません。</div>
     );
   }
 
@@ -611,7 +611,7 @@ function PracticeStep({
     <div>
       <div className="mb-6">
         <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-          Practice · {currentIdx + 1} / {exercises.length}
+          練習 · {currentIdx + 1} / {exercises.length}
         </p>
         <h2 className="text-lg font-semibold text-gray-100">
           {exercise.instruction}
@@ -651,8 +651,8 @@ function PracticeStep({
           className="mt-6 w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
         >
           {currentIdx < exercises.length - 1
-            ? "Next Exercise"
-            : "Finish Practice"}
+            ? "次の問題"
+            : "練習完了"}
         </button>
       )}
     </div>
@@ -733,7 +733,7 @@ function FillInBlank({
             if (e.key === "Enter") handleSubmit();
           }}
           disabled={result !== null}
-          placeholder="Type your answer..."
+          placeholder="答えを入力..."
           className="flex-1 rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
         />
         <button
@@ -741,7 +741,7 @@ function FillInBlank({
           disabled={!value.trim() || isSubmitting || result !== null}
           className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "..." : "Check"}
+          {isSubmitting ? "..." : "確認"}
         </button>
       </div>
 
@@ -757,11 +757,11 @@ function FillInBlank({
           <p
             className={`mb-1 text-sm font-semibold ${result.correct ? "text-green-400" : "text-red-400"}`}
           >
-            {result.correct ? "Correct!" : "Not quite."}
+            {result.correct ? "正解！" : "惜しい！"}
           </p>
           {!result.correct && result.correctAnswer && (
             <p className="text-sm text-gray-400">
-              Correct answer:{" "}
+              正解：{" "}
               <span className="font-medium text-gray-200">
                 {result.correctAnswer}
               </span>
@@ -848,7 +848,7 @@ function ReorderExercise({
       <div className="mb-4 min-h-[60px] rounded-xl border border-dashed border-gray-600 bg-gray-900 p-4">
         {chosen.length === 0 ? (
           <p className="text-sm text-gray-600">
-            Tap words below to build the sentence
+            下の単語をタップして文を作ろう
           </p>
         ) : (
           <div className="flex flex-wrap gap-2">
@@ -887,7 +887,7 @@ function ReorderExercise({
           disabled={chosen.length === 0 || isSubmitting}
           className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "Checking..." : "Check"}
+          {isSubmitting ? "確認中..." : "確認"}
         </button>
       )}
 
@@ -903,11 +903,11 @@ function ReorderExercise({
           <p
             className={`mb-1 text-sm font-semibold ${result.correct ? "text-green-400" : "text-red-400"}`}
           >
-            {result.correct ? "Correct!" : "Not quite."}
+            {result.correct ? "正解！" : "惜しい！"}
           </p>
           {!result.correct && result.correctAnswer && (
             <p className="text-sm text-gray-400">
-              Correct order:{" "}
+              正しい順序：{" "}
               <span className="font-medium text-gray-200">
                 {result.correctAnswer}
               </span>
@@ -979,7 +979,7 @@ function FreeTextExercise({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           disabled={result !== null}
-          placeholder="Write your answer here..."
+          placeholder="ここに答えを書こう..."
           rows={4}
           className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
         />
@@ -992,7 +992,7 @@ function FreeTextExercise({
           disabled={!value.trim() || isSubmitting}
           className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "Submitting..." : "Submit"}
+          {isSubmitting ? "送信中..." : "送信"}
         </button>
       )}
 
@@ -1008,7 +1008,7 @@ function FreeTextExercise({
           <p
             className={`mb-1 text-sm font-semibold ${result.correct ? "text-green-400" : "text-amber-400"}`}
           >
-            {result.correct ? "Great work!" : "AI Feedback"}
+            {result.correct ? "よくできました！" : "AIフィードバック"}
           </p>
           {result.feedback && (
             <p className="text-sm text-gray-300">{result.feedback}</p>
@@ -1016,7 +1016,7 @@ function FreeTextExercise({
           {result.correctAnswer && (
             <div className="mt-3 rounded-lg border border-gray-700 bg-gray-900 p-3">
               <p className="mb-1 text-xs font-medium text-gray-500">
-                Model answer
+                模範解答
               </p>
               <p className="text-sm text-gray-200">{result.correctAnswer}</p>
             </div>
@@ -1042,10 +1042,10 @@ function WrapupStep({
     <div>
       <div className="mb-6">
         <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-          Wrap-up
+          まとめ
         </p>
         <h2 className="text-lg font-semibold text-gray-100">
-          Great work today!
+          今日もよくできました！
         </h2>
       </div>
 
@@ -1060,7 +1060,7 @@ function WrapupStep({
       {wrapup.keyPoints.length > 0 && (
         <div className="mb-6">
           <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
-            Key Points
+            重要ポイント
           </p>
           <ul className="flex flex-col gap-3">
             {wrapup.keyPoints.map((point, i) => (
@@ -1082,7 +1082,7 @@ function WrapupStep({
       {wrapup.nextPreview && (
         <div className="mb-6 rounded-xl border border-gray-800 bg-gray-900/50 p-5">
           <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-600">
-            Coming up next
+            次回のレッスン
           </p>
           <p className="text-sm text-gray-400">{wrapup.nextPreview}</p>
         </div>
@@ -1092,7 +1092,7 @@ function WrapupStep({
         onClick={onComplete}
         className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
       >
-        Complete Lesson
+        レッスンを完了
       </button>
     </div>
   );
@@ -1122,10 +1122,10 @@ function CompleteScreen({
         </div>
 
         <h1 className="mb-2 text-2xl font-bold text-gray-100">
-          Lesson Complete!
+          レッスン完了！
         </h1>
         <p className="mb-8 text-sm text-gray-400">
-          You&apos;ve finished today&apos;s lesson. Keep up the great work!
+          今日のレッスンが終わりました。引き続き頑張りましょう！
         </p>
 
         {/* Score + streak */}
@@ -1134,7 +1134,7 @@ function CompleteScreen({
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl border border-gray-800 bg-gray-950 p-4">
                 <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Score
+                  スコア
                 </p>
                 <p className="font-mono text-3xl font-bold text-gray-100">
                   {completionData.score}
@@ -1142,7 +1142,7 @@ function CompleteScreen({
               </div>
               <div className="rounded-xl border border-gray-800 bg-gray-950 p-4">
                 <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Streak
+                  連続記録
                 </p>
                 <p className="flex items-center justify-center gap-1 font-mono text-3xl font-bold text-gray-100">
                   <span role="img" aria-label="Fire">
@@ -1158,8 +1158,7 @@ function CompleteScreen({
             {completionData.streak.isNewRecord && (
               <div className="mt-4 rounded-lg border border-amber-800/40 bg-amber-950/20 px-4 py-3">
                 <p className="text-sm font-semibold text-amber-400">
-                  {"\uD83C\uDF89"} New streak record:{" "}
-                  {completionData.streak.longestStreak} days!
+                  {"\uD83C\uDF89"} 新記録達成：{completionData.streak.longestStreak}日連続！
                 </p>
               </div>
             )}
@@ -1172,13 +1171,13 @@ function CompleteScreen({
             onClick={() => onNavigate("/dashboard")}
             className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
           >
-            Back to Dashboard
+            ダッシュボードに戻る
           </button>
           <button
             onClick={() => onNavigate("/cards/review")}
             className="w-full rounded-lg border border-gray-700 bg-gray-900 px-6 py-3 text-sm font-semibold text-gray-200 transition-colors hover:border-gray-600 hover:bg-gray-800"
           >
-            Review Phrase Cards
+            フレーズカードを復習する
           </button>
         </div>
       </div>

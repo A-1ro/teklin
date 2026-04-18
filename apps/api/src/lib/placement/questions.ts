@@ -21,7 +21,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "reading",
     difficulty: 1,
     type: "multiple_choice",
-    prompt: 'What does the author mean by "This PR introduces a breaking change"?',
+    prompt: '「This PR introduces a breaking change」という表現は何を意味していますか？',
     context: [
       "From a pull request description:",
       "",
@@ -51,7 +51,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "reading",
     difficulty: 1,
     type: "multiple_choice",
-    prompt: "What went wrong according to the error log below?",
+    prompt: "以下のエラーログによると、何が問題でしたか？",
     context: [
       "```",
       "ERROR 2024-03-12T09:14:22Z [worker] Unhandled promise rejection:",
@@ -84,7 +84,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 2,
     type: "multiple_choice",
     prompt:
-      "What is the reviewer saying about the race condition in this comment?",
+      "このコメントでレビュアーはrace conditionについて何を指摘していますか？",
     context: [
       "From a GitHub PR review:",
       "",
@@ -119,7 +119,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "reading",
     difficulty: 2,
     type: "multiple_choice",
-    prompt: "What solution is being proposed in this RFC excerpt?",
+    prompt: "このRFC抜粋で提案されている解決策は何ですか？",
     context: [
       "From an internal RFC:",
       "",
@@ -162,7 +162,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "reading",
     difficulty: 3,
     type: "multiple_choice",
-    prompt: "What is the reviewer implicitly suggesting in this comment?",
+    prompt: "このコメントでレビュアーが暗に示していることは何ですか？",
     context: [
       "From a code review on a data-processing function:",
       "",
@@ -197,7 +197,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 3,
     type: "multiple_choice",
     prompt:
-      "According to this architecture decision record, what is the main trade-off of the chosen approach?",
+      "このアーキテクチャ決定記録（ADR）によると、選択したアプローチの主なトレードオフは何ですか？",
     context: [
       "From an Architecture Decision Record (ADR-042):",
       "",
@@ -242,7 +242,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 1,
     type: "free_text",
     prompt:
-      'Write a concise, imperative-mood git commit message in English for the following change: "バグを直しました — ユーザーがログアウトしても session が残り続けていた問題を修正"',
+      '以下の変更内容について、英語で簡潔な命令形のgitコミットメッセージを書いてください：「バグを直しました — ユーザーがログアウトしても session が残り続けていた問題を修正」',
     scoringCriteria: [
       "Uses imperative mood (e.g., 'Fix' not 'Fixed')",
       "Clearly describes what was changed and why",
@@ -257,7 +257,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 1,
     type: "free_text",
     prompt:
-      "Write a short Slack message (2-3 sentences) asking your teammate to review your pull request. Include the PR link placeholder [PR_LINK] and mention it is not urgent.",
+      "チームメートにプルリクエストのレビューをお願いする短いSlackメッセージ（2〜3文）を英語で書いてください。PRリンクのプレースホルダー [PR_LINK] を含め、急ぎではないことも伝えましょう。",
     scoringCriteria: [
       "Polite and professional tone",
       "Mentions the PR link",
@@ -276,7 +276,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 2,
     type: "free_text",
     prompt:
-      'Rewrite the following PR review comment to be constructive and specific: "This code is bad. You should refactor it."',
+      '以下のPRレビューコメントを、建設的で具体的な表現に英語で書き直してください：「This code is bad. You should refactor it.」',
     scoringCriteria: [
       "Specific about what the problem is",
       "Suggests a concrete improvement",
@@ -291,7 +291,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 2,
     type: "free_text",
     prompt:
-      "Write a GitHub issue describing a null pointer exception you discovered. Include: where it occurs, steps to reproduce (use a numbered list), and expected vs. actual behavior.",
+      "発見したnull pointer exceptionを説明するGitHub Issueを英語で書いてください。以下の内容を含めてください：発生箇所、再現手順（番号付きリスト）、期待される動作と実際の動作。",
     scoringCriteria: [
       "Clear title and structured body",
       "Steps to reproduce are numbered and clear",
@@ -310,7 +310,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 3,
     type: "free_text",
     prompt:
-      "Write a 3-4 sentence technical RFC summary proposing migrating the public API from REST to GraphQL. Cover: the motivation, the core change, and one key benefit.",
+      "public APIをRESTからGraphQLに移行することを提案する技術的なRFCサマリーを英語で3〜4文で書いてください。動機、中核となる変更点、主な利点の1つを含めてください。",
     scoringCriteria: [
       "Clear motivation (e.g., over-fetching, versioning pain)",
       "Core change is precisely described",
@@ -325,7 +325,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 3,
     type: "free_text",
     prompt:
-      "A user has requested a feature that the team has decided not to implement. Write a diplomatic reply (3-5 sentences) that: declines the request, explains the reasoning briefly, and offers an alternative workaround or suggestion.",
+      "チームが実装しないと決定した機能をユーザーが要望しています。丁寧な返答（3〜5文）を英語で書いてください：要望を断り、理由を簡潔に説明し、代替案や回避策を提案してください。",
     scoringCriteria: [
       "Polite and empathetic opening",
       "Clear but tactful decline",
@@ -343,7 +343,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 1,
     type: "multiple_choice",
-    prompt: 'What does "deprecated" mean in a software context?',
+    prompt: 'ソフトウェアの文脈で「deprecated」はどういう意味ですか？',
     choices: [
       { id: "A", text: "A feature that has been deleted from the codebase." },
       {
@@ -360,7 +360,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 1,
     type: "multiple_choice",
-    prompt: 'What does "refactor" mean?',
+    prompt: '「refactor」はどういう意味ですか？',
     choices: [
       {
         id: "A",
@@ -390,7 +390,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 2,
     type: "multiple_choice",
-    prompt: 'What does "idempotent" mean in the context of HTTP or APIs?',
+    prompt: 'HTTPやAPIの文脈で「idempotent」はどういう意味ですか？',
     choices: [
       {
         id: "A",
@@ -416,7 +416,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 2,
     type: "multiple_choice",
-    prompt: 'What is a "race condition"?',
+    prompt: '「race condition」とは何ですか？',
     choices: [
       {
         id: "A",
@@ -446,7 +446,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 3,
     type: "multiple_choice",
-    prompt: 'What does "eventual consistency" mean in distributed systems?',
+    prompt: '分散システムにおいて「eventual consistency」はどういう意味ですか？',
     choices: [
       {
         id: "A",
@@ -473,7 +473,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 3,
     type: "multiple_choice",
     prompt:
-      'What does "backpressure" mean in the context of streaming data pipelines?',
+      'ストリーミングデータパイプラインの文脈で「backpressure」はどういう意味ですか？',
     choices: [
       {
         id: "A",
@@ -503,7 +503,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "nuance",
     difficulty: 1,
     type: "multiple_choice",
-    prompt: 'Which phrasing is more polite when asking someone to fix a bug?',
+    prompt: 'バグの修正をお願いするとき、より丁寧な表現はどちらですか？',
     choices: [
       { id: "A", text: "Fix this bug." },
       { id: "B", text: "Could you take a look at this bug when you have a moment?" },
@@ -518,7 +518,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 1,
     type: "multiple_choice",
     prompt:
-      'A colleague leaves the comment "LGTM 👍" on your pull request. What does this convey?',
+      '同僚があなたのプルリクエストに「LGTM 👍」とコメントしました。これは何を伝えていますか？',
     choices: [
       { id: "A", text: "They found a critical issue but are approving anyway." },
       {
@@ -540,7 +540,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 2,
     type: "multiple_choice",
     prompt:
-      'A reviewer writes: "I wonder if there might be a simpler approach here." What do they most likely mean?',
+      'レビュアーが「I wonder if there might be a simpler approach here.」と書いています。この発言が最も意味している内容はどれですか？',
     choices: [
       {
         id: "A",
@@ -567,7 +567,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 2,
     type: "multiple_choice",
     prompt:
-      "You disagree with a senior engineer's suggestion in a code review. Which response is most professionally appropriate?",
+      "コードレビューでシニアエンジニアの提案に同意できない場合、最もプロフェッショナルな返答はどれですか？",
     choices: [
       {
         id: "A",
@@ -598,7 +598,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 3,
     type: "multiple_choice",
     prompt:
-      'A senior engineer comments on your PR: "This is an interesting approach." No further explanation is given. What is the most likely real meaning?',
+      'シニアエンジニアがあなたのPRに「This is an interesting approach.」とコメントし、それ以上の説明はありません。この発言が実際に意味している可能性が最も高いのはどれですか？',
     context: [
       "The comment appears on a complex caching implementation you wrote.",
       "The reviewer has not approved the PR.",
@@ -629,7 +629,7 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     difficulty: 3,
     type: "multiple_choice",
     prompt:
-      "A critical bug in production is blocking your team and the root cause is in a library owned by another team. Which message to the other team's manager is most appropriate?",
+      "本番環境の重大なバグがチームをブロックしており、根本原因は別チームが所有するライブラリにあります。そのチームのマネージャーへのメッセージとして最も適切なのはどれですか？",
     choices: [
       {
         id: "A",
