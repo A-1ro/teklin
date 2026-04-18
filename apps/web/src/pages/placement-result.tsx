@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
-import type { PlacementResultResponse, SkillAxis } from "@teklin/shared";
+import type {
+  PlacementAnswerReview,
+  PlacementResultResponse,
+  SkillAxis,
+} from "@teklin/shared";
 
 const LEVEL_LABELS: Record<string, { en: string; ja: string }> = {
   L1: { en: "Starter", ja: "Beginner" },
@@ -253,6 +257,109 @@ export function PlacementResultPage() {
                       </p>
                       <p className="text-sm text-gray-400">{advice}</p>
                     </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Answer review */}
+        {result.answers && result.answers.length > 0 && (
+          <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
+              Answer Review
+            </h2>
+            <div className="space-y-4">
+              {result.answers.map((review: PlacementAnswerReview) => {
+                const axisMeta = AXIS_LABELS[review.axis];
+                const isSkip = review.isSkip;
+                const correctChoice = review.choices?.find(
+                  (c) => c.id === review.correctChoiceId
+                );
+                const userChoice = review.choices?.find(
+                  (c) => c.id === review.userAnswer
+                );
+                const isCorrect =
+                  !isSkip &&
+                  review.type === "multiple_choice" &&
+                  review.userAnswer === review.correctChoiceId;
+
+                return (
+                  <div
+                    key={review.questionId}
+                    className="rounded-xl border border-gray-800 bg-gray-950 p-4"
+                  >
+                    {/* Header: axis + result indicator */}
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-gray-500">
+                        {axisMeta.en}
+                      </span>
+                      {isSkip ? (
+                        <span className="text-xs text-gray-600">スキップ</span>
+                      ) : review.type === "multiple_choice" ? (
+                        <span
+                          className={`text-xs font-bold ${isCorrect ? "text-green-400" : "text-red-400"}`}
+                        >
+                          {isCorrect ? "正解" : "不正解"}
+                        </span>
+                      ) : (
+                        <span
+                          className={`font-mono text-xs font-bold ${scoreBadgeColor(review.score)}`}
+                        >
+                          {review.score}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Question prompt */}
+                    <p className="mb-3 text-sm text-gray-300">{review.prompt}</p>
+
+                    {/* MC: your answer + correct answer */}
+                    {review.type === "multiple_choice" && !isSkip && (
+                      <div className="space-y-1 text-xs">
+                        <div className="flex gap-2">
+                          <span className="w-16 flex-shrink-0 text-gray-500">あなた:</span>
+                          <span
+                            className={
+                              isCorrect ? "text-green-400" : "text-red-400"
+                            }
+                          >
+                            {userChoice?.text ?? review.userAnswer}
+                          </span>
+                        </div>
+                        {!isCorrect && correctChoice && (
+                          <div className="flex gap-2">
+                            <span className="w-16 flex-shrink-0 text-gray-500">正解:</span>
+                            <span className="text-green-400">
+                              {correctChoice.text}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Free text: your answer + advice */}
+                    {review.type === "free_text" && !isSkip && (
+                      <div className="space-y-2 text-xs">
+                        <div>
+                          <span className="text-gray-500">あなた: </span>
+                          <span className="font-mono text-gray-300">
+                            {review.userAnswer}
+                          </span>
+                        </div>
+                        {review.advice && (
+                          <div className="rounded-lg bg-gray-900 px-3 py-2 text-gray-400">
+                            💡 {review.advice}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Skip */}
+                    {isSkip && (
+                      <p className="text-xs text-gray-600">回答なし</p>
+                    )}
                   </div>
                 );
               })}

@@ -22,18 +22,17 @@ function sanitizeForPrompt(text: string): string {
   return text.replace(/---/g, "—");
 }
 
-/** Score a writing answer using LLM (0-100) */
+/** Score a writing answer using LLM (0-100) and return one-point advice */
 export async function scoreWriting(
   questionId: string,
   answer: string,
   llm: LLMService
-): Promise<number> {
+): Promise<{ score: number; advice: string }> {
   const q = PLACEMENT_QUESTIONS.find((q) => q.id === questionId);
-  if (!q) return 0;
+  if (!q) return { score: 0, advice: "" };
 
   const sanitizedAnswer = sanitizeForPrompt(answer);
 
-  // Append question-specific scoring criteria to the user prompt
   const criteria = q.scoringCriteria
     ? `\n\nScoring criteria: ${q.scoringCriteria}`
     : "";
@@ -53,19 +52,22 @@ export async function scoreWriting(
     const result = JSON.parse(response.text) as {
       score?: unknown;
       level?: unknown;
+      feedback?: unknown;
     };
     const score = typeof result.score === "number" ? result.score : 0;
     const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
 
-    // Validate that level, if present, is a known value
     const validLevels = new Set(["L1", "L2", "L3", "L4"]);
     if (result.level && !validLevels.has(String(result.level))) {
-      return 50; // suspicious response
+      return { score: 50, advice: "" };
     }
 
-    return clampedScore;
+    const advice =
+      typeof result.feedback === "string" ? result.feedback.trim() : "";
+
+    return { score: clampedScore, advice };
   } catch {
-    return 50; // fallback if LLM returns invalid JSON
+    return { score: 50, advice: "" };
   }
 }
 

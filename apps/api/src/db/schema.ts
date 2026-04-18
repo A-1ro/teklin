@@ -63,6 +63,8 @@ export const placementResults = sqliteTable(
     level: text("level").notNull(),
     // JSON string: SkillAxis[] e.g. '["reading","writing"]'
     weaknesses: text("weaknesses").notNull(),
+    // JSON string: PlacementAnswerRecord[] — stored for answer review
+    answers: text("answers"),
     createdAt: integer("created_at").notNull(),
   },
   (table) => [
