@@ -34,7 +34,7 @@ const CONTEXT_TO_CATEGORY: Record<RewriteContext, CardCategory> = {
   pr_comment: "pr_comments",
   github_issue: "github_issues",
   slack: "slack_chat",
-  general: "code_review",
+  general: "slack_chat",
 };
 
 // ---------------------------------------------------------------------------
@@ -124,6 +124,16 @@ rewriteRoutes.post("/", async (c) => {
     );
   }
 
+  // Pre-increment rewrite count to prevent race conditions.
+  // If the LLM call fails, we decrement below.
+  const preIncrementedCount: RewriteCountValue = {
+    count: currentCount + 1,
+    updatedAt: new Date().toISOString(),
+  };
+  await c.env.USAGE_KV.put(countKey, JSON.stringify(preIncrementedCount), {
+    expirationTtl: 48 * 60 * 60,
+  });
+
   // Get user's level from DB
   const db = createDb(c.env.DB);
   const userRow = await db
@@ -171,6 +181,14 @@ rewriteRoutes.post("/", async (c) => {
     );
   } catch (err) {
     console.error("[rewrite] LLM generation failed", { error: String(err) });
+    // Rollback pre-incremented count
+    const rollbackValue: RewriteCountValue = {
+      count: currentCount,
+      updatedAt: new Date().toISOString(),
+    };
+    await c.env.USAGE_KV.put(countKey, JSON.stringify(rollbackValue), {
+      expirationTtl: 48 * 60 * 60,
+    });
     return c.json({ error: "LLM service unavailable" }, 502);
   }
 
@@ -181,6 +199,14 @@ rewriteRoutes.post("/", async (c) => {
   } catch {
     console.error("[rewrite] Failed to parse LLM response as JSON", {
       text: llmResponse.text,
+    });
+    // Rollback pre-incremented count
+    const rollbackValue: RewriteCountValue = {
+      count: currentCount,
+      updatedAt: new Date().toISOString(),
+    };
+    await c.env.USAGE_KV.put(countKey, JSON.stringify(rollbackValue), {
+      expirationTtl: 48 * 60 * 60,
     });
     return c.json({ error: "Failed to parse AI response" }, 502);
   }
@@ -207,18 +233,7 @@ rewriteRoutes.post("/", async (c) => {
   // Track LLM usage
   await llmService.usage.track(userId, llmResponse.usage);
 
-  // Increment rewrite count in USAGE_KV
-  const newCount = currentCount + 1;
-  const newCountValue: RewriteCountValue = {
-    count: newCount,
-    updatedAt: new Date().toISOString(),
-  };
-  // TTL: keep until end of tomorrow (48h max) to handle timezone edge cases
-  await c.env.USAGE_KV.put(countKey, JSON.stringify(newCountValue), {
-    expirationTtl: 48 * 60 * 60,
-  });
-
-  return c.json(result);
+  return c.json({ id: historyId, ...result });
 });
 
 // ---------------------------------------------------------------------------

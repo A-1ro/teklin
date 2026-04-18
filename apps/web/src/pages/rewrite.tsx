@@ -84,10 +84,7 @@ interface SaveCardState {
   saved: boolean;
 }
 
-interface RewriteResponse {
-  id: string;
-  result: RewriteResult;
-}
+type RewriteResponse = RewriteResult & { id: string };
 
 export function RewritePage() {
   const { user, isLoading: authLoading } = useRequireAuth();
@@ -167,7 +164,7 @@ export function RewritePage() {
   const openSaveCard = useCallback(
     (changeIndex: number) => {
       if (!result) return;
-      const change = result.result.changes[changeIndex];
+      const change = result.changes[changeIndex];
       if (!change) return;
 
       setSaveCard({
@@ -386,22 +383,22 @@ export function RewritePage() {
                 </h2>
                 <div className="flex items-center gap-2">
                   <ContextBadge context={context} />
-                  <ToneBadge tone={result.result.tone} />
+                  <ToneBadge tone={result.tone} />
                 </div>
               </div>
               <p className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-gray-100">
-                {result.result.rewritten}
+                {result.rewritten}
               </p>
             </div>
 
             {/* Changes */}
-            {result.result.changes.length > 0 && (
+            {result.changes.length > 0 && (
               <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
                 <h2 className="mb-4 text-sm font-semibold text-gray-300">
-                  Changes ({result.result.changes.length})
+                  Changes ({result.changes.length})
                 </h2>
                 <div className="space-y-2">
-                  {result.result.changes.map((change, index) => (
+                  {result.changes.map((change, index) => (
                     <div
                       key={index}
                       className="rounded-xl border border-gray-800"
@@ -474,13 +471,13 @@ export function RewritePage() {
             )}
 
             {/* Tips */}
-            {result.result.tips.length > 0 && (
+            {result.tips.length > 0 && (
               <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
                 <h2 className="mb-3 text-sm font-semibold text-gray-300">
                   Tips
                 </h2>
                 <ul className="space-y-2">
-                  {result.result.tips.map((tip, index) => (
+                  {result.tips.map((tip, index) => (
                     <li
                       key={index}
                       className="flex items-start gap-2 text-sm text-gray-400"
