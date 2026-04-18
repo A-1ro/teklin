@@ -123,20 +123,16 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     context: [
       "From an internal RFC:",
       "",
-      "> **Problem**: The current monolithic deployment requires a full",
-      "> restart whenever any service configuration changes, causing",
-      "> ~4 minutes of downtime per deployment.",
+      "> **Problem**: Monolithic deployment causes ~4 min downtime on every",
+      "> config change.",
       ">",
-      "> **Proposed Solution**: Extract each bounded context into an",
-      "> independently deployable unit. Each service owns its configuration",
-      "> and can be restarted without affecting siblings. This enables",
-      "> zero-downtime rolling deployments via the orchestrator's health",
-      "> checks.",
+      "> **Proposed Solution**: Split into independently deployable services.",
+      "> Each owns its config and can restart without affecting others.",
     ].join("\n"),
     choices: [
       {
         id: "A",
-        text: "Increase server capacity to reduce restart time to under a minute.",
+        text: "Increase server capacity to reduce restart time.",
       },
       {
         id: "B",
@@ -144,11 +140,11 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
       },
       {
         id: "C",
-        text: "Use blue-green deployments to mask downtime from the current monolith.",
+        text: "Use blue-green deployments to mask downtime.",
       },
       {
         id: "D",
-        text: "Cache configuration values to avoid restarts on config changes.",
+        text: "Cache configuration values to avoid restarts.",
       },
     ],
     correctChoiceId: "B",
@@ -199,18 +195,14 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     prompt:
       "このアーキテクチャ決定記録（ADR）によると、選択したアプローチの主なトレードオフは何ですか？",
     context: [
-      "From an Architecture Decision Record (ADR-042):",
+      "From an Architecture Decision Record:",
       "",
-      "> **Decision**: We will adopt event sourcing for the orders domain.",
+      "> **Decision**: Adopt event sourcing for the orders domain.",
       ">",
-      "> **Consequences**:",
-      "> *Positive*: Full audit trail; ability to replay events for debugging",
-      "> and read-model rebuilds; temporal decoupling of producers and consumers.",
+      "> **Positive**: Full audit trail; can replay events for debugging.",
       ">",
-      "> *Negative*: Eventual consistency means downstream read models may lag",
-      "> behind writes by up to several seconds. Queries that require strongly",
-      "> consistent reads must either accept this lag or query the write model",
-      "> directly, increasing coupling.",
+      "> **Negative**: Eventual consistency — read models may lag behind",
+      "> writes by several seconds.",
     ].join("\n"),
     choices: [
       {
@@ -240,31 +232,29 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     id: "w-easy-1",
     axis: "writing",
     difficulty: 1,
-    type: "free_text",
-    prompt:
-      '以下の変更内容について、英語で簡潔な命令形のgitコミットメッセージを書いてください：「バグを直しました — ユーザーがログアウトしても session が残り続けていた問題を修正」',
-    scoringCriteria: [
-      "Uses imperative mood (e.g., 'Fix' not 'Fixed')",
-      "Clearly describes what was changed and why",
-      "50 characters or fewer for the subject line",
-      "No trailing period",
-      "Grammatically correct English",
-    ].join("; "),
+    type: "multiple_choice",
+    prompt: "正しいgitコミットメッセージはどれですか？",
+    choices: [
+      { id: "A", text: "fixed bug" },
+      { id: "B", text: "Fix session not cleared on logout" },
+      { id: "C", text: "I fixed the bug where session was not cleared when user logs out" },
+      { id: "D", text: "bugfix" },
+    ],
+    correctChoiceId: "B",
   },
   {
     id: "w-easy-2",
     axis: "writing",
     difficulty: 1,
-    type: "free_text",
-    prompt:
-      "チームメートにプルリクエストのレビューをお願いする短いSlackメッセージ（2〜3文）を英語で書いてください。PRリンクのプレースホルダー [PR_LINK] を含め、急ぎではないことも伝えましょう。",
-    scoringCriteria: [
-      "Polite and professional tone",
-      "Mentions the PR link",
-      "Communicates low urgency",
-      "Grammatically correct English",
-      "Natural, conversational phrasing appropriate for Slack",
-    ].join("; "),
+    type: "multiple_choice",
+    prompt: "チームメートにPRレビューをお願いするSlackメッセージとして最も適切なのはどれですか？",
+    choices: [
+      { id: "A", text: "Review my PR now." },
+      { id: "B", text: "Hey, could you take a look at my PR when you get a chance? No rush! [PR_LINK]" },
+      { id: "C", text: "My PR needs a review ASAP." },
+      { id: "D", text: "Please review. [PR_LINK]" },
+    ],
+    correctChoiceId: "B",
   },
 
   // -------------------------------------------------------------------------
@@ -274,31 +264,29 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     id: "w-med-1",
     axis: "writing",
     difficulty: 2,
-    type: "free_text",
-    prompt:
-      '以下のPRレビューコメントを、建設的で具体的な表現に英語で書き直してください：「This code is bad. You should refactor it.」',
-    scoringCriteria: [
-      "Specific about what the problem is",
-      "Suggests a concrete improvement",
-      "Respectful and professional tone",
-      "Does not repeat the original rudeness",
-      "Grammatically correct English",
-    ].join("; "),
+    type: "multiple_choice",
+    prompt: "最も建設的なPRレビューコメントはどれですか？",
+    choices: [
+      { id: "A", text: "This code is bad. Refactor it." },
+      { id: "B", text: "LGTM 👍" },
+      { id: "C", text: "Consider extracting this logic into a helper function — it would make the code easier to test and read." },
+      { id: "D", text: "Why did you write it this way?" },
+    ],
+    correctChoiceId: "C",
   },
   {
     id: "w-med-2",
     axis: "writing",
     difficulty: 2,
-    type: "free_text",
-    prompt:
-      "発見したnull pointer exceptionを説明するGitHub Issueを英語で書いてください。以下の内容を含めてください：発生箇所、再現手順（番号付きリスト）、期待される動作と実際の動作。",
-    scoringCriteria: [
-      "Clear title and structured body",
-      "Steps to reproduce are numbered and clear",
-      "Distinguishes expected vs. actual behavior",
-      "Mentions the location of the error",
-      "Grammatically correct and professional English",
-    ].join("; "),
+    type: "multiple_choice",
+    prompt: "GitHub Issueのタイトルとして最も適切なのはどれですか？",
+    choices: [
+      { id: "A", text: "Bug" },
+      { id: "B", text: "Login doesn't work" },
+      { id: "C", text: "Login button unresponsive when email field is empty on iOS 17" },
+      { id: "D", text: "There's a problem with login I think" },
+    ],
+    correctChoiceId: "C",
   },
 
   // -------------------------------------------------------------------------
@@ -308,31 +296,29 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     id: "w-hard-1",
     axis: "writing",
     difficulty: 3,
-    type: "free_text",
-    prompt:
-      "public APIをRESTからGraphQLに移行することを提案する技術的なRFCサマリーを英語で3〜4文で書いてください。動機、中核となる変更点、主な利点の1つを含めてください。",
-    scoringCriteria: [
-      "Clear motivation (e.g., over-fetching, versioning pain)",
-      "Core change is precisely described",
-      "At least one concrete technical benefit stated",
-      "Appropriate technical vocabulary",
-      "Grammatically correct and concise English",
-    ].join("; "),
+    type: "multiple_choice",
+    prompt: "PRでbreaking changeを説明する文として最も適切なのはどれですか？",
+    choices: [
+      { id: "A", text: "This is a big change." },
+      { id: "B", text: "This PR updates getUserById to accept an object { id, includeDeleted } instead of a plain string. All call sites must be updated before merging." },
+      { id: "C", text: "getUserById has been updated." },
+      { id: "D", text: "I refactored the API a bit." },
+    ],
+    correctChoiceId: "B",
   },
   {
     id: "w-hard-2",
     axis: "writing",
     difficulty: 3,
-    type: "free_text",
-    prompt:
-      "チームが実装しないと決定した機能をユーザーが要望しています。丁寧な返答（3〜5文）を英語で書いてください：要望を断り、理由を簡潔に説明し、代替案や回避策を提案してください。",
-    scoringCriteria: [
-      "Polite and empathetic opening",
-      "Clear but tactful decline",
-      "Brief, non-defensive reasoning",
-      "Concrete alternative or workaround offered",
-      "Professional tone suitable for a public GitHub comment",
-    ].join("; "),
+    type: "multiple_choice",
+    prompt: "ユーザーの機能要望をGitHub上で丁寧に断る返答として最も適切なのはどれですか？",
+    choices: [
+      { id: "A", text: "We won't implement this." },
+      { id: "B", text: "Thanks for the suggestion! This is currently out of scope, but you can achieve a similar result by using [workaround]. Feel free to reopen if your use case changes." },
+      { id: "C", text: "This is not possible." },
+      { id: "D", text: "I'll pass this along to the team." },
+    ],
+    correctChoiceId: "B",
   },
 
   // -------------------------------------------------------------------------
@@ -343,15 +329,12 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 1,
     type: "multiple_choice",
-    prompt: 'ソフトウェアの文脈で「deprecated」はどういう意味ですか？',
+    prompt: '「deprecated」の意味は？',
     choices: [
-      { id: "A", text: "A feature that has been deleted from the codebase." },
-      {
-        id: "B",
-        text: "A feature that is outdated and discouraged; it may be removed in a future version.",
-      },
-      { id: "C", text: "A feature that contains a known security vulnerability." },
-      { id: "D", text: "A feature that is experimental and not yet stable." },
+      { id: "A", text: "コードから削除された機能" },
+      { id: "B", text: "非推奨。将来のバージョンで削除される予定" },
+      { id: "C", text: "セキュリティ脆弱性が含まれる機能" },
+      { id: "D", text: "実験的でまだ不安定な機能" },
     ],
     correctChoiceId: "B",
   },
@@ -360,24 +343,12 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 1,
     type: "multiple_choice",
-    prompt: '「refactor」はどういう意味ですか？',
+    prompt: '「refactor」の意味は？',
     choices: [
-      {
-        id: "A",
-        text: "To rewrite code from scratch with new features added.",
-      },
-      {
-        id: "B",
-        text: "To restructure existing code without changing its external behavior.",
-      },
-      {
-        id: "C",
-        text: "To fix a bug by changing the logic of a function.",
-      },
-      {
-        id: "D",
-        text: "To add automated tests to untested code.",
-      },
+      { id: "A", text: "新機能を追加しながらゼロから書き直す" },
+      { id: "B", text: "外部の動作を変えずにコードの内部構造を整理する" },
+      { id: "C", text: "バグのロジックを修正する" },
+      { id: "D", text: "未テストのコードにテストを追加する" },
     ],
     correctChoiceId: "B",
   },
@@ -390,24 +361,12 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 2,
     type: "multiple_choice",
-    prompt: 'HTTPやAPIの文脈で「idempotent」はどういう意味ですか？',
+    prompt: '「idempotent」の意味は？',
     choices: [
-      {
-        id: "A",
-        text: "An operation that completes instantly regardless of payload size.",
-      },
-      {
-        id: "B",
-        text: "An operation that produces the same result whether called once or many times.",
-      },
-      {
-        id: "C",
-        text: "An operation that can only be safely executed by one client at a time.",
-      },
-      {
-        id: "D",
-        text: "An operation that automatically retries on failure.",
-      },
+      { id: "A", text: "ペイロードの大きさに関わらず即座に完了する処理" },
+      { id: "B", text: "1回呼んでも何度呼んでも結果が変わらない処理" },
+      { id: "C", text: "同時に1クライアントしか実行できない処理" },
+      { id: "D", text: "失敗時に自動でリトライする処理" },
     ],
     correctChoiceId: "B",
   },
@@ -416,24 +375,12 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 2,
     type: "multiple_choice",
-    prompt: '「race condition」とは何ですか？',
+    prompt: '「race condition」の意味は？',
     choices: [
-      {
-        id: "A",
-        text: "A performance benchmark that compares the speed of two code paths.",
-      },
-      {
-        id: "B",
-        text: "A bug that occurs when two threads compete to acquire the same lock.",
-      },
-      {
-        id: "C",
-        text: "A situation where the outcome of concurrent operations depends on their unpredictable order.",
-      },
-      {
-        id: "D",
-        text: "A CI pipeline failure caused by tests running in parallel.",
-      },
+      { id: "A", text: "2つのコードパスの速度を比較するベンチマーク" },
+      { id: "B", text: "2つのスレッドが同じロックを取り合うバグ" },
+      { id: "C", text: "並列処理の結果が実行順序によって変わる問題" },
+      { id: "D", text: "テストを並列実行したときのCIの失敗" },
     ],
     correctChoiceId: "C",
   },
@@ -446,24 +393,12 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 3,
     type: "multiple_choice",
-    prompt: '分散システムにおいて「eventual consistency」はどういう意味ですか？',
+    prompt: '「eventual consistency」の意味は？',
     choices: [
-      {
-        id: "A",
-        text: "All write operations block until every replica has confirmed the update.",
-      },
-      {
-        id: "B",
-        text: "Given no new updates, all replicas will converge to the same value over time.",
-      },
-      {
-        id: "C",
-        text: "The system guarantees that reads always return the most recent write.",
-      },
-      {
-        id: "D",
-        text: "Data is replicated synchronously to avoid any inconsistency window.",
-      },
+      { id: "A", text: "全レプリカが確認するまで書き込みをブロックする" },
+      { id: "B", text: "更新が止まれば、いずれ全レプリカが同じ値に収束する" },
+      { id: "C", text: "読み取りが常に最新の書き込みを返すことを保証する" },
+      { id: "D", text: "不整合をなくすために同期レプリケーションする" },
     ],
     correctChoiceId: "B",
   },
@@ -472,25 +407,12 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
     axis: "vocabulary",
     difficulty: 3,
     type: "multiple_choice",
-    prompt:
-      'ストリーミングデータパイプラインの文脈で「backpressure」はどういう意味ですか？',
+    prompt: '「backpressure」の意味は？',
     choices: [
-      {
-        id: "A",
-        text: "The latency added when a message must travel back through multiple network hops.",
-      },
-      {
-        id: "B",
-        text: "A mechanism by which a slow consumer signals the producer to slow down or pause.",
-      },
-      {
-        id: "C",
-        text: "The overhead of compressing data before sending it downstream.",
-      },
-      {
-        id: "D",
-        text: "Retrying failed messages from a dead-letter queue.",
-      },
+      { id: "A", text: "メッセージが複数のホップを経由する際のレイテンシ" },
+      { id: "B", text: "処理が追いつかないコンシューマーがプロデューサーに速度を落とさせる仕組み" },
+      { id: "C", text: "データを送信前に圧縮するオーバーヘッド" },
+      { id: "D", text: "デッドレターキューから失敗メッセージを再送する処理" },
     ],
     correctChoiceId: "B",
   },
