@@ -39,24 +39,20 @@ export const placementRoutes = new Hono<{
 placementRoutes.use("/*", authMiddleware);
 
 /**
- * Generate an initial question order: interleave axes at medium difficulty.
+ * Generate an initial question order: interleave axes starting at easy.
  * Adaptive selection replaces entries at runtime as answers come in.
+ * 3 rounds × 4 axes = 12 questions total.
  */
 function generateQuestionOrder(): string[] {
   const axes: SkillAxis[] = ["reading", "writing", "vocabulary", "nuance"];
   const order: string[] = [];
-
   const usedIds = new Set<string>();
 
-  // 5 rounds × 4 axes = 20 questions; start with medium difficulty
-  for (let round = 0; round < 5; round++) {
+  // Start at difficulty 1 (easy); adaptive algorithm escalates from there
+  for (let round = 0; round < 3; round++) {
     for (const axis of axes) {
-      // Prefer medium, then fall back to any unused question for this axis
       const candidates = PLACEMENT_QUESTIONS.filter(
-        (q) =>
-          q.axis === axis &&
-          q.difficulty === 2 &&
-          !usedIds.has(q.id)
+        (q) => q.axis === axis && q.difficulty === 1 && !usedIds.has(q.id)
       );
       const fallback = PLACEMENT_QUESTIONS.filter(
         (q) => q.axis === axis && !usedIds.has(q.id)
@@ -73,8 +69,9 @@ function generateQuestionOrder(): string[] {
 }
 
 /**
- * Select the next question for an axis adaptively.
- * Adjusts difficulty based on the last answer for that axis.
+ * Select the next question for an axis using binary-search style adaptation.
+ * Starts easy and escalates only when the user answers correctly.
+ * "わからない" (skip) is treated as incorrect (score 0).
  */
 function selectNextQuestion(
   axis: SkillAxis,
@@ -84,29 +81,21 @@ function selectNextQuestion(
   const axisAnswers = answers.filter((a) => a.axis === axis);
   const lastAnswer = axisAnswers[axisAnswers.length - 1];
 
-  let targetDifficulty: 1 | 2 | 3 = 2;
+  // Default to easy; only escalate on a clear correct answer
+  let targetDifficulty: 1 | 2 | 3 = 1;
   if (lastAnswer) {
     if (lastAnswer.score >= 70) {
-      targetDifficulty = Math.min(
-        3,
-        lastAnswer.difficulty + 1
-      ) as 1 | 2 | 3;
-    } else if (lastAnswer.score < 40) {
-      targetDifficulty = Math.max(
-        1,
-        lastAnswer.difficulty - 1
-      ) as 1 | 2 | 3;
+      // Correct → step up
+      targetDifficulty = Math.min(3, lastAnswer.difficulty + 1) as 1 | 2 | 3;
     } else {
-      targetDifficulty = lastAnswer.difficulty;
+      // Wrong or skipped → step down (floor at 1)
+      targetDifficulty = Math.max(1, lastAnswer.difficulty - 1) as 1 | 2 | 3;
     }
   }
 
   // Prefer target difficulty; fall back to any unused question for this axis
   let candidates = PLACEMENT_QUESTIONS.filter(
-    (q) =>
-      q.axis === axis &&
-      q.difficulty === targetDifficulty &&
-      !usedIds.has(q.id)
+    (q) => q.axis === axis && q.difficulty === targetDifficulty && !usedIds.has(q.id)
   );
 
   if (candidates.length === 0) {
@@ -118,7 +107,8 @@ function selectNextQuestion(
   return candidates[0]?.id ?? null;
 }
 
-const TOTAL_QUESTIONS = 20;
+const TOTAL_QUESTIONS = 12;
+const SKIP_ANSWER = "__skip__";
 const SESSION_TTL = 3600; // 1 hour
 const MAX_ANSWER_LENGTH = 2000;
 
@@ -222,9 +212,11 @@ placementRoutes.post("/answer", async (c) => {
     return c.json({ error: "Invalid question" }, 400);
   }
 
-  // Score the answer
+  // Score the answer ("わからない" skip counts as 0)
   let score: number;
-  if (question.type === "multiple_choice") {
+  if (answer === SKIP_ANSWER) {
+    score = 0;
+  } else if (question.type === "multiple_choice") {
     score = scoreMultipleChoice(questionId, answer);
   } else {
     const llm = createLLMService(c.env);

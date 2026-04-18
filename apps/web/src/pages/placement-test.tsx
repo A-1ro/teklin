@@ -56,13 +56,8 @@ export function PlacementTestPage() {
       });
   }, [authLoading, user]);
 
-  const handleSubmit = useCallback(async () => {
-    if (!question) return;
-
-    const answer =
-      question.type === "multiple_choice" ? selectedChoice : freeText.trim();
-    if (!answer) return;
-
+  const submitAnswer = useCallback(async (answer: string) => {
+    if (!question || isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
 
@@ -88,7 +83,19 @@ export function PlacementTestPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [question, selectedChoice, freeText]);
+  }, [question, isSubmitting]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!question) return;
+    const answer =
+      question.type === "multiple_choice" ? selectedChoice : freeText.trim();
+    if (!answer) return;
+    await submitAnswer(answer);
+  }, [question, selectedChoice, freeText, submitAnswer]);
+
+  const handleSkip = useCallback(async () => {
+    await submitAnswer("__skip__");
+  }, [submitAnswer]);
 
   // When test completes, call complete endpoint and navigate to results
   useEffect(() => {
@@ -315,6 +322,17 @@ export function PlacementTestPage() {
               "次へ"
             )}
           </button>
+
+          {/* Skip button */}
+          <div className="mt-3 text-center">
+            <button
+              onClick={handleSkip}
+              disabled={isSubmitting}
+              className="text-sm text-gray-600 underline-offset-2 transition-colors hover:text-gray-400 hover:underline disabled:cursor-not-allowed"
+            >
+              わからない
+            </button>
+          </div>
         </div>
       </div>
     </main>
