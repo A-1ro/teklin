@@ -7,7 +7,7 @@ import { Personas } from "@/components/landing/personas";
 import { Pricing } from "@/components/landing/pricing";
 import { WhyTeklin } from "@/components/landing/why-teklin";
 
-export default function Home() {
+export function LandingPage() {
   return (
     <>
       <NavBar />

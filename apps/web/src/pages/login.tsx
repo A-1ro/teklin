@@ -1,9 +1,7 @@
-"use client";
-
 import { getLoginUrl } from "@/lib/api";
 import { useRedirectIfAuth } from "@/lib/auth";
 
-export default function LoginPage() {
+export function LoginPage() {
   const { isLoading } = useRedirectIfAuth();
 
   if (isLoading) {
@@ -17,7 +15,6 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4">
       <div className="w-full max-w-md">
-        {/* Branding */}
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-100">
             Teklin
@@ -30,14 +27,12 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Login card */}
         <div className="rounded-2xl border border-gray-800 bg-gray-900 p-8">
           <h2 className="mb-6 text-center text-lg font-semibold text-gray-100">
             ログインして始める
           </h2>
 
           <div className="flex flex-col gap-3">
-            {/* GitHub login */}
             <a
               href={getLoginUrl("github")}
               className="flex items-center justify-center gap-3 rounded-lg bg-gray-800 px-5 py-3 text-sm font-semibold text-gray-100 transition-colors hover:bg-gray-700 active:bg-gray-600"
@@ -46,7 +41,6 @@ export default function LoginPage() {
               GitHubでログイン
             </a>
 
-            {/* Google login */}
             <a
               href={getLoginUrl("google")}
               className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-50 active:bg-gray-100"
@@ -58,11 +52,17 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-xs leading-relaxed text-gray-500">
             ログインすることで、
-            <a href="/terms" className="underline underline-offset-2 hover:text-gray-400">
+            <a
+              href="/terms"
+              className="underline underline-offset-2 hover:text-gray-400"
+            >
               利用規約
             </a>
             および
-            <a href="/privacy" className="underline underline-offset-2 hover:text-gray-400">
+            <a
+              href="/privacy"
+              className="underline underline-offset-2 hover:text-gray-400"
+            >
               プライバシーポリシー
             </a>
             に同意したものとみなします。

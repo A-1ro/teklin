@@ -1,7 +1,5 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type {
@@ -20,9 +18,9 @@ const AXIS_META: Record<SkillAxis, { label: string; color: string }> = {
   nuance: { label: "Nuance", color: "bg-amber-500/20 text-amber-400" },
 };
 
-export default function PlacementTestPage() {
+export function PlacementTestPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [question, setQuestion] = useState<PlacementQuestionClient | null>(
     null
@@ -98,13 +96,13 @@ export default function PlacementTestPage() {
 
     apiFetch<unknown>("/api/placement/complete", { method: "POST" })
       .then(() => {
-        router.push("/placement/result");
+        navigate("/placement/result");
       })
       .catch(() => {
         setError("Failed to save results. Please try again.");
         setIsComplete(false);
       });
-  }, [isComplete, router]);
+  }, [isComplete, navigate]);
 
   const canSubmit =
     !isSubmitting &&
@@ -166,7 +164,7 @@ export default function PlacementTestPage() {
             {error || "Failed to load question."}
           </p>
           <button
-            onClick={() => router.push("/placement")}
+            onClick={() => navigate("/placement")}
             className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
             Back to Start

@@ -1,10 +1,7 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { useAuth } from "@/components/auth/auth-provider";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import type { TodayLessonResponse } from "@teklin/shared";
 
@@ -22,10 +19,10 @@ const DOMAIN_LABELS: Record<string, string> = {
   mobile: "Mobile",
 };
 
-export default function DashboardPage() {
+export function DashboardPage() {
   const { user, isLoading } = useRequireAuth();
   const { logout } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [lessonData, setLessonData] = useState<TodayLessonResponse | null>(
     null
@@ -37,15 +34,13 @@ export default function DashboardPage() {
 
     apiFetch<TodayLessonResponse>("/api/lessons/today")
       .then((res) => setLessonData(res))
-      .catch(() => {
-        // Silently fail -- lesson card will just not show
-      })
+      .catch(() => {})
       .finally(() => setLessonLoading(false));
   }, [isLoading, user]);
 
   const handleLogout = async () => {
     await logout();
-    router.replace("/login");
+    navigate("/login", { replace: true });
   };
 
   if (isLoading) {
@@ -74,7 +69,6 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-gray-950 px-4 py-8">
       <div className="mx-auto max-w-2xl">
-        {/* Header */}
         <header className="mb-8 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-100">Teklin</h1>
           <button
@@ -85,7 +79,6 @@ export default function DashboardPage() {
           </button>
         </header>
 
-        {/* Welcome card */}
         <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
           <div className="flex items-center gap-4">
             {user.avatarUrl ? (
@@ -110,7 +103,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats row */}
         <div className="mb-6 grid grid-cols-3 gap-4">
           <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
             <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -153,27 +145,25 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Today's Lesson */}
         <TodayLessonCard data={lessonData} isLoading={lessonLoading} />
 
-        {/* Quick links */}
         <div className="mt-6 grid grid-cols-2 gap-4">
           <Link
-            href="/cards"
+            to="/cards"
             className="rounded-xl border border-emerald-800/30 bg-emerald-950/20 p-4 text-center transition-colors hover:border-emerald-700/40 hover:bg-emerald-950/30"
           >
             <p className="text-sm font-semibold text-gray-200">Phrase Cards</p>
             <p className="mt-1 text-xs text-gray-500">SRS flashcard review</p>
           </Link>
           <Link
-            href="/lesson"
+            to="/lesson"
             className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center transition-colors hover:border-gray-700 hover:bg-gray-800"
           >
             <p className="text-sm font-semibold text-gray-200">All Lessons</p>
             <p className="mt-1 text-xs text-gray-500">View lesson details</p>
           </Link>
           <Link
-            href="/placement"
+            to="/placement"
             className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center transition-colors hover:border-gray-700 hover:bg-gray-800"
           >
             <p className="text-sm font-semibold text-gray-200">
@@ -186,10 +176,6 @@ export default function DashboardPage() {
     </main>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Today's Lesson card (dashboard sub-component)
-// ---------------------------------------------------------------------------
 
 function TodayLessonCard({
   data,
@@ -267,7 +253,7 @@ function TodayLessonCard({
         </div>
       ) : (
         <Link
-          href={`/lesson/${lesson.id}`}
+          to={`/lesson/${lesson.id}`}
           className="block w-full rounded-lg bg-blue-600 px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
         >
           Start Lesson

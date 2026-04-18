@@ -1,8 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type { TodayLessonResponse, Level } from "@teklin/shared";
@@ -21,9 +18,9 @@ const LESSON_TYPE_LABELS: Record<string, string> = {
   listening: "Listening",
 };
 
-export default function LessonHomePage() {
+export function LessonHomePage() {
   const { user, isLoading: authLoading } = useRequireAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [data, setData] = useState<TodayLessonResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +62,7 @@ export default function LessonHomePage() {
             {error || "No lesson available."}
           </p>
           <Link
-            href="/dashboard"
+            to="/dashboard"
             className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
             Back to Dashboard
@@ -81,18 +78,16 @@ export default function LessonHomePage() {
   return (
     <main className="min-h-screen bg-gray-950 px-4 py-8">
       <div className="mx-auto max-w-2xl">
-        {/* Header */}
         <header className="mb-8 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-100">Teklin</h1>
           <Link
-            href="/dashboard"
+            to="/dashboard"
             className="rounded-lg px-4 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
           >
             Dashboard
           </Link>
         </header>
 
-        {/* Streak card */}
         <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -103,9 +98,7 @@ export default function LessonHomePage() {
                 <p className="font-mono text-2xl font-bold text-gray-100">
                   {streak.currentStreak}
                 </p>
-                <p className="text-sm text-gray-400">
-                  {streak.currentStreak === 1 ? "day streak" : "day streak"}
-                </p>
+                <p className="text-sm text-gray-400">day streak</p>
               </div>
             </div>
             <div className="text-right">
@@ -119,10 +112,8 @@ export default function LessonHomePage() {
           </div>
         </div>
 
-        {/* Lesson card */}
         {lesson ? (
           <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
-            {/* Badges */}
             <div className="mb-4 flex flex-wrap items-center gap-2">
               {levelMeta && (
                 <span
@@ -136,7 +127,6 @@ export default function LessonHomePage() {
               </span>
             </div>
 
-            {/* Title */}
             <h2 className="mb-2 text-xl font-bold text-gray-100">
               Today&apos;s Lesson
             </h2>
@@ -149,7 +139,6 @@ export default function LessonHomePage() {
                 : lesson.content.focus.explanation}
             </p>
 
-            {/* Meta info */}
             <div className="mb-6 flex items-center gap-6 text-sm text-gray-400">
               <span className="flex items-center gap-1.5">
                 <svg
@@ -187,7 +176,6 @@ export default function LessonHomePage() {
               </span>
             </div>
 
-            {/* CTA */}
             {isCompleted ? (
               <div className="rounded-lg border border-green-800 bg-green-950/30 px-6 py-4 text-center">
                 <p className="flex items-center justify-center gap-2 text-sm font-semibold text-green-400">
@@ -213,7 +201,7 @@ export default function LessonHomePage() {
               </div>
             ) : (
               <button
-                onClick={() => router.push(`/lesson/${lesson.id}`)}
+                onClick={() => navigate(`/lesson/${lesson.id}`)}
                 className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
               >
                 Start Lesson

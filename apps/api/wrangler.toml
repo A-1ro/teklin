@@ -1,7 +1,13 @@
-name = "teklin-api"
+name = "teklin"
 main = "src/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
+
+# ─── Static Assets (SPA frontend) ───
+[assets]
+directory = "../web/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
 
 # ─── D1 Database ───
 [[d1_databases]]
@@ -39,7 +45,7 @@ binding = "AI"
 # ─── Environment Variables ───
 [vars]
 ENVIRONMENT = "development"
-CORS_ORIGIN = "http://localhost:3000"
+APP_URL = "http://localhost:8787"
 AI_GATEWAY_ACCOUNT_ID = "placeholder-replace-with-actual-account-id"
 AI_GATEWAY_ID = "placeholder-replace-with-actual-gateway-id"
 LLM_DAILY_TOKEN_LIMIT = "100000"

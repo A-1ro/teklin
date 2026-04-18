@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type { CardStatsResponse, CardCategory } from "@teklin/shared";
@@ -37,7 +35,7 @@ const CATEGORY_ORDER: CardCategory[] = [
   "github_issues",
 ];
 
-export default function CardsPage() {
+export function CardsPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
 
   const [stats, setStats] = useState<CardStatsResponse | null>(null);
@@ -80,7 +78,7 @@ export default function CardsPage() {
             {error || "カード情報がありません。"}
           </p>
           <Link
-            href="/dashboard"
+            to="/dashboard"
             className="inline-block rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
           >
             ダッシュボードに戻る
@@ -100,7 +98,7 @@ export default function CardsPage() {
         <header className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
-              href="/dashboard"
+              to="/dashboard"
               className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
               aria-label="ダッシュボードに戻る"
             >
@@ -113,7 +111,7 @@ export default function CardsPage() {
         {/* Today's Review CTA */}
         {stats.dueToday > 0 ? (
           <Link
-            href="/cards/review"
+            to="/cards/review"
             className="mb-6 block rounded-2xl border border-emerald-800/50 bg-emerald-950/30 p-6 transition-colors hover:border-emerald-700/50 hover:bg-emerald-950/40"
           >
             <div className="flex items-center justify-between">
@@ -222,12 +220,14 @@ export default function CardsPage() {
               const catLearning = catStats?.learning ?? 0;
               const catUnseen = catStats?.unseen ?? 0;
               const catProgress =
-                catTotal > 0 ? Math.round((catMastered / catTotal) * 100) : 0;
+                catTotal > 0
+                  ? Math.round((catMastered / catTotal) * 100)
+                  : 0;
 
               return (
                 <Link
                   key={category}
-                  href={`/cards/deck/${category}`}
+                  to={`/cards/deck/${category}`}
                   className="group rounded-xl border border-gray-800 bg-gray-900 p-4 transition-all duration-300 hover:border-gray-700 hover:bg-gray-800/80"
                 >
                   <div className="mb-3 flex items-center gap-3">

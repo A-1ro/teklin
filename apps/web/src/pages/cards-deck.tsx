@@ -1,8 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { Link, useParams } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type {
@@ -72,10 +69,9 @@ function formatNextReview(card: PhraseCardWithSrs): string {
   return `${diffDays}日後`;
 }
 
-export default function DeckCategoryPage() {
+export function DeckCategoryPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
-  const params = useParams();
-  const category = params.category as string;
+  const { category } = useParams<{ category: string }>();
 
   const [data, setData] = useState<DeckCardsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,7 +120,7 @@ export default function DeckCategoryPage() {
             {error || "カード情報がありません。"}
           </p>
           <Link
-            href="/cards"
+            to="/cards"
             className="inline-block rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
           >
             カード一覧に戻る
@@ -155,7 +151,7 @@ export default function DeckCategoryPage() {
         {/* Header */}
         <header className="mb-6 flex items-center gap-3">
           <Link
-            href="/cards"
+            to="/cards"
             className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
             aria-label="カード一覧に戻る"
           >

@@ -1,12 +1,10 @@
-"use client";
-
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { fetchCurrentUser } from "@/lib/api";
 import { useAuth } from "@/components/auth/auth-provider";
 
-export default function AuthCallbackPage() {
-  const router = useRouter();
+export function AuthCallbackPage() {
+  const navigate = useNavigate();
   const { refreshUser } = useAuth();
 
   useEffect(() => {
@@ -18,13 +16,13 @@ export default function AuthCallbackPage() {
         if (cancelled) return;
         if (user) {
           await refreshUser();
-          router.replace("/dashboard");
+          navigate("/dashboard", { replace: true });
         } else {
-          router.replace("/login?error=auth_failed");
+          navigate("/login?error=auth_failed", { replace: true });
         }
       } catch {
         if (!cancelled) {
-          router.replace("/login?error=auth_failed");
+          navigate("/login?error=auth_failed", { replace: true });
         }
       }
     }
@@ -34,7 +32,7 @@ export default function AuthCallbackPage() {
     return () => {
       cancelled = true;
     };
-  }, [router, refreshUser]);
+  }, [navigate, refreshUser]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gray-950">

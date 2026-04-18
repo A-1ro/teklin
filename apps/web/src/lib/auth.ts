@@ -1,31 +1,29 @@
-"use client";
-
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/auth/auth-provider";
 
 export function useRequireAuth() {
   const { user, isLoading } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace("/login");
+      navigate("/login", { replace: true });
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, navigate]);
 
   return { user, isLoading };
 }
 
 export function useRedirectIfAuth() {
   const { user, isLoading } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.replace("/dashboard");
+      navigate("/dashboard", { replace: true });
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, navigate]);
 
   return { user, isLoading };
 }

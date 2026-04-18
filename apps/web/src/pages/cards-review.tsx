@@ -1,7 +1,5 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type {
@@ -78,7 +76,7 @@ const RATING_BUTTONS: {
   },
 ];
 
-export default function ReviewPage() {
+export function ReviewPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
 
   const [cards, setCards] = useState<PhraseCardWithSrs[]>([]);
@@ -206,7 +204,7 @@ export default function ReviewPage() {
         <div className="text-center">
           <p className="mb-4 text-gray-400">{error}</p>
           <Link
-            href="/cards"
+            to="/cards"
             className="inline-block rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
           >
             カード一覧に戻る
@@ -225,7 +223,7 @@ export default function ReviewPage() {
         <div className="mx-auto max-w-md">
           <header className="mb-8 flex items-center gap-3">
             <Link
-              href="/cards"
+              to="/cards"
               className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
               aria-label="カード一覧に戻る"
             >
@@ -288,7 +286,7 @@ export default function ReviewPage() {
             )}
 
             <Link
-              href="/cards"
+              to="/cards"
               className="inline-block w-full rounded-lg bg-gray-800 px-6 py-3 text-sm font-semibold text-gray-200 transition-colors hover:bg-gray-700"
             >
               カード一覧に戻る
@@ -312,7 +310,7 @@ export default function ReviewPage() {
         <header className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
-              href="/cards"
+              to="/cards"
               className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
               aria-label="カード一覧に戻る"
             >
@@ -350,7 +348,9 @@ export default function ReviewPage() {
               transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
               transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
             }}
-            aria-label={isFlipped ? "カードの裏面" : "タップしてカードをめくる"}
+            aria-label={
+              isFlipped ? "カードの裏面" : "タップしてカードをめくる"
+            }
           >
             {/* Card Front */}
             <div
@@ -373,7 +373,7 @@ export default function ReviewPage() {
               </div>
 
               {/* Japanese translation */}
-              <div className="min-h-[120px] flex items-center justify-center py-6">
+              <div className="flex min-h-[120px] items-center justify-center py-6">
                 <p className="text-center text-xl font-semibold leading-relaxed text-gray-100">
                   {card.translation}
                 </p>
@@ -403,7 +403,7 @@ export default function ReviewPage() {
               </div>
 
               {/* English phrase */}
-              <div className="min-h-[80px] flex items-center justify-center py-4">
+              <div className="flex min-h-[80px] items-center justify-center py-4">
                 <p className="text-center font-mono text-lg font-semibold leading-relaxed text-gray-100">
                   {card.phrase}
                 </p>

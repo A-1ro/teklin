@@ -8,10 +8,10 @@ Teklin is an AI-powered technical English learning app for software engineers. "
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15 + React 19 + Tailwind CSS 4 → Cloudflare Pages
-- **API**: Hono 4 on Cloudflare Workers
-- **Database**: Cloudflare D1 (SQLite) — not yet implemented
-- **Cache**: Cloudflare KV (SESSION_KV, SRS_KV, STREAK_KV)
+- **Frontend**: React 19 + Vite + React Router 7 + Tailwind CSS 4 (SPA)
+- **Backend**: Hono 4 on Cloudflare Workers (API + static asset serving)
+- **Database**: Cloudflare D1 (SQLite)
+- **Cache**: Cloudflare KV (SESSION_KV, SRS_KV, STREAK_KV, USAGE_KV)
 - **Storage**: Cloudflare R2 (CONTENT_BUCKET for audio/images/content JSON)
 - **LLM**: Cloudflare AI Gateway (Workers AI + GPT-4.1/Claude via gateway)
 - **Shared types**: `@teklin/shared` package (pure TypeScript, no runtime deps)
@@ -22,12 +22,12 @@ Teklin is an AI-powered technical English learning app for software engineers. "
 ```bash
 # Development
 npm run dev          # Run both web and api dev servers
-npm run dev:web      # Next.js dev (Turbopack, port 3000)
-npm run dev:api      # Wrangler dev server
+npm run dev:web      # Vite dev (port 3000, proxies /api and /auth to :8787)
+npm run dev:api      # Wrangler dev server (port 8787)
 
 # Build
-npm run build        # Build all workspaces
-npm run build:web    # Next.js standalone build (for Cloudflare Pages)
+npm run build        # Build web then api
+npm run build:web    # Vite build → apps/web/dist/
 npm run build:api    # Wrangler dry-run build to dist/
 
 # Quality
@@ -37,25 +37,33 @@ npm run format:check # Prettier check only
 npm run typecheck    # TypeScript --noEmit across all workspaces
 
 # Deploy
-cd apps/api && npm run deploy  # wrangler deploy (Workers)
-# Web deploys via Cloudflare Pages git integration
+npm run deploy       # Build web + wrangler deploy (single Worker)
 ```
 
 ## Architecture
 
 ### Monorepo Layout
 
-- `apps/web/` — Next.js 15 frontend (App Router, `@teklin/web`)
+- `apps/web/` — React SPA (Vite + React Router, `@teklin/web`)
 - `apps/api/` — Hono API on Cloudflare Workers (`@teklin/api`)
 - `packages/shared/` — Domain types and enums (`@teklin/shared`)
+
+### Single Worker Deployment
+
+The app deploys as a single Cloudflare Worker:
+- Hono handles `/api/*` and `/auth/*` routes
+- Cloudflare Workers Static Assets serves the SPA from `apps/web/dist/`
+- `not_found_handling = "single-page-application"` enables SPA fallback to index.html
+- Same origin — no CORS needed
 
 ### API Bindings (wrangler.toml)
 
 The Hono app is typed with Cloudflare bindings accessed via `c.env`:
 - `DB` — D1Database
-- `SESSION_KV`, `SRS_KV`, `STREAK_KV` — KVNamespace
+- `SESSION_KV`, `SRS_KV`, `STREAK_KV`, `USAGE_KV` — KVNamespace
 - `CONTENT_BUCKET` — R2Bucket
 - `AI` — Cloudflare Workers AI binding
+- `ASSETS` — Fetcher (static asset binding)
 
 ### Shared Domain Types
 
@@ -66,9 +74,10 @@ The Hono app is typed with Cloudflare bindings accessed via `c.env`:
 ### Web App
 
 - Uses `src/` directory with `@/*` path alias → `./src/*`
-- Tailwind CSS 4 via `@tailwindcss/postcss`
-- `output: "standalone"` in next.config.ts for Cloudflare Pages compatibility
-- Uses `@opennextjs/cloudflare` adapter for deployment
+- Tailwind CSS 4 via `@tailwindcss/vite` plugin
+- Client-side routing via React Router
+- All API calls use relative paths (`/api/...`, `/auth/...`)
+- Dev server proxies `/api` and `/auth` to Wrangler on port 8787
 
 ## Code Style
 

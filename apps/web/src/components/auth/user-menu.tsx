@@ -1,12 +1,10 @@
-"use client";
-
 import { useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 export function UserMenu() {
   const { user, logout } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -23,7 +21,7 @@ export function UserMenu() {
     setIsLoggingOut(true);
     try {
       await logout();
-      router.replace("/login");
+      navigate("/login", { replace: true });
     } finally {
       setIsLoggingOut(false);
       setIsOpen(false);
