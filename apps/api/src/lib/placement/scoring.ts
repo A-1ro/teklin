@@ -95,13 +95,28 @@ export function calculateAxisScores(
   return scores;
 }
 
-/** Determine level from axis scores */
+/** Map a score to a level using the standard thresholds */
+function scoreToLevel(score: number): Level {
+  if (score < 30) return "L1";
+  if (score < 55) return "L2";
+  if (score < 80) return "L3";
+  return "L4";
+}
+
+const LEVEL_ORDER: Record<Level, number> = { L1: 1, L2: 2, L3: 3, L4: 4 };
+
+/**
+ * Determine level from axis scores.
+ * The writing axis acts as a ceiling: regardless of other axes, the final
+ * level cannot exceed what the writing score alone would support.
+ */
 export function determineLevel(scores: Record<SkillAxis, number>): Level {
   const avg = Object.values(scores).reduce((a, b) => a + b, 0) / 4;
-  if (avg < 30) return "L1";
-  if (avg < 55) return "L2";
-  if (avg < 80) return "L3";
-  return "L4";
+  const levelFromAvg = scoreToLevel(avg);
+  const levelFromWriting = scoreToLevel(scores.writing);
+  return LEVEL_ORDER[levelFromAvg] <= LEVEL_ORDER[levelFromWriting]
+    ? levelFromAvg
+    : levelFromWriting;
 }
 
 /** Identify weak axes (below threshold score of 50) */
