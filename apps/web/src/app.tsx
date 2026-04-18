@@ -11,6 +11,9 @@ import { DeckCategoryPage } from "@/pages/cards-deck";
 import { PlacementPage } from "@/pages/placement";
 import { PlacementTestPage } from "@/pages/placement-test";
 import { PlacementResultPage } from "@/pages/placement-result";
+import { RewritePage } from "@/pages/rewrite";
+import { RewriteHistoryPage } from "@/pages/rewrite-history";
+import { RewriteDetailPage } from "@/pages/rewrite-detail";
 
 export function App() {
   return (
@@ -27,6 +30,9 @@ export function App() {
       <Route path="/placement" element={<PlacementPage />} />
       <Route path="/placement/test" element={<PlacementTestPage />} />
       <Route path="/placement/result" element={<PlacementResultPage />} />
+      <Route path="/rewrite" element={<RewritePage />} />
+      <Route path="/rewrite/history" element={<RewriteHistoryPage />} />
+      <Route path="/rewrite/history/:id" element={<RewriteDetailPage />} />
     </Routes>
   );
 }
