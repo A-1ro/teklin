@@ -30,19 +30,10 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
       "> string ID. Update all call sites before merging.",
     ].join("\n"),
     choices: [
-      { id: "A", text: "The PR fixes a bug that was breaking production." },
-      {
-        id: "B",
-        text: "The PR changes the API in a way that is not backward-compatible.",
-      },
-      {
-        id: "C",
-        text: "The PR accidentally broke existing tests that must be fixed.",
-      },
-      {
-        id: "D",
-        text: "The PR is so large that it may break the CI pipeline.",
-      },
+      { id: "A", text: "本番環境を壊していたバグを修正するPR" },
+      { id: "B", text: "後方互換性のない変更を加えるPR" },
+      { id: "C", text: "既存のテストを誤って壊してしまったPR" },
+      { id: "D", text: "大きすぎてCIパイプラインに影響するPR" },
     ],
     correctChoiceId: "B",
   },
@@ -61,16 +52,10 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
       "```",
     ].join("\n"),
     choices: [
-      { id: "A", text: "The server ran out of memory processing the order." },
-      {
-        id: "B",
-        text: "A network timeout occurred while fetching order data.",
-      },
-      {
-        id: "C",
-        text: "The code tried to access `.id` on a value that was undefined.",
-      },
-      { id: "D", text: "The promise was rejected because the order ID is 0." },
+      { id: "A", text: "サーバーがメモリ不足になった" },
+      { id: "B", text: "注文データの取得中にネットワークタイムアウトが発生した" },
+      { id: "C", text: "undefinedの値に対して`.id`にアクセスしようとした" },
+      { id: "D", text: "注文IDが0だったためPromiseが失敗した" },
     ],
     correctChoiceId: "C",
   },
@@ -95,22 +80,10 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
       "> ensure correctness.",
     ].join("\n"),
     choices: [
-      {
-        id: "A",
-        text: "Two requests arriving at the same time will crash the server.",
-      },
-      {
-        id: "B",
-        text: "Concurrent calls may read a stale value and produce duplicate increments.",
-      },
-      {
-        id: "C",
-        text: "The counter will overflow if requests arrive too quickly.",
-      },
-      {
-        id: "D",
-        text: "The lock mechanism currently used is too slow for high concurrency.",
-      },
+      { id: "A", text: "同時リクエストが来るとサーバーがクラッシュする" },
+      { id: "B", text: "並列呼び出しが古い値を読んで、カウントが重複する可能性がある" },
+      { id: "C", text: "リクエストが速すぎるとカウンターがオーバーフローする" },
+      { id: "D", text: "現在使っているロック機構が高負荷時に遅すぎる" },
     ],
     correctChoiceId: "B",
   },
@@ -130,22 +103,10 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
       "> Each owns its config and can restart without affecting others.",
     ].join("\n"),
     choices: [
-      {
-        id: "A",
-        text: "Increase server capacity to reduce restart time.",
-      },
-      {
-        id: "B",
-        text: "Migrate to a microservices architecture for independent deployments.",
-      },
-      {
-        id: "C",
-        text: "Use blue-green deployments to mask downtime.",
-      },
-      {
-        id: "D",
-        text: "Cache configuration values to avoid restarts.",
-      },
+      { id: "A", text: "サーバーの増強で再起動時間を短縮する" },
+      { id: "B", text: "独立してデプロイできるサービスに分割する" },
+      { id: "C", text: "ブルーグリーンデプロイでダウンタイムを隠す" },
+      { id: "D", text: "設定値をキャッシュして再起動を減らす" },
     ],
     correctChoiceId: "B",
   },
@@ -168,22 +129,10 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
       "> to the analytics pipeline.",
     ].join("\n"),
     choices: [
-      {
-        id: "A",
-        text: "The reviewer is approving the code but wants documentation added.",
-      },
-      {
-        id: "B",
-        text: "The reviewer doubts the approach will work on any dataset.",
-      },
-      {
-        id: "C",
-        text: "The reviewer suspects there may be a performance or scalability issue at scale.",
-      },
-      {
-        id: "D",
-        text: "The reviewer wants the author to add a unit test with 10 million items.",
-      },
+      { id: "A", text: "コードを承認しているが、ドキュメントを追加してほしい" },
+      { id: "B", text: "このアプローチはどんなデータでも機能しないと思っている" },
+      { id: "C", text: "大規模データでパフォーマンスやスケーラビリティの問題が出る可能性を懸念している" },
+      { id: "D", text: "1000万件のデータを使ったユニットテストを追加してほしい" },
     ],
     correctChoiceId: "C",
   },
@@ -205,22 +154,10 @@ export const PLACEMENT_QUESTIONS: QuestionData[] = [
       "> writes by several seconds.",
     ].join("\n"),
     choices: [
-      {
-        id: "A",
-        text: "Event sourcing is harder to implement, so development velocity will drop.",
-      },
-      {
-        id: "B",
-        text: "Read models may not immediately reflect the latest writes, complicating strongly-consistent queries.",
-      },
-      {
-        id: "C",
-        text: "Replaying events is slow and will cause performance issues in production.",
-      },
-      {
-        id: "D",
-        text: "The audit trail will grow unboundedly and require costly storage.",
-      },
+      { id: "A", text: "実装が難しくなり開発速度が落ちる" },
+      { id: "B", text: "読み取りモデルが最新の書き込みをすぐに反映しない場合がある" },
+      { id: "C", text: "イベントの再生が遅く、本番のパフォーマンスに影響する" },
+      { id: "D", text: "監査ログが無限に増えてストレージコストが膨らむ" },
     ],
     correctChoiceId: "B",
   },
