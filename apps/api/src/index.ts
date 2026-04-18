@@ -30,4 +30,9 @@ app.get("/api/health", (c) => {
   });
 });
 
+// SPA fallback — serve index.html for all non-API/auth routes
+app.get("*", async (c) => {
+  return c.env.ASSETS.fetch(new Request(new URL("/index.html", c.req.url)));
+});
+
 export default app;
