@@ -260,20 +260,30 @@ export function RewritePage() {
             <h1 className="text-xl font-bold text-gray-100">AI Rewrite</h1>
           </div>
 
-          {/* Remaining badge */}
-          {remainingLoading ? (
-            <div className="h-6 w-20 animate-pulse rounded-full bg-gray-800" />
-          ) : remaining ? (
-            <div className="flex items-center gap-1.5 rounded-full border border-gray-800 bg-gray-900 px-3 py-1">
-              <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-              <span className="font-mono text-xs font-medium text-gray-300">
-                {remaining.remaining}
-              </span>
-              <span className="text-xs text-gray-500">
-                / {remaining.limit} left
-              </span>
-            </div>
-          ) : null}
+          <div className="flex items-center gap-3">
+            <Link
+              to="/rewrite/history"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-gray-700 hover:bg-gray-800 hover:text-gray-100"
+            >
+              <Clock className="h-3.5 w-3.5" />
+              History
+            </Link>
+
+            {/* Remaining badge */}
+            {remainingLoading ? (
+              <div className="h-6 w-20 animate-pulse rounded-full bg-gray-800" />
+            ) : remaining ? (
+              <div className="flex items-center gap-1.5 rounded-full border border-gray-800 bg-gray-900 px-3 py-1">
+                <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+                <span className="font-mono text-xs font-medium text-gray-300">
+                  {remaining.remaining}
+                </span>
+                <span className="text-xs text-gray-500">
+                  / {remaining.limit} left
+                </span>
+              </div>
+            ) : null}
+          </div>
         </header>
 
         {/* Input Section */}
@@ -494,16 +504,6 @@ export function RewritePage() {
               </div>
             )}
 
-            {/* View History Link */}
-            <div className="text-center">
-              <Link
-                to="/rewrite/history"
-                className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-300"
-              >
-                <Clock className="h-3.5 w-3.5" />
-                View History
-              </Link>
-            </div>
           </div>
         )}
       </div>
