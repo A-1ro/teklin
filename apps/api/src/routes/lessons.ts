@@ -218,6 +218,49 @@ lessonRoutes.get("/today", async (c) => {
 });
 
 // ---------------------------------------------------------------------------
+// GET /api/lessons/:id — Get a specific lesson by ID
+// ---------------------------------------------------------------------------
+lessonRoutes.get("/:id", async (c) => {
+  const { userId } = c.get("user");
+  const lessonId = c.req.param("id");
+  const db = createDb(c.env.DB);
+
+  const lesson = await db
+    .select()
+    .from(lessons)
+    .where(eq(lessons.id, lessonId))
+    .get();
+
+  if (!lesson) {
+    return c.json({ error: "Lesson not found" }, 404);
+  }
+
+  // Verify the user has access to this lesson
+  const userLesson = await db
+    .select()
+    .from(userLessons)
+    .where(
+      and(eq(userLessons.userId, userId), eq(userLessons.lessonId, lessonId))
+    )
+    .get();
+
+  if (!userLesson) {
+    return c.json({ error: "Lesson not found" }, 404);
+  }
+
+  const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
+
+  return c.json({
+    id: lesson.id,
+    domain: lesson.domain,
+    level: lesson.level,
+    type: lesson.type,
+    content: toClientContent(content),
+    createdAt: new Date(lesson.createdAt).toISOString(),
+  });
+});
+
+// ---------------------------------------------------------------------------
 // POST /api/lessons/:id/start — Record lesson start time
 // ---------------------------------------------------------------------------
 lessonRoutes.post("/:id/start", async (c) => {
