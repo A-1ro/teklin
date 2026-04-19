@@ -193,11 +193,18 @@ export function LessonHomePage() {
                       d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  Completed
+                  完了済み
                 </p>
                 <p className="mt-1 text-xs text-gray-400">
-                  Great job! Come back tomorrow for the next lesson.
+                  お疲れさまでした！明日また新しいレッスンが届きます。
                 </p>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/lesson/${lesson.id}?review=true`)}
+                  className="mt-3 text-xs text-gray-500 underline underline-offset-2 hover:text-gray-300"
+                >
+                  もう一度見る
+                </button>
               </div>
             ) : (
               <button

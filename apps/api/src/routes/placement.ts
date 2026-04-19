@@ -42,7 +42,7 @@ function buildAnswerReviews(
         choices: q.choices,
         correctChoiceId: q.correctChoiceId,
         advice: rec.advice,
-      };
+      } as PlacementAnswerReview;
     })
     .filter((r): r is PlacementAnswerReview => r !== null);
 }

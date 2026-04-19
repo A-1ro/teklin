@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type {
@@ -46,6 +46,8 @@ export function LessonPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isReview = searchParams.get("review") === "true";
   const lessonId = id as string;
 
   const [lesson, setLesson] = useState<LessonData | null>(null);
@@ -65,7 +67,9 @@ export function LessonPage() {
     apiFetch<LessonData>(`/api/lessons/${lessonId}`)
       .then((data) => {
         setLesson(data);
-        return apiFetch(`/api/lessons/${lessonId}/start`, { method: "POST" });
+        if (!isReview) {
+          return apiFetch(`/api/lessons/${lessonId}/start`, { method: "POST" });
+        }
       })
       .catch(() => setError("レッスンの読み込みに失敗しました。"))
       .finally(() => setIsLoading(false));
@@ -76,6 +80,9 @@ export function LessonPage() {
       const idx = STEPS.indexOf(step as StepId);
       if (idx < STEPS.length - 1) {
         setCurrentStep(STEPS[idx + 1]);
+      } else if (isReview) {
+        // Review mode: go back to lesson home instead of complete screen
+        navigate("/lesson");
       } else {
         // wrapup complete → call complete endpoint
         apiFetch<LessonCompleteResponse>(`/api/lessons/${lessonId}/complete`, {
@@ -91,7 +98,7 @@ export function LessonPage() {
           });
       }
     },
-    [lessonId],
+    [lessonId, isReview, navigate],
   );
 
   if (authLoading || isLoading) {
@@ -147,12 +154,14 @@ export function LessonPage() {
       levelMeta={levelMeta}
       currentStep={currentStep}
       stepIndex={stepIndex}
+      isReview={isReview}
     >
       {currentStep === "warmup" && (
         <WarmupStep
           lessonId={lessonId}
           questions={lesson.content.warmup.questions as WarmupQuestion[]}
           onComplete={() => handleStepComplete("warmup")}
+          readOnly={isReview}
         />
       )}
       {currentStep === "focus" && (
@@ -166,6 +175,7 @@ export function LessonPage() {
           lessonId={lessonId}
           exercises={lesson.content.practice.exercises as Exercise[]}
           onComplete={() => handleStepComplete("practice")}
+          readOnly={isReview}
         />
       )}
       {currentStep === "wrapup" && (
@@ -187,12 +197,14 @@ function LessonShell({
   levelMeta,
   currentStep,
   stepIndex,
+  isReview,
   children,
 }: {
   lesson: LessonData;
   levelMeta: { label: string; color: string };
   currentStep: StepId;
   stepIndex: number;
+  isReview: boolean;
   children: React.ReactNode;
 }) {
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
@@ -232,6 +244,11 @@ function LessonShell({
           </Link>
 
           <div className="flex items-center gap-2">
+            {isReview && (
+              <span className="rounded-full bg-gray-700 px-2.5 py-0.5 text-xs font-semibold text-gray-300">
+                復習
+              </span>
+            )}
             <span
               className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${levelMeta.color}`}
             >
@@ -288,10 +305,12 @@ function WarmupStep({
   lessonId,
   questions,
   onComplete,
+  readOnly = false,
 }: {
   lessonId: string;
   questions: WarmupQuestion[];
   onComplete: () => void;
+  readOnly?: boolean;
 }) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -304,8 +323,18 @@ function WarmupStep({
     async (choiceId: string) => {
       if (selected || isSubmitting) return;
       setSelected(choiceId);
-      setIsSubmitting(true);
 
+      if (readOnly) {
+        // In review mode, just show which answer is correct without API call
+        setResult({
+          correct: choiceId === question.correctChoiceId,
+          score: choiceId === question.correctChoiceId ? 100 : 0,
+          correctAnswer: question.correctChoiceId,
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
       try {
         const res = await apiFetch<LessonAnswerResponse>(
           `/api/lessons/${lessonId}/answer`,
@@ -326,7 +355,7 @@ function WarmupStep({
         setIsSubmitting(false);
       }
     },
-    [selected, isSubmitting, lessonId, question],
+    [selected, isSubmitting, lessonId, question, readOnly],
   );
 
   const handleNext = useCallback(() => {
@@ -572,10 +601,12 @@ function PracticeStep({
   lessonId,
   exercises,
   onComplete,
+  readOnly = false,
 }: {
   lessonId: string;
   exercises: Exercise[];
   onComplete: () => void;
+  readOnly?: boolean;
 }) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [results, setResults] = useState<Map<string, LessonAnswerResponse>>(
@@ -624,6 +655,7 @@ function PracticeStep({
           exercise={exercise}
           result={currentResult}
           onAnswer={handleAnswer}
+          readOnly={readOnly}
         />
       )}
 
@@ -633,6 +665,7 @@ function PracticeStep({
           exercise={exercise}
           result={currentResult}
           onAnswer={handleAnswer}
+          readOnly={readOnly}
         />
       )}
 
@@ -642,10 +675,11 @@ function PracticeStep({
           exercise={exercise}
           result={currentResult}
           onAnswer={handleAnswer}
+          readOnly={readOnly}
         />
       )}
 
-      {currentResult && (
+      {(currentResult || readOnly) && (
         <button
           onClick={handleNext}
           className="mt-6 w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
@@ -668,11 +702,13 @@ function FillInBlank({
   exercise,
   result,
   onAnswer,
+  readOnly = false,
 }: {
   lessonId: string;
   exercise: Exercise;
   result: LessonAnswerResponse | null;
   onAnswer: (result: LessonAnswerResponse) => void;
+  readOnly?: boolean;
 }) {
   const [value, setValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -723,27 +759,30 @@ function FillInBlank({
       </div>
 
       {/* Input */}
-      <div className="mb-4 flex gap-3">
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSubmit();
-          }}
-          disabled={result !== null}
-          placeholder="答えを入力..."
-          className="flex-1 rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
-        />
-        <button
-          onClick={handleSubmit}
-          disabled={!value.trim() || isSubmitting || result !== null}
-          className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isSubmitting ? "..." : "確認"}
-        </button>
-      </div>
+      {!readOnly && (
+        <div className="mb-4 flex gap-3">
+          <input
+            ref={inputRef}
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSubmit();
+            }}
+            disabled={result !== null}
+            placeholder="答えを入力..."
+            className="flex-1 rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
+          />
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!value.trim() || isSubmitting || result !== null}
+            className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? "..." : "確認"}
+          </button>
+        </div>
+      )}
 
       {/* Result */}
       {result && (
@@ -785,11 +824,13 @@ function ReorderExercise({
   exercise,
   result,
   onAnswer,
+  readOnly = false,
 }: {
   lessonId: string;
   exercise: Exercise;
   result: LessonAnswerResponse | null;
   onAnswer: (result: LessonAnswerResponse) => void;
+  readOnly?: boolean;
 }) {
   // Compute initial word order once per exercise (keyed by exercise.id).
   // We intentionally omit exercise.words from deps to avoid re-shuffling on
@@ -881,7 +922,7 @@ function ReorderExercise({
       </div>
 
       {/* Submit */}
-      {!result && (
+      {!result && !readOnly && (
         <button
           onClick={handleSubmit}
           disabled={chosen.length === 0 || isSubmitting}
@@ -931,11 +972,13 @@ function FreeTextExercise({
   exercise,
   result,
   onAnswer,
+  readOnly = false,
 }: {
   lessonId: string;
   exercise: Exercise;
   result: LessonAnswerResponse | null;
   onAnswer: (result: LessonAnswerResponse) => void;
+  readOnly?: boolean;
 }) {
   const [value, setValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -973,27 +1016,30 @@ function FreeTextExercise({
         </div>
       )}
 
-      {/* Textarea */}
-      <div className="mb-4">
-        <textarea
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          disabled={result !== null}
-          placeholder="ここに答えを書こう..."
-          rows={4}
-          className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
-        />
-      </div>
+      {/* Textarea + Submit */}
+      {!readOnly && (
+        <>
+          <div className="mb-4">
+            <textarea
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              disabled={result !== null}
+              placeholder="ここに答えを書こう..."
+              rows={4}
+              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
+            />
+          </div>
 
-      {/* Submit */}
-      {!result && (
-        <button
-          onClick={handleSubmit}
-          disabled={!value.trim() || isSubmitting}
-          className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isSubmitting ? "送信中..." : "送信"}
-        </button>
+          {!result && (
+            <button
+              onClick={handleSubmit}
+              disabled={!value.trim() || isSubmitting}
+              className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSubmitting ? "送信中..." : "送信"}
+            </button>
+          )}
+        </>
       )}
 
       {/* Result */}
