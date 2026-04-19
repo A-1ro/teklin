@@ -56,6 +56,13 @@ function isValidLessonShape(data: unknown): data is LessonContentInternal {
   if (!Array.isArray(warmup.questions) || warmup.questions.length === 0) {
     return false;
   }
+  const hasValidChoices = (warmup.questions as unknown[]).every((q) => {
+    const question = q as Record<string, unknown>;
+    return Array.isArray(question.choices) && question.choices.length > 0;
+  });
+  if (!hasValidChoices) {
+    return false;
+  }
 
   const focus = d.focus as Record<string, unknown>;
   if (

@@ -115,24 +115,34 @@ lessonRoutes.get("/today", async (c) => {
 
     if (lesson) {
       const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
-      const isCompleted =
-        existing.completedAt !== null && existing.completedAt !== undefined;
-      return c.json({
-        lesson: {
-          id: lesson.id,
-          domain: lesson.domain,
-          level: lesson.level,
-          type: lesson.type,
-          content: toClientContent(content),
-          createdAt: new Date(lesson.createdAt).toISOString(),
-        },
-        streak: streakInfo,
-        isCompleted,
-      });
-    }
 
-    // KV session is orphaned (D1 record missing) — clean up before generating
-    await kv.delete(sessionKvKey);
+      // Detect corrupted warmup (choices missing or empty) and force re-generation
+      const hasValidChoices = content.warmup.questions.every(
+        (q) => Array.isArray(q.choices) && q.choices.length > 0
+      );
+      if (hasValidChoices) {
+        const isCompleted =
+          existing.completedAt !== null && existing.completedAt !== undefined;
+        return c.json({
+          lesson: {
+            id: lesson.id,
+            domain: lesson.domain,
+            level: lesson.level,
+            type: lesson.type,
+            content: toClientContent(content),
+            createdAt: new Date(lesson.createdAt).toISOString(),
+          },
+          streak: streakInfo,
+          isCompleted,
+        });
+      }
+
+      // Warmup choices are corrupted — discard KV session and re-generate
+      await kv.delete(sessionKvKey);
+    } else {
+      // KV session is orphaned (D1 record missing) — clean up before generating
+      await kv.delete(sessionKvKey);
+    }
   }
 
   // Generate a new lesson
