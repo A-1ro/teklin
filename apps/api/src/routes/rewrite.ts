@@ -37,7 +37,7 @@ const CONTEXT_TO_CATEGORY: Record<RewriteContext, CardCategory> = {
   general: "slack_chat",
 };
 
-const REWRITE_ANALYSIS_SCHEMA = {
+const REWRITE_METADATA_SCHEMA = {
   type: "json_schema",
   json_schema: {
     type: "object",
@@ -60,12 +60,23 @@ const REWRITE_ANALYSIS_SCHEMA = {
         type: "string",
         enum: ["friendly", "professional", "too_casual", "too_formal", "neutral"],
       },
+    },
+    required: ["changes", "tone"],
+  },
+} as const;
+
+const REWRITE_TIPS_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
       tips: {
         type: "array",
         items: { type: "string" },
       },
     },
-    required: ["changes", "tone", "tips"],
+    required: ["tips"],
   },
 } as const;
 
@@ -223,8 +234,7 @@ function buildRewriteAnalysisSystemPrompt(context: RewriteContext): string {
     `Analyze a rewrite for the context: ${context}.`,
     "You will receive the original text and the rewritten text.",
     "Return only valid JSON, with no markdown wrapper and no extra text.",
-    "The 'tips' field MUST be written in Japanese.",
-    "Keep tips concise and practical.",
+    "Focus only on tone assessment and key changes.",
   ].join("\n");
 }
 
@@ -248,42 +258,45 @@ function buildRewriteAnalysisUserPrompt(
     "{",
     '  "changes": [{"original": "<original phrase>", "corrected": "<corrected phrase>", "reason": "<why this change>"}],',
     '  "tone": "<friendly|professional|too_casual|too_formal|neutral>",',
-    '  "tips": ["<日本語の改善ポイント1>", "<日本語の改善ポイント2>"]',
     "}",
   ].join("\n");
 }
 
-function containsJapanese(text: string): boolean {
-  return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text);
+function buildRewriteTipsSystemPrompt(context: RewriteContext): string {
+  return [
+    "You are an expert technical writing coach for software engineers.",
+    `Review a rewrite for the context: ${context}.`,
+    "You will receive the original text and the rewritten text.",
+    "Return only valid JSON, with no markdown wrapper and no extra text.",
+    "Return practical improvement tips in Japanese only.",
+    "Each tip must be a natural Japanese sentence.",
+    "Do not write any English.",
+    "Keep tips concise and useful for a Japanese learner of technical English.",
+  ].join("\n");
 }
 
-function translateTipToJapanese(tip: string): string {
-  const normalized = tip.trim();
-
-  const replacements: Array<[RegExp, string]> = [
-    [/^clear and concise title:?/i, "タイトルを簡潔で分かりやすく修正しました。"],
-    [/^reorganized structure:?/i, "構成を整理し、内容を追いやすくしました。"],
-    [/^improved formatting:?/i, "見出しや箇条書きを整え、読みやすさを改善しました。"],
-    [/^minor rewording:?/i, "表現を細かく調整し、より自然で明確な英語にしました。"],
-    [/^added a brief summary:?/i, "冒頭に要点が伝わる説明を入れ、状況を把握しやすくしました。"],
-    [/^removed unnecessary phrases:?/i, "不要な表現を削り、文章を簡潔にしました。"],
-    [/^these improvements make the text more readable.*$/i, "全体として、読みやすく分かりやすい issue 文に整えました。"],
-  ];
-
-  for (const [pattern, translated] of replacements) {
-    if (pattern.test(normalized)) {
-      return translated;
-    }
-  }
-
-  return `改善ポイント: ${normalized}`;
-}
-
-function normalizeTipsToJapanese(tips: string[]): string[] {
-  return tips
-    .map((tip) => tip.trim())
-    .filter(Boolean)
-    .map((tip) => (containsJapanese(tip) ? tip : translateTipToJapanese(tip)));
+function buildRewriteTipsUserPrompt(
+  context: RewriteContext,
+  original: string,
+  rewritten: string
+): string {
+  return [
+    `Context: ${context}`,
+    "",
+    "---BEGIN ORIGINAL TEXT---",
+    original,
+    "---END ORIGINAL TEXT---",
+    "",
+    "---BEGIN REWRITTEN TEXT---",
+    rewritten,
+    "---END REWRITTEN TEXT---",
+    "",
+    "Return JSON in this shape:",
+    "{",
+    '  "tips": ["<日本語の改善ポイント1>", "<日本語の改善ポイント2>"]',
+    "}",
+    'Example tips: ["文法と語順を整えると、読みやすさが上がります。", "問題の状況と再現手順を具体的に書くと伝わりやすくなります。"]',
+  ].join("\n");
 }
 
 function extractJson(text: string): string {
@@ -311,36 +324,6 @@ function normalizeTone(value: unknown): RewriteResult["tone"] {
     : "neutral";
 }
 
-function parseTipsFromText(text: string): string[] {
-  const match = text.match(
-    /(?:^|\n)(?:#+\s*)?(?:Improvements made|Tips?)(?:\s*:)?\s*\n+([\s\S]*)$/i
-  );
-  if (!match) {
-    return [];
-  }
-
-  const lines = match[1]
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  const bulletTips = lines
-    .filter((line) => /^(\d+\.|[-*])\s+/.test(line))
-    .map((line) => line.replace(/^(\d+\.|[-*])\s+/, "").trim());
-
-  if (bulletTips.length > 0) {
-    return bulletTips.slice(0, 5);
-  }
-
-  return lines.slice(0, 6);
-}
-
-function stripTrailingTipsSection(text: string): string {
-  return text
-    .replace(/\n+(?:#+\s*)?(?:Improvements made|Tips?)(?:\s*:)?\s*[\s\S]*$/i, "")
-    .trim();
-}
-
 function normalizeRewrittenText(text: string): string | null {
   const normalized = text
     .replace(/^```(?:markdown|md|text)?\s*/i, "")
@@ -350,7 +333,9 @@ function normalizeRewrittenText(text: string): string | null {
   return normalized.length > 0 ? normalized : null;
 }
 
-function parseRewriteAnalysisResponse(text: string): Omit<RewriteResult, "rewritten"> | null {
+function parseRewriteMetadataResponse(
+  text: string
+): Pick<RewriteResult, "changes" | "tone"> | null {
   try {
     const parsed = JSON.parse(extractJson(text)) as Partial<RewriteResult>;
 
@@ -365,21 +350,28 @@ function parseRewriteAnalysisResponse(text: string): Omit<RewriteResult, "rewrit
         )
       : [];
 
-    const tips = Array.isArray(parsed.tips)
-      ? parsed.tips.filter((item): item is string => typeof item === "string")
-      : [];
-
     return {
       changes,
       tone: normalizeTone(parsed.tone),
-      tips: normalizeTipsToJapanese(tips),
     };
   } catch {
-    return {
-      changes: [],
-      tone: "professional",
-      tips: normalizeTipsToJapanese(parseTipsFromText(text)),
-    };
+    return null;
+  }
+}
+
+function parseRewriteTipsResponse(text: string): string[] | null {
+  try {
+    const parsed = JSON.parse(extractJson(text)) as { tips?: unknown };
+    if (!Array.isArray(parsed.tips)) {
+      return null;
+    }
+    const tips = parsed.tips
+      .filter((item): item is string => typeof item === "string")
+      .map((tip) => tip.trim())
+      .filter(Boolean);
+    return tips.length > 0 ? tips : [];
+  } catch {
+    return null;
   }
 }
 
@@ -513,7 +505,7 @@ rewriteRoutes.post("/", async (c) => {
     return c.json({ error: "Failed to parse AI response" }, 502);
   }
 
-  // Step 2: analyze rewrite as structured JSON
+  // Step 2: analyze rewrite metadata as structured JSON
   const analysisSystemPrompt = buildRewriteAnalysisSystemPrompt(body.context);
   const analysisUserPrompt = buildRewriteAnalysisUserPrompt(
     body.context,
@@ -527,9 +519,9 @@ rewriteRoutes.post("/", async (c) => {
       analysisUserPrompt,
       {
         system: analysisSystemPrompt,
-        maxTokens: 900,
+        maxTokens: 700,
         temperature: 0.1,
-        responseFormat: REWRITE_ANALYSIS_SCHEMA,
+        responseFormat: REWRITE_METADATA_SCHEMA,
       },
       "lightweight"
     );
@@ -545,10 +537,57 @@ rewriteRoutes.post("/", async (c) => {
     return c.json({ error: "LLM service unavailable" }, 502);
   }
 
-  const analysis = parseRewriteAnalysisResponse(analysisResponse.text);
-  if (!analysis) {
-    console.error("[rewrite] Failed to parse rewrite analysis as JSON", {
+  const metadata = parseRewriteMetadataResponse(analysisResponse.text);
+  if (!metadata) {
+    console.error("[rewrite] Failed to parse rewrite metadata as JSON", {
       text: analysisResponse.text,
+    });
+    const rollbackValue: RewriteCountValue = {
+      count: currentCount,
+      updatedAt: new Date().toISOString(),
+    };
+    await c.env.USAGE_KV.put(countKey, JSON.stringify(rollbackValue), {
+      expirationTtl: 48 * 60 * 60,
+    });
+    return c.json({ error: "Failed to parse AI response" }, 502);
+  }
+
+  // Step 3: generate Japanese tips only
+  const tipsSystemPrompt = buildRewriteTipsSystemPrompt(body.context);
+  const tipsUserPrompt = buildRewriteTipsUserPrompt(
+    body.context,
+    body.text,
+    rewritten
+  );
+
+  let tipsResponse;
+  try {
+    tipsResponse = await llmService.router.generate(
+      tipsUserPrompt,
+      {
+        system: tipsSystemPrompt,
+        maxTokens: 300,
+        temperature: 0.1,
+        responseFormat: REWRITE_TIPS_SCHEMA,
+      },
+      "lightweight"
+    );
+  } catch (err) {
+    console.error("[rewrite] LLM tips generation failed", { error: String(err) });
+    const rollbackValue: RewriteCountValue = {
+      count: currentCount,
+      updatedAt: new Date().toISOString(),
+    };
+    await c.env.USAGE_KV.put(countKey, JSON.stringify(rollbackValue), {
+      expirationTtl: 48 * 60 * 60,
+    });
+    return c.json({ error: "LLM service unavailable" }, 502);
+  }
+
+  const tips = parseRewriteTipsResponse(tipsResponse.text);
+  if (tips == null) {
+    console.error("[rewrite] Failed to parse rewrite tips as JSON", {
+      text: tipsResponse.text,
     });
     const rollbackValue: RewriteCountValue = {
       count: currentCount,
@@ -562,9 +601,9 @@ rewriteRoutes.post("/", async (c) => {
 
   const result: RewriteResult = {
     rewritten,
-    changes: analysis.changes,
-    tone: analysis.tone,
-    tips: analysis.tips,
+    changes: metadata.changes,
+    tone: metadata.tone,
+    tips,
   };
 
   // Save to ai_rewrite_history
@@ -589,12 +628,17 @@ rewriteRoutes.post("/", async (c) => {
   // Track LLM usage
   await llmService.usage.track(userId, {
     promptTokens:
-      rewriteResponse.usage.promptTokens + analysisResponse.usage.promptTokens,
+      rewriteResponse.usage.promptTokens +
+      analysisResponse.usage.promptTokens +
+      tipsResponse.usage.promptTokens,
     completionTokens:
       rewriteResponse.usage.completionTokens +
-      analysisResponse.usage.completionTokens,
+      analysisResponse.usage.completionTokens +
+      tipsResponse.usage.completionTokens,
     totalTokens:
-      rewriteResponse.usage.totalTokens + analysisResponse.usage.totalTokens,
+      rewriteResponse.usage.totalTokens +
+      analysisResponse.usage.totalTokens +
+      tipsResponse.usage.totalTokens,
   });
 
   return c.json({ id: historyId, ...result });
