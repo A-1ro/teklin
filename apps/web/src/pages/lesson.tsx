@@ -324,13 +324,6 @@ function WarmupStep({
       if (selected || isSubmitting) return;
       setSelected(choiceId);
 
-      if (readOnly) {
-        // In review mode, correctChoiceId is not available on the client.
-        // Just record the selection so the Next button appears.
-        setResult({ correct: true, score: 0 });
-        return;
-      }
-
       setIsSubmitting(true);
       try {
         const res = await apiFetch<LessonAnswerResponse>(
@@ -346,13 +339,12 @@ function WarmupStep({
         );
         setResult(res);
       } catch {
-        // Show as incorrect on error
         setResult({ correct: false, score: 0 });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [selected, isSubmitting, lessonId, question, readOnly],
+    [selected, isSubmitting, lessonId, question],
   );
 
   const handleNext = useCallback(() => {
@@ -429,8 +421,8 @@ function WarmupStep({
         })}
       </div>
 
-      {/* Result feedback (hidden in review mode — correctChoiceId not available client-side) */}
-      {result && !readOnly && (
+      {/* Result feedback */}
+      {result && (
         <div
           className={`mb-6 rounded-lg px-5 py-4 ${
             result.correct
