@@ -9,8 +9,7 @@
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply teklin-db --local",
-    "db:seed:local": "wrangler d1 migrations apply teklin-db --local"
+    "db:migrate:local": "wrangler d1 migrations apply teklin-db --local"
   },
   "dependencies": {
     "@teklin/shared": "*",
