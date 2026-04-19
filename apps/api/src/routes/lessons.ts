@@ -44,14 +44,29 @@ function toClientContent(internal: LessonContentInternal): LessonContent {
   };
 }
 
-/** Get today's date string in YYYY-MM-DD format */
+/**
+ * Get today's date string in YYYY-MM-DD format.
+ * A "Teklin day" starts at JST 05:00 (= UTC 20:00 the previous calendar day).
+ * If the current UTC hour is >= 20, we are already in the next JST day.
+ */
 function todayString(): string {
-  return new Date().toISOString().split("T")[0];
+  const now = new Date();
+  if (now.getUTCHours() >= 20) {
+    const next = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
+    );
+    return next.toISOString().split("T")[0];
+  }
+  return now.toISOString().split("T")[0];
 }
 
-/** Get the start-of-day timestamp (midnight UTC) for a given date string */
+/**
+ * Get the start-of-day timestamp for a given Teklin date string.
+ * Each Teklin day starts at JST 05:00 = UTC 20:00 of the previous calendar day,
+ * which is 4 hours before UTC midnight of the given date.
+ */
 function startOfDayMs(dateStr: string): number {
-  return new Date(`${dateStr}T00:00:00.000Z`).getTime();
+  return new Date(`${dateStr}T00:00:00.000Z`).getTime() - 4 * 3600 * 1000;
 }
 
 export const lessonRoutes = new Hono<{

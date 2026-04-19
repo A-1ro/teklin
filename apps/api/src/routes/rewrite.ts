@@ -93,16 +93,34 @@ function rewriteCountKey(userId: string, date: string): string {
   return `rewrite:${userId}:${date}`;
 }
 
+/**
+ * Get today's date key in YYYY-MM-DD format.
+ * A "Teklin day" starts at JST 05:00 (= UTC 20:00 the previous calendar day).
+ */
 function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  if (now.getUTCHours() >= 20) {
+    const next = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
+    );
+    return next.toISOString().slice(0, 10);
+  }
+  return now.toISOString().slice(0, 10);
 }
 
-function midnightUtcIso(): string {
+/** Returns the ISO timestamp of the next daily reset (UTC 20:00 = JST 05:00). */
+function nextResetIso(): string {
   const now = new Date();
-  const midnight = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
+  const offsetDays = now.getUTCHours() >= 20 ? 1 : 0;
+  const reset = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + offsetDays,
+      20
+    )
   );
-  return midnight.toISOString();
+  return reset.toISOString();
 }
 
 function buildRewriteSystemPrompt(
@@ -708,7 +726,7 @@ rewriteRoutes.get("/remaining", async (c) => {
   const response: RewriteRemainingResponse = {
     remaining: Math.max(0, DAILY_REWRITE_LIMIT - currentCount),
     limit: DAILY_REWRITE_LIMIT,
-    resetsAt: midnightUtcIso(),
+    resetsAt: nextResetIso(),
   };
   return c.json(response);
 });
