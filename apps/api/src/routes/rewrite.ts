@@ -62,6 +62,96 @@ function midnightUtcIso(): string {
   return midnight.toISOString();
 }
 
+function extractJson(text: string): string {
+  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return text.slice(firstBrace, lastBrace + 1);
+  }
+
+  return text.trim();
+}
+
+function normalizeTone(value: unknown): RewriteResult["tone"] {
+  return value === "friendly" ||
+    value === "professional" ||
+    value === "too_casual" ||
+    value === "too_formal" ||
+    value === "neutral"
+    ? value
+    : "neutral";
+}
+
+function parseTipsFromText(text: string): string[] {
+  const match = text.match(
+    /(?:^|\n)(?:#+\s*)?(?:Improvements made|Tips?)\s*:\s*\n?([\s\S]*)$/i
+  );
+  if (!match) {
+    return [];
+  }
+
+  return match[1]
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /^(\d+\.|[-*])\s+/.test(line))
+    .map((line) => line.replace(/^(\d+\.|[-*])\s+/, "").trim())
+    .slice(0, 5);
+}
+
+function stripTrailingTipsSection(text: string): string {
+  return text
+    .replace(/\n+(?:#+\s*)?(?:Improvements made|Tips?)\s*:\s*[\s\S]*$/i, "")
+    .trim();
+}
+
+function parseRewriteResponse(text: string): RewriteResult | null {
+  try {
+    const parsed = JSON.parse(extractJson(text)) as Partial<RewriteResult>;
+    if (typeof parsed.rewritten !== "string") {
+      return null;
+    }
+
+    const changes = Array.isArray(parsed.changes)
+      ? parsed.changes.filter(
+          (item): item is RewriteResult["changes"][number] =>
+            typeof item === "object" &&
+            item !== null &&
+            typeof item.original === "string" &&
+            typeof item.corrected === "string" &&
+            typeof item.reason === "string"
+        )
+      : [];
+
+    const tips = Array.isArray(parsed.tips)
+      ? parsed.tips.filter((item): item is string => typeof item === "string")
+      : [];
+
+    return {
+      rewritten: parsed.rewritten.trim(),
+      changes,
+      tone: normalizeTone(parsed.tone),
+      tips,
+    };
+  } catch {
+    const rewritten = stripTrailingTipsSection(text);
+    if (!rewritten) {
+      return null;
+    }
+
+    return {
+      rewritten,
+      changes: [],
+      tone: "professional",
+      tips: parseTipsFromText(text),
+    };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
@@ -193,10 +283,8 @@ rewriteRoutes.post("/", async (c) => {
   }
 
   // Parse LLM response as RewriteResult
-  let result: RewriteResult;
-  try {
-    result = JSON.parse(llmResponse.text) as RewriteResult;
-  } catch {
+  const result = parseRewriteResponse(llmResponse.text);
+  if (!result) {
     console.error("[rewrite] Failed to parse LLM response as JSON", {
       text: llmResponse.text,
     });
@@ -394,4 +482,3 @@ rewriteRoutes.post("/:id/save-card", async (c) => {
 
   return c.json({ cardId }, 201);
 });
-
