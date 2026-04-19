@@ -720,15 +720,8 @@ function FillInBlank({
 
   const handleSubmit = useCallback(async () => {
     if (!value.trim() || isSubmitting || result) return;
-
-    // In review mode, the lesson is already completed so the API would reject
-    // the answer. Just record a local result to show the Next button.
-    if (readOnly) {
-      onAnswer({ correct: true, score: 0 });
-      return;
-    }
-
     setIsSubmitting(true);
+
     try {
       const res = await apiFetch<LessonAnswerResponse>(
         `/api/lessons/${lessonId}/answer`,
@@ -747,7 +740,7 @@ function FillInBlank({
     } finally {
       setIsSubmitting(false);
     }
-  }, [value, isSubmitting, result, readOnly, lessonId, exercise.id, onAnswer]);
+  }, [value, isSubmitting, result, lessonId, exercise.id, onAnswer]);
 
   return (
     <div>
@@ -786,8 +779,8 @@ function FillInBlank({
         </button>
       </div>
 
-      {/* Result (hidden in review mode — correct answer not available client-side) */}
-      {result && !readOnly && (
+      {/* Result */}
+      {result && (
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct
@@ -863,13 +856,8 @@ function ReorderExercise({
 
   const handleSubmit = useCallback(async () => {
     if (chosen.length === 0 || isSubmitting || result) return;
-
-    if (readOnly) {
-      onAnswer({ correct: true, score: 0 });
-      return;
-    }
-
     setIsSubmitting(true);
+
     try {
       const res = await apiFetch<LessonAnswerResponse>(
         `/api/lessons/${lessonId}/answer`,
@@ -888,7 +876,7 @@ function ReorderExercise({
     } finally {
       setIsSubmitting(false);
     }
-  }, [chosen, isSubmitting, result, readOnly, lessonId, exercise.id, onAnswer]);
+  }, [chosen, isSubmitting, result, lessonId, exercise.id, onAnswer]);
 
   return (
     <div>
@@ -939,8 +927,8 @@ function ReorderExercise({
         </button>
       )}
 
-      {/* Result (hidden in review mode — correct answer not available client-side) */}
-      {result && !readOnly && (
+      {/* Result */}
+      {result && (
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct
@@ -992,13 +980,8 @@ function FreeTextExercise({
 
   const handleSubmit = useCallback(async () => {
     if (!value.trim() || isSubmitting || result) return;
-
-    if (readOnly) {
-      onAnswer({ correct: true, score: 0 });
-      return;
-    }
-
     setIsSubmitting(true);
+
     try {
       const res = await apiFetch<LessonAnswerResponse>(
         `/api/lessons/${lessonId}/answer`,
@@ -1017,7 +1000,7 @@ function FreeTextExercise({
     } finally {
       setIsSubmitting(false);
     }
-  }, [value, isSubmitting, result, readOnly, lessonId, exercise.id, onAnswer]);
+  }, [value, isSubmitting, result, lessonId, exercise.id, onAnswer]);
 
   return (
     <div>
@@ -1050,8 +1033,8 @@ function FreeTextExercise({
         </button>
       )}
 
-      {/* Result (hidden in review mode — LLM scoring not available) */}
-      {result && !readOnly && (
+      {/* Result */}
+      {result && (
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct

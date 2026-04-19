@@ -312,9 +312,8 @@ lessonRoutes.post("/:id/answer", async (c) => {
     return c.json({ error: "Lesson session not found" }, 404);
   }
 
-  if (session.completedAt !== null) {
-    return c.json({ error: "Lesson already completed" }, 400);
-  }
+  // Review mode: lesson already completed — score the answer but don't record it
+  const isReview = session.completedAt !== null;
 
   let body: { step?: string; exerciseId?: string; answer?: string };
   try {
@@ -337,12 +336,14 @@ lessonRoutes.post("/:id/answer", async (c) => {
     return c.json({ error: "Answer must be 2000 characters or fewer" }, 400);
   }
 
-  // Check for duplicate answers
-  const alreadyAnswered = session.answers.find(
-    (a) => a.exerciseId === exerciseId && a.step === step
-  );
-  if (alreadyAnswered) {
-    return c.json({ error: "Already answered this exercise" }, 400);
+  // Prevent duplicate answers only in normal (non-review) mode
+  if (!isReview) {
+    const alreadyAnswered = session.answers.find(
+      (a) => a.exerciseId === exerciseId && a.step === step
+    );
+    if (alreadyAnswered) {
+      return c.json({ error: "Already answered this exercise" }, 400);
+    }
   }
 
   // Load lesson content from D1
@@ -405,20 +406,22 @@ lessonRoutes.post("/:id/answer", async (c) => {
     return c.json({ error: "Invalid step. Must be warmup or practice" }, 400);
   }
 
-  // Record answer in KV session
-  const answerRecord: LessonAnswerRecord = {
-    step,
-    exerciseId,
-    answer,
-    correct,
-    score,
-    answeredAt: Date.now(),
-  };
-  session.answers.push(answerRecord);
+  // In review mode, skip recording the answer to avoid mutating completed sessions
+  if (!isReview) {
+    const answerRecord: LessonAnswerRecord = {
+      step,
+      exerciseId,
+      answer,
+      correct,
+      score,
+      answeredAt: Date.now(),
+    };
+    session.answers.push(answerRecord);
 
-  await kv.put(sessionKvKey, JSON.stringify(session), {
-    expirationTtl: LESSON_SESSION_TTL,
-  });
+    await kv.put(sessionKvKey, JSON.stringify(session), {
+      expirationTtl: LESSON_SESSION_TTL,
+    });
+  }
 
   return c.json({
     correct,
