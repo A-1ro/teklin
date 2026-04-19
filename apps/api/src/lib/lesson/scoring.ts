@@ -2,6 +2,19 @@ import type { LLMService } from "../llm";
 import type { Exercise, WarmupQuestion } from "@teklin/shared";
 
 /**
+ * Extract a JSON object from an LLM response that may include markdown fences
+ * or surrounding prose (same logic as generator.ts).
+ */
+function extractJson(text: string): string {
+  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlockMatch) return codeBlockMatch[1].trim();
+  const first = text.indexOf("{");
+  const last = text.lastIndexOf("}");
+  if (first !== -1 && last > first) return text.slice(first, last + 1);
+  return text.trim();
+}
+
+/**
  * Sanitize text before embedding it in an LLM prompt.
  * Escapes delimiter markers to prevent prompt injection.
  */
@@ -89,7 +102,9 @@ export async function scoreFreeTextWithFeedback(
       "quality"
     );
 
-    const result = JSON.parse(response.text) as {
+    // Extract JSON even if the model wraps it in markdown code fences
+    const jsonText = extractJson(response.text);
+    const result = JSON.parse(jsonText) as {
       score?: unknown;
       feedback?: unknown;
     };
