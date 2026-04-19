@@ -57,3 +57,8 @@ LLM_DAILY_TOKEN_LIMIT = "100000"
 # ─── Secrets (set via `wrangler secret put`) ───
 # wrangler secret put OPENAI_API_KEY
 # wrangler secret put ANTHROPIC_API_KEY
+
+[observability]
+[observability.logs]
+enabled = false
+invocation_logs = true
