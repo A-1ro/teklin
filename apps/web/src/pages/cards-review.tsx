@@ -342,7 +342,7 @@ export function ReviewPage() {
             type="button"
             onClick={handleFlip}
             disabled={isFlipped}
-            className="relative w-full cursor-pointer disabled:cursor-default"
+            className="relative block min-h-[360px] w-full cursor-pointer disabled:cursor-default sm:min-h-[400px]"
             style={{
               transformStyle: "preserve-3d",
               transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -354,7 +354,7 @@ export function ReviewPage() {
           >
             {/* Card Front */}
             <div
-              className="rounded-2xl border border-gray-800 bg-gray-900 p-6"
+              className="flex min-h-[360px] flex-col rounded-2xl border border-gray-800 bg-gray-900 p-6 sm:min-h-[400px]"
               style={{
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
@@ -373,7 +373,7 @@ export function ReviewPage() {
               </div>
 
               {/* Japanese translation */}
-              <div className="flex min-h-[120px] items-center justify-center py-6">
+              <div className="flex flex-1 items-center justify-center py-6">
                 <p className="text-center text-xl font-semibold leading-relaxed text-gray-100">
                   {card.translation}
                 </p>
@@ -388,7 +388,7 @@ export function ReviewPage() {
 
             {/* Card Back */}
             <div
-              className="absolute inset-0 rounded-2xl border border-emerald-800/30 bg-gray-900 p-6"
+              className="absolute inset-0 flex min-h-[360px] flex-col rounded-2xl border border-emerald-800/30 bg-gray-900 p-6 sm:min-h-[400px]"
               style={{
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
@@ -403,14 +403,14 @@ export function ReviewPage() {
               </div>
 
               {/* English phrase */}
-              <div className="flex min-h-[80px] items-center justify-center py-4">
+              <div className="flex items-center justify-center py-4">
                 <p className="text-center font-mono text-lg font-semibold leading-relaxed text-gray-100">
                   {card.phrase}
                 </p>
               </div>
 
               {/* Context */}
-              <div className="mt-4 rounded-lg bg-gray-800/50 p-4">
+              <div className="mt-4 flex-1 rounded-lg bg-gray-800/50 p-4">
                 <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
                   使用例
                 </p>
