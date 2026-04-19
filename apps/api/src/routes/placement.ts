@@ -244,7 +244,14 @@ placementRoutes.post("/answer", async (c) => {
   let feedback: PlacementAnswerFeedback | undefined;
   if (answer === SKIP_ANSWER) {
     score = 0;
-    // No feedback for skips
+    // For multiple choice skips, still reveal the correct answer
+    if (question.type === "multiple_choice") {
+      feedback = {
+        type: "multiple_choice",
+        isCorrect: false,
+        correctChoiceId: question.correctChoiceId ?? "",
+      };
+    }
   } else if (question.type === "multiple_choice") {
     score = scoreMultipleChoice(questionId, answer);
     feedback = {
