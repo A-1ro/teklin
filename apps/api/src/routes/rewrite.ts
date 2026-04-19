@@ -37,6 +37,41 @@ const CONTEXT_TO_CATEGORY: Record<RewriteContext, CardCategory> = {
   general: "slack_chat",
 };
 
+const REWRITE_RESPONSE_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      rewritten: {
+        type: "string",
+      },
+      changes: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            original: { type: "string" },
+            corrected: { type: "string" },
+            reason: { type: "string" },
+          },
+          required: ["original", "corrected", "reason"],
+        },
+      },
+      tone: {
+        type: "string",
+        enum: ["friendly", "professional", "too_casual", "too_formal", "neutral"],
+      },
+      tips: {
+        type: "array",
+        items: { type: "string" },
+      },
+    },
+    required: ["rewritten", "changes", "tone", "tips"],
+  },
+} as const;
+
 // ---------------------------------------------------------------------------
 // KV helpers
 // ---------------------------------------------------------------------------
@@ -89,23 +124,31 @@ function normalizeTone(value: unknown): RewriteResult["tone"] {
 
 function parseTipsFromText(text: string): string[] {
   const match = text.match(
-    /(?:^|\n)(?:#+\s*)?(?:Improvements made|Tips?)\s*:\s*\n?([\s\S]*)$/i
+    /(?:^|\n)(?:#+\s*)?(?:Improvements made|Tips?)(?:\s*:)?\s*\n+([\s\S]*)$/i
   );
   if (!match) {
     return [];
   }
 
-  return match[1]
+  const lines = match[1]
     .split("\n")
     .map((line) => line.trim())
+    .filter(Boolean);
+
+  const bulletTips = lines
     .filter((line) => /^(\d+\.|[-*])\s+/.test(line))
-    .map((line) => line.replace(/^(\d+\.|[-*])\s+/, "").trim())
-    .slice(0, 5);
+    .map((line) => line.replace(/^(\d+\.|[-*])\s+/, "").trim());
+
+  if (bulletTips.length > 0) {
+    return bulletTips.slice(0, 5);
+  }
+
+  return lines.slice(0, 6);
 }
 
 function stripTrailingTipsSection(text: string): string {
   return text
-    .replace(/\n+(?:#+\s*)?(?:Improvements made|Tips?)\s*:\s*[\s\S]*$/i, "")
+    .replace(/\n+(?:#+\s*)?(?:Improvements made|Tips?)(?:\s*:)?\s*[\s\S]*$/i, "")
     .trim();
 }
 
@@ -267,8 +310,13 @@ rewriteRoutes.post("/", async (c) => {
   try {
     llmResponse = await llmService.router.generate(
       userPrompt,
-      { system: systemPrompt },
-      "quality"
+      {
+        system: systemPrompt,
+        maxTokens: 1400,
+        temperature: 0.2,
+        responseFormat: REWRITE_RESPONSE_SCHEMA,
+      },
+      "lightweight"
     );
   } catch (err) {
     console.error("[rewrite] LLM generation failed", { error: String(err) });

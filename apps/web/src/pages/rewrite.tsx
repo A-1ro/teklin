@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { CopyMarkdownButton } from "@/components/copy-markdown-button";
 import { MarkdownText } from "@/components/markdown-text";
 import type {
   RewriteContext,
@@ -383,6 +384,7 @@ export function RewritePage() {
                   Rewritten
                 </h2>
                 <div className="flex items-center gap-2">
+                  <CopyMarkdownButton text={result.rewritten} />
                   <ContextBadge context={context} />
                   <ToneBadge tone={result.tone} />
                 </div>

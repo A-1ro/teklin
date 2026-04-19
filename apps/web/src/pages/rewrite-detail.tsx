@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { CopyMarkdownButton } from "@/components/copy-markdown-button";
 import { MarkdownText } from "@/components/markdown-text";
 import type {
   RewriteHistoryDetail,
@@ -189,9 +190,12 @@ export function RewriteDetailPage() {
 
           {/* Rewritten */}
           <div className="rounded-2xl border border-violet-800/30 bg-violet-950/20 p-5">
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-violet-400">
-              Rewritten
-            </h2>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+                Rewritten
+              </h2>
+              <CopyMarkdownButton text={detail.rewrittenText} />
+            </div>
             <MarkdownText
               text={detail.rewrittenText}
               className="space-y-3 text-sm text-gray-100"
