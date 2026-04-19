@@ -4,7 +4,7 @@ import { LLMError } from "../types";
 const DEFAULT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
 interface WorkersAiTextResponse {
-  response?: string;
+  response?: unknown;
   content?: Array<{ type?: string; text?: string }>;
   model?: string;
   id?: string;
@@ -27,6 +27,10 @@ function resolveModel(options: LLMOptions): string {
 function extractText(result: WorkersAiTextResponse): string {
   if (typeof result.response === "string") {
     return result.response;
+  }
+
+  if (result.response != null) {
+    return JSON.stringify(result.response);
   }
 
   const text = result.content
