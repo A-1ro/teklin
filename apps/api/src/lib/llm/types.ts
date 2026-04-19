@@ -7,6 +7,7 @@ export interface LLMOptions {
   temperature?: number;
   system?: string;
   model?: string;
+  responseFormat?: Record<string, unknown>;
 }
 
 export interface LLMUsage {

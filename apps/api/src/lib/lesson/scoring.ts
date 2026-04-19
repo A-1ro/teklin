@@ -1,6 +1,23 @@
 import type { LLMService } from "../llm";
 import type { Exercise, WarmupQuestion } from "@teklin/shared";
 
+const FREE_TEXT_SCORE_RESPONSE_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      score: {
+        type: "number",
+      },
+      feedback: {
+        type: "string",
+      },
+    },
+    required: ["score", "feedback"],
+  },
+} as const;
+
 /**
  * Extract a JSON object from an LLM response that may include markdown fences
  * or surrounding prose (same logic as generator.ts).
@@ -98,7 +115,12 @@ export async function scoreFreeTextWithFeedback(
 
     const response = await llm.router.generate(
       user,
-      { system, maxTokens: 256, temperature: 0.1 },
+      {
+        system,
+        maxTokens: 256,
+        temperature: 0.1,
+        responseFormat: FREE_TEXT_SCORE_RESPONSE_SCHEMA,
+      },
       "lightweight"
     );
 
@@ -120,6 +142,9 @@ export async function scoreFreeTextWithFeedback(
     return { score, feedback };
   } catch (err) {
     console.error("[scoreFreeTextWithFeedback] failed:", err);
+    if (err instanceof Error) {
+      console.error("[scoreFreeTextWithFeedback] message:", err.message);
+    }
     return { score: 50, feedback: "回答を受け付けました。引き続き練習を続けましょう！" };
   }
 }

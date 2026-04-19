@@ -73,6 +73,9 @@ export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
           messages,
           max_tokens: options.maxTokens ?? 1024,
           temperature: options.temperature ?? 0.7,
+          ...(options.responseFormat
+            ? { response_format: options.responseFormat }
+            : {}),
         })) as WorkersAiTextResponse;
       } catch (err) {
         throw new LLMError(
@@ -111,6 +114,9 @@ export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
             max_tokens: options.maxTokens ?? 1024,
             temperature: options.temperature ?? 0.7,
             stream: true,
+            ...(options.responseFormat
+              ? { response_format: options.responseFormat }
+              : {}),
           })) as unknown as ReadableStream<Uint8Array>;
 
           const reader = stream.getReader();
