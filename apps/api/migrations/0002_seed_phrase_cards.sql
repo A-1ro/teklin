@@ -1,6 +1,6 @@
 -- Teklin Phrase Cards Seed Data
--- 120+ cards across 5 categories, 4 levels, 4 domains
--- Category distribution: ~24 cards each
+-- 125 cards across 5 categories, 4 levels, 4 domains
+-- Category distribution: 25 cards each
 -- Level distribution: roughly even across L1-L4
 -- Domain distribution: web-biased, with infra/ml/mobile coverage
 

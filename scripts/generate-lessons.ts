@@ -4,9 +4,15 @@
  *
  * Generates lesson JSON to stdout using static content templates.
  * No LLM calls — 12 static patterns (3 domains × 4 levels).
+ * Note: "mobile" domain is not yet supported by this script.
  *
  * Usage:
  *   npx tsx scripts/generate-lessons.ts --level L1 --domain web --count 1
+ *   npx tsx scripts/generate-lessons.ts --level L3 --domain infra --count 3
+ *
+ * Output:
+ *   count=1: a single JSON object
+ *   count>1: a JSON array of objects
  */
 
 import type {
@@ -40,7 +46,13 @@ function parseArgs(): { level: Level; domain: Domain; count: number } {
     } else if (args[i] === "--domain" && args[i + 1]) {
       const val = args[++i];
       if (!["web", "infra", "ml"].includes(val)) {
-        console.error(`Invalid domain: ${val}. Must be web, infra, or ml.`);
+        if (val === "mobile") {
+          console.error(
+            `Domain "mobile" is not yet supported by this script. Supported: web, infra, ml.`
+          );
+        } else {
+          console.error(`Invalid domain: ${val}. Must be web, infra, or ml.`);
+        }
         process.exit(1);
       }
       domain = val as Domain;
@@ -1839,14 +1851,16 @@ function buildLesson(level: Level, domain: Domain): LessonContentInternal {
 function main(): void {
   const { level, domain, count } = parseArgs();
 
-  for (let i = 0; i < count; i++) {
+  if (count === 1) {
     const lesson = buildLesson(level, domain);
-    process.stdout.write(JSON.stringify(lesson, null, 2));
-    if (i < count - 1) {
-      process.stdout.write("\n");
+    process.stdout.write(JSON.stringify(lesson, null, 2) + "\n");
+  } else {
+    const lessons: LessonContentInternal[] = [];
+    for (let i = 0; i < count; i++) {
+      lessons.push(buildLesson(level, domain));
     }
+    process.stdout.write(JSON.stringify(lessons, null, 2) + "\n");
   }
-  process.stdout.write("\n");
 }
 
 main();
