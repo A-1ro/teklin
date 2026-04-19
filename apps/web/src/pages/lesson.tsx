@@ -720,8 +720,15 @@ function FillInBlank({
 
   const handleSubmit = useCallback(async () => {
     if (!value.trim() || isSubmitting || result) return;
-    setIsSubmitting(true);
 
+    // In review mode, the lesson is already completed so the API would reject
+    // the answer. Just record a local result to show the Next button.
+    if (readOnly) {
+      onAnswer({ correct: true, score: 0 });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const res = await apiFetch<LessonAnswerResponse>(
         `/api/lessons/${lessonId}/answer`,
@@ -740,7 +747,7 @@ function FillInBlank({
     } finally {
       setIsSubmitting(false);
     }
-  }, [value, isSubmitting, result, lessonId, exercise.id, onAnswer]);
+  }, [value, isSubmitting, result, readOnly, lessonId, exercise.id, onAnswer]);
 
   return (
     <div>
@@ -756,33 +763,31 @@ function FillInBlank({
       </div>
 
       {/* Input */}
-      {!readOnly && (
-        <div className="mb-4 flex gap-3">
-          <input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSubmit();
-            }}
-            disabled={result !== null}
-            placeholder="答えを入力..."
-            className="flex-1 rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
-          />
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!value.trim() || isSubmitting || result !== null}
-            className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSubmitting ? "..." : "確認"}
-          </button>
-        </div>
-      )}
+      <div className="mb-4 flex gap-3">
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSubmit();
+          }}
+          disabled={result !== null}
+          placeholder="答えを入力..."
+          className="flex-1 rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
+        />
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!value.trim() || isSubmitting || result !== null}
+          className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSubmitting ? "..." : "確認"}
+        </button>
+      </div>
 
-      {/* Result */}
-      {result && (
+      {/* Result (hidden in review mode — correct answer not available client-side) */}
+      {result && !readOnly && (
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct
@@ -858,8 +863,13 @@ function ReorderExercise({
 
   const handleSubmit = useCallback(async () => {
     if (chosen.length === 0 || isSubmitting || result) return;
-    setIsSubmitting(true);
 
+    if (readOnly) {
+      onAnswer({ correct: true, score: 0 });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const res = await apiFetch<LessonAnswerResponse>(
         `/api/lessons/${lessonId}/answer`,
@@ -878,7 +888,7 @@ function ReorderExercise({
     } finally {
       setIsSubmitting(false);
     }
-  }, [chosen, isSubmitting, result, lessonId, exercise.id, onAnswer]);
+  }, [chosen, isSubmitting, result, readOnly, lessonId, exercise.id, onAnswer]);
 
   return (
     <div>
@@ -919,7 +929,7 @@ function ReorderExercise({
       </div>
 
       {/* Submit */}
-      {!result && !readOnly && (
+      {!result && (
         <button
           onClick={handleSubmit}
           disabled={chosen.length === 0 || isSubmitting}
@@ -929,8 +939,8 @@ function ReorderExercise({
         </button>
       )}
 
-      {/* Result */}
-      {result && (
+      {/* Result (hidden in review mode — correct answer not available client-side) */}
+      {result && !readOnly && (
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct
@@ -982,8 +992,13 @@ function FreeTextExercise({
 
   const handleSubmit = useCallback(async () => {
     if (!value.trim() || isSubmitting || result) return;
-    setIsSubmitting(true);
 
+    if (readOnly) {
+      onAnswer({ correct: true, score: 0 });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const res = await apiFetch<LessonAnswerResponse>(
         `/api/lessons/${lessonId}/answer`,
@@ -1002,7 +1017,7 @@ function FreeTextExercise({
     } finally {
       setIsSubmitting(false);
     }
-  }, [value, isSubmitting, result, lessonId, exercise.id, onAnswer]);
+  }, [value, isSubmitting, result, readOnly, lessonId, exercise.id, onAnswer]);
 
   return (
     <div>
@@ -1013,34 +1028,30 @@ function FreeTextExercise({
         </div>
       )}
 
-      {/* Textarea + Submit */}
-      {!readOnly && (
-        <>
-          <div className="mb-4">
-            <textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              disabled={result !== null}
-              placeholder="ここに答えを書こう..."
-              rows={4}
-              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
-            />
-          </div>
+      {/* Textarea */}
+      <div className="mb-4">
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          disabled={result !== null}
+          placeholder="ここに答えを書こう..."
+          rows={4}
+          className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
+        />
+      </div>
 
-          {!result && (
-            <button
-              onClick={handleSubmit}
-              disabled={!value.trim() || isSubmitting}
-              className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isSubmitting ? "送信中..." : "送信"}
-            </button>
-          )}
-        </>
+      {!result && (
+        <button
+          onClick={handleSubmit}
+          disabled={!value.trim() || isSubmitting}
+          className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSubmitting ? "送信中..." : "送信"}
+        </button>
       )}
 
-      {/* Result */}
-      {result && (
+      {/* Result (hidden in review mode — LLM scoring not available) */}
+      {result && !readOnly && (
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct
