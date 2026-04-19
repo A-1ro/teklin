@@ -41,6 +41,13 @@ function buildRequestBody(
   };
 }
 
+function buildAiOptions(gatewayId?: string): { gateway: { id: string } } | undefined {
+  if (!gatewayId) {
+    return undefined;
+  }
+  return { gateway: { id: gatewayId } };
+}
+
 function extractText(result: WorkersAiTextResponse): string {
   if (typeof result.response === "string") {
     return result.response;
@@ -73,7 +80,12 @@ function extractUsage(result: WorkersAiTextResponse): {
   return { promptTokens, completionTokens, totalTokens };
 }
 
-export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
+export function createWorkersAiAdapter(
+  ai: Ai,
+  gatewayId?: string
+): LLMAdapter {
+  const aiOptions = buildAiOptions(gatewayId);
+
   return {
     provider: "workers-ai",
 
@@ -87,7 +99,8 @@ export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
       try {
         result = (await ai.run(
           model,
-          buildRequestBody(prompt, options)
+          buildRequestBody(prompt, options),
+          aiOptions
         )) as WorkersAiTextResponse;
       } catch (err) {
         throw new LLMError(
@@ -118,7 +131,8 @@ export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
         try {
           const stream = (await ai.run(
             model,
-            buildRequestBody(prompt, options, { stream: true })
+            buildRequestBody(prompt, options, { stream: true }),
+            aiOptions
           )) as unknown as ReadableStream<Uint8Array>;
 
           const reader = stream.getReader();

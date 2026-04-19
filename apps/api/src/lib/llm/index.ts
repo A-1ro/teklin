@@ -25,6 +25,7 @@ type LLMServiceBindings = Pick<
   | "AI"
   | "USAGE_KV"
   | "LLM_DAILY_TOKEN_LIMIT"
+  | "AI_GATEWAY_ID"
   | "WORKERS_AI_LIGHTWEIGHT_MODEL"
   | "WORKERS_AI_QUALITY_MODEL"
 >;
@@ -47,7 +48,9 @@ export interface LLMService {
  * from Cloudflare Worker bindings.
  */
 export function createLLMService(env: LLMServiceBindings): LLMService {
-  const adapters: LLMAdapter[] = [createWorkersAiAdapter(env.AI)];
+  const adapters: LLMAdapter[] = [
+    createWorkersAiAdapter(env.AI, env.AI_GATEWAY_ID ?? "default"),
+  ];
 
   const router = createLLMRouter(adapters, {
     ...DEFAULT_ROUTER_CONFIG,

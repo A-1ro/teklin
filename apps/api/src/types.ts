@@ -16,6 +16,7 @@ export type Bindings = {
   APP_URL: string;
   /** Daily token limit per user. Defaults to "100000" if not set. */
   LLM_DAILY_TOKEN_LIMIT?: string;
+  AI_GATEWAY_ID?: string;
   WORKERS_AI_LIGHTWEIGHT_MODEL?: string;
   WORKERS_AI_QUALITY_MODEL?: string;
 };
