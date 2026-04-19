@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { useAuth } from "@/components/auth/auth-provider";
 import { apiFetch } from "@/lib/api";
+import { FlameIcon } from "@/components/icons/flame-icon";
 import type { TodayLessonResponse } from "@teklin/shared";
 
 const PLACEMENT_PROMPT_DISMISS_KEY = "dashboard:placement-prompt-dismissed";
@@ -161,11 +162,14 @@ export function DashboardPage() {
             <p className="text-lg font-semibold text-gray-100">
               {lessonData ? (
                 <span className="flex items-center gap-1">
-                  <span role="img" aria-label="Fire">
-                    {lessonData.streak.currentStreak > 0
-                      ? "\uD83D\uDD25"
-                      : "\u2744\uFE0F"}
-                  </span>
+                  <FlameIcon
+                    size={20}
+                    className={
+                      lessonData.streak.currentStreak > 0
+                        ? "text-orange-400"
+                        : "text-blue-400"
+                    }
+                  />
                   <span className="font-mono">
                     {lessonData.streak.currentStreak}
                   </span>

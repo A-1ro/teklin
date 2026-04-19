@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { FlameIcon } from "@/components/icons/flame-icon";
 import type { TodayLessonResponse, Level } from "@teklin/shared";
 
 const LEVEL_META: Record<Level, { label: string; color: string }> = {
@@ -91,9 +92,14 @@ export function LessonHomePage() {
         <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-3xl" role="img" aria-label="Fire streak">
-                {streak.currentStreak > 0 ? "\uD83D\uDD25" : "\u2744\uFE0F"}
-              </span>
+              <FlameIcon
+                size={32}
+                className={
+                  streak.currentStreak > 0
+                    ? "text-orange-400"
+                    : "text-blue-400"
+                }
+              />
               <div>
                 <p className="font-mono text-2xl font-bold text-gray-100">
                   {streak.currentStreak}

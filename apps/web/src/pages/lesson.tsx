@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { ApiError, apiFetch } from "@/lib/api";
+import { FlameIcon } from "@/components/icons/flame-icon";
 import type {
   LessonContent,
   LessonStep,
@@ -1205,11 +1206,14 @@ function CompleteScreen({
                   連続記録
                 </p>
                 <p className="flex items-center justify-center gap-1 font-mono text-3xl font-bold text-gray-100">
-                  <span role="img" aria-label="Fire">
-                    {completionData.streak.currentStreak > 0
-                      ? "\uD83D\uDD25"
-                      : "\u2744\uFE0F"}
-                  </span>
+                  <FlameIcon
+                    size={30}
+                    className={
+                      completionData.streak.currentStreak > 0
+                        ? "text-orange-400"
+                        : "text-blue-400"
+                    }
+                  />
                   {completionData.streak.currentStreak}
                 </p>
               </div>
