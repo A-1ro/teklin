@@ -97,6 +97,170 @@ function midnightUtcIso(): string {
   return midnight.toISOString();
 }
 
+function buildRewriteSystemPrompt(
+  context: RewriteContext,
+  userLevel: string
+): string {
+  const baseRules = [
+    "You are an expert technical writing coach for software engineers.",
+    "Rewrite the user's English text to be clear, concise, and natural for the given context.",
+    `The user's proficiency level is ${userLevel}.`,
+    "Preserve the author's intended meaning.",
+    "Do not invent facts, steps, logs, versions, or conclusions.",
+    "Preserve inline code, commands, file names, and technical identifiers.",
+    "",
+    "You MUST respond with valid JSON only, no markdown wrapper, no extra text.",
+    "JSON format:",
+    "{",
+    '  "rewritten": "<the rewritten text>",',
+    '  "changes": [{"original": "<original phrase>", "corrected": "<corrected phrase>", "reason": "<why this change>"}],',
+    '  "tone": "<friendly|professional|too_casual|too_formal|neutral>",',
+    '  "tips": ["<日本語の改善ポイント1>", "<日本語の改善ポイント2>"]',
+    "}",
+    'The "tips" field MUST be written in Japanese.',
+  ];
+
+  if (context === "github_issue") {
+    baseRules.push(
+      "",
+      "For GitHub issues:",
+      "- Preserve Markdown structure.",
+      "- Keep headings, blank lines, numbered lists, and bullet lists.",
+      "- Do NOT collapse the issue into a single paragraph.",
+      "- Keep the output easy to paste directly into GitHub.",
+      "- Keep the tone professional and concise."
+    );
+  }
+
+  if (context === "pr_comment") {
+    baseRules.push(
+      "",
+      "For PR comments:",
+      "- Preserve line breaks and list structure when present.",
+      "- Keep the comment direct, actionable, and easy to skim.",
+      "- Prefer short paragraphs or bullets over dense blocks.",
+      "- Make requests and suggestions explicit."
+    );
+  }
+
+  if (context === "commit_message") {
+    baseRules.push(
+      "",
+      "For commit messages:",
+      "- Prefer conventional imperative style.",
+      "- Keep the subject concise.",
+      "- Do not add headings or unnecessary sections."
+    );
+  }
+
+  if (context === "slack") {
+    baseRules.push(
+      "",
+      "For Slack messages:",
+      "- Keep the message natural, concise, and conversational.",
+      "- Preserve short paragraphs and bullets when helpful.",
+      "- Do not make it overly formal.",
+      "- Keep it easy to read quickly in chat."
+    );
+  }
+
+  if (context === "general") {
+    baseRules.push(
+      "",
+      "For general writing:",
+      "- Optimize for clarity and natural phrasing.",
+      "- Preserve useful structure from the original text.",
+      "- Do not force GitHub-style sections unless the input already uses them."
+    );
+  }
+
+  return baseRules.join("\n");
+}
+
+function buildRewriteUserPrompt(
+  context: RewriteContext,
+  original: string
+): string {
+  const prompt = [
+    `Context: ${context}`,
+    "",
+    "---BEGIN USER TEXT---",
+    original,
+    "---END USER TEXT---",
+    "",
+    "Rewrite the text for the given context.",
+  ];
+
+  if (context === "github_issue") {
+    prompt.push(
+      "If the input uses Markdown, keep it as Markdown.",
+      "Preserve headings, numbered steps, bullet points, and code spans."
+    );
+  }
+
+  if (context === "pr_comment") {
+    prompt.push(
+      "Make the comment easy for reviewers to scan.",
+      "If the input includes multiple points, preserve them as separate lines or bullets."
+    );
+  }
+
+  if (context === "commit_message") {
+    prompt.push(
+      "Return a commit message, not an explanation or description block."
+    );
+  }
+
+  if (context === "slack") {
+    prompt.push(
+      "Keep the output suitable for posting directly in Slack."
+    );
+  }
+
+  if (context === "general") {
+    prompt.push(
+      "Preserve the original structure when it improves readability."
+    );
+  }
+
+  prompt.push("Then return the JSON object exactly as instructed.");
+
+  return prompt.join("\n");
+}
+
+function containsJapanese(text: string): boolean {
+  return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text);
+}
+
+function translateTipToJapanese(tip: string): string {
+  const normalized = tip.trim();
+
+  const replacements: Array<[RegExp, string]> = [
+    [/^clear and concise title:?/i, "タイトルを簡潔で分かりやすく修正しました。"],
+    [/^reorganized structure:?/i, "構成を整理し、内容を追いやすくしました。"],
+    [/^improved formatting:?/i, "見出しや箇条書きを整え、読みやすさを改善しました。"],
+    [/^minor rewording:?/i, "表現を細かく調整し、より自然で明確な英語にしました。"],
+    [/^added a brief summary:?/i, "冒頭に要点が伝わる説明を入れ、状況を把握しやすくしました。"],
+    [/^removed unnecessary phrases:?/i, "不要な表現を削り、文章を簡潔にしました。"],
+    [/^these improvements make the text more readable.*$/i, "全体として、読みやすく分かりやすい issue 文に整えました。"],
+  ];
+
+  for (const [pattern, translated] of replacements) {
+    if (pattern.test(normalized)) {
+      return translated;
+    }
+  }
+
+  return `改善ポイント: ${normalized}`;
+}
+
+function normalizeTipsToJapanese(tips: string[]): string[] {
+  return tips
+    .map((tip) => tip.trim())
+    .filter(Boolean)
+    .map((tip) => (containsJapanese(tip) ? tip : translateTipToJapanese(tip)));
+}
+
 function extractJson(text: string): string {
   const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (codeBlockMatch) {
@@ -178,7 +342,7 @@ function parseRewriteResponse(text: string): RewriteResult | null {
       rewritten: parsed.rewritten.trim(),
       changes,
       tone: normalizeTone(parsed.tone),
-      tips,
+      tips: normalizeTipsToJapanese(tips),
     };
   } catch {
     const rewritten = stripTrailingTipsSection(text);
@@ -190,7 +354,7 @@ function parseRewriteResponse(text: string): RewriteResult | null {
       rewritten,
       changes: [],
       tone: "professional",
-      tips: parseTipsFromText(text),
+      tips: normalizeTipsToJapanese(parseTipsFromText(text)),
     };
   }
 }
@@ -281,29 +445,10 @@ rewriteRoutes.post("/", async (c) => {
 
   const userLevel = userRow.level;
 
-  // Build custom system prompt for structured JSON output
-  const systemPrompt = [
-    "You are an expert technical writing coach for software engineers.",
-    "Rewrite the user's English text to be clear, concise, and natural for the given context.",
-    `The user's proficiency level is ${userLevel}.`,
-    "",
-    "You MUST respond with valid JSON only, no markdown, no extra text.",
-    "JSON format:",
-    "{",
-    '  "rewritten": "<the rewritten text>",',
-    '  "changes": [{"original": "<original phrase>", "corrected": "<corrected phrase>", "reason": "<why this change>"}],',
-    '  "tone": "<friendly|professional|too_casual|too_formal|neutral>",',
-    '  "tips": ["<日本語の改善ポイント1>", "<日本語の改善ポイント2>"]',
-    "}",
-    'The "tips" field MUST be written in Japanese.',
-  ].join("\n");
-
-  // Build user prompt from template
+  // Build custom prompts for structured JSON output
+  const systemPrompt = buildRewriteSystemPrompt(body.context, userLevel);
   const llmService = createLLMService(c.env);
-  const { user: userPrompt } = llmService.prompts.render(
-    llmService.prompts.templates.rewrite,
-    { context: body.context, original: body.text }
-  );
+  const userPrompt = buildRewriteUserPrompt(body.context, body.text);
 
   // Call LLM
   let llmResponse;
