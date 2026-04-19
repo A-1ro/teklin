@@ -42,7 +42,7 @@ id = "50d730b4541a47cf9c39ae3f552338f6"
 binding = "CONTENT_BUCKET"
 bucket_name = "teklin-content"
 
-# ─── AI Gateway (via AI binding) ───
+# ─── Workers AI ───
 [ai]
 binding = "AI"
 
@@ -50,13 +50,9 @@ binding = "AI"
 [vars]
 ENVIRONMENT = "production"
 APP_URL = "https://teklin.app"
-AI_GATEWAY_ACCOUNT_ID = "placeholder-replace-with-actual-account-id"
-AI_GATEWAY_ID = "placeholder-replace-with-actual-gateway-id"
 LLM_DAILY_TOKEN_LIMIT = "100000"
-
-# ─── Secrets (set via `wrangler secret put`) ───
-# wrangler secret put OPENAI_API_KEY
-# wrangler secret put ANTHROPIC_API_KEY
+WORKERS_AI_LIGHTWEIGHT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+WORKERS_AI_QUALITY_MODEL = "anthropic/claude-sonnet-4.6"
 
 [observability]
 [observability.logs]

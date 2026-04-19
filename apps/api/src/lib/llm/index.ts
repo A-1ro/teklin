@@ -17,8 +17,6 @@ import { createLLMRouter, DEFAULT_ROUTER_CONFIG } from "./router";
 import { renderPrompt, templates } from "./prompts";
 import { trackUsage, getDailyUsage, checkDailyLimit } from "./usage";
 import { createWorkersAiAdapter } from "./adapters/workers-ai";
-import { createOpenAiAdapter } from "./adapters/openai";
-import { createAnthropicAdapter } from "./adapters/anthropic";
 import type { LLMUsage } from "./types";
 import type { Bindings } from "../../types";
 
@@ -26,11 +24,9 @@ type LLMServiceBindings = Pick<
   Bindings,
   | "AI"
   | "USAGE_KV"
-  | "AI_GATEWAY_ACCOUNT_ID"
-  | "AI_GATEWAY_ID"
-  | "OPENAI_API_KEY"
-  | "ANTHROPIC_API_KEY"
   | "LLM_DAILY_TOKEN_LIMIT"
+  | "WORKERS_AI_LIGHTWEIGHT_MODEL"
+  | "WORKERS_AI_QUALITY_MODEL"
 >;
 
 export interface LLMService {
@@ -51,38 +47,25 @@ export interface LLMService {
  * from Cloudflare Worker bindings.
  */
 export function createLLMService(env: LLMServiceBindings): LLMService {
-  const adapters: LLMAdapter[] = [];
+  const adapters: LLMAdapter[] = [createWorkersAiAdapter(env.AI)];
 
-  // Workers AI is always available
-  adapters.push(createWorkersAiAdapter(env.AI));
-
-  // OpenAI via AI Gateway — only if key is configured
-  if (env.OPENAI_API_KEY && env.AI_GATEWAY_ACCOUNT_ID && env.AI_GATEWAY_ID) {
-    adapters.push(
-      createOpenAiAdapter({
-        accountId: env.AI_GATEWAY_ACCOUNT_ID,
-        gatewayId: env.AI_GATEWAY_ID,
-        apiKey: env.OPENAI_API_KEY,
-      })
-    );
-  }
-
-  // Anthropic via AI Gateway — only if key is configured
-  if (
-    env.ANTHROPIC_API_KEY &&
-    env.AI_GATEWAY_ACCOUNT_ID &&
-    env.AI_GATEWAY_ID
-  ) {
-    adapters.push(
-      createAnthropicAdapter({
-        accountId: env.AI_GATEWAY_ACCOUNT_ID,
-        gatewayId: env.AI_GATEWAY_ID,
-        apiKey: env.ANTHROPIC_API_KEY,
-      })
-    );
-  }
-
-  const router = createLLMRouter(adapters, DEFAULT_ROUTER_CONFIG);
+  const router = createLLMRouter(adapters, {
+    ...DEFAULT_ROUTER_CONFIG,
+    taskRouting: {
+      lightweight: {
+        provider: "workers-ai",
+        model:
+          env.WORKERS_AI_LIGHTWEIGHT_MODEL ??
+          DEFAULT_ROUTER_CONFIG.taskRouting.lightweight.model,
+      },
+      quality: {
+        provider: "workers-ai",
+        model:
+          env.WORKERS_AI_QUALITY_MODEL ??
+          DEFAULT_ROUTER_CONFIG.taskRouting.quality.model,
+      },
+    },
+  });
   const dailyLimit = parseInt(env.LLM_DAILY_TOKEN_LIMIT ?? "100000", 10);
   const kv = env.USAGE_KV;
 

@@ -6,6 +6,7 @@ export interface LLMOptions {
   maxTokens?: number;
   temperature?: number;
   system?: string;
+  model?: string;
 }
 
 export interface LLMUsage {

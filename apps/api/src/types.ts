@@ -14,10 +14,8 @@ export type Bindings = {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   APP_URL: string;
-  AI_GATEWAY_ACCOUNT_ID: string;
-  AI_GATEWAY_ID: string;
-  OPENAI_API_KEY?: string;
-  ANTHROPIC_API_KEY?: string;
   /** Daily token limit per user. Defaults to "100000" if not set. */
   LLM_DAILY_TOKEN_LIMIT?: string;
+  WORKERS_AI_LIGHTWEIGHT_MODEL?: string;
+  WORKERS_AI_QUALITY_MODEL?: string;
 };

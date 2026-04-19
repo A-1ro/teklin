@@ -13,10 +13,16 @@ export interface RouterConfig {
 }
 
 export const DEFAULT_ROUTER_CONFIG: RouterConfig = {
-  fallbackOrder: ["workers-ai", "openai", "anthropic"],
+  fallbackOrder: ["workers-ai"],
   taskRouting: {
-    lightweight: { provider: "workers-ai" },
-    quality: { provider: "openai" },
+    lightweight: {
+      provider: "workers-ai",
+      model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    },
+    quality: {
+      provider: "workers-ai",
+      model: "anthropic/claude-sonnet-4.6",
+    },
   },
 };
 
@@ -72,7 +78,12 @@ export function createLLMRouter(
       let lastError: unknown;
       for (const adapter of candidates) {
         try {
-          return await adapter.generate(prompt, options);
+          const route = taskType != null ? config.taskRouting[taskType] : null;
+          const mergedOptions =
+            route?.provider === adapter.provider && route.model
+              ? { ...options, model: route.model }
+              : options;
+          return await adapter.generate(prompt, mergedOptions);
         } catch (err) {
           lastError = err;
           // Continue to next adapter
@@ -104,7 +115,12 @@ export function createLLMRouter(
       // before streaming starts (e.g., network error), the error propagates
       // to the caller. Consider retrying with generate() as a fallback
       // strategy at the call site if stream reliability is critical.
-      return candidates[0].stream(prompt, options);
+      const route = taskType != null ? config.taskRouting[taskType] : null;
+      const mergedOptions =
+        route?.provider === candidates[0].provider && route.model
+          ? { ...options, model: route.model }
+          : options;
+      return candidates[0].stream(prompt, mergedOptions);
     },
   };
 }
