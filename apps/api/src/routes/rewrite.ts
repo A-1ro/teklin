@@ -250,8 +250,9 @@ rewriteRoutes.post("/", async (c) => {
     '  "rewritten": "<the rewritten text>",',
     '  "changes": [{"original": "<original phrase>", "corrected": "<corrected phrase>", "reason": "<why this change>"}],',
     '  "tone": "<friendly|professional|too_casual|too_formal|neutral>",',
-    '  "tips": ["<improvement tip 1>", "<improvement tip 2>"]',
+    '  "tips": ["<日本語の改善ポイント1>", "<日本語の改善ポイント2>"]',
     "}",
+    'The "tips" field MUST be written in Japanese.',
   ].join("\n");
 
   // Build user prompt from template

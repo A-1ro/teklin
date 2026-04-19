@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { MarkdownText } from "@/components/markdown-text";
 import type {
   RewriteContext,
   RewriteResult,
@@ -386,9 +387,10 @@ export function RewritePage() {
                   <ToneBadge tone={result.tone} />
                 </div>
               </div>
-              <p className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-gray-100">
-                {result.rewritten}
-              </p>
+              <MarkdownText
+                text={result.rewritten}
+                className="space-y-3 text-sm text-gray-100"
+              />
             </div>
 
             {/* Changes */}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { MarkdownText } from "@/components/markdown-text";
 import type {
   RewriteHistoryDetail,
   RewriteContext,
@@ -191,9 +192,10 @@ export function RewriteDetailPage() {
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-violet-400">
               Rewritten
             </h2>
-            <p className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-gray-100">
-              {detail.rewrittenText}
-            </p>
+            <MarkdownText
+              text={detail.rewrittenText}
+              className="space-y-3 text-sm text-gray-100"
+            />
           </div>
         </div>
 
