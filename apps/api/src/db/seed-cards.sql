@@ -170,7 +170,7 @@ INSERT INTO phrase_cards (id, phrase, translation, context, domain, level, categ
 ('card-gi-007', 'This issue is a blocker for the release', 'この問題はリリースのブロッカーです', 'This issue is a blocker for the release — tagging as P0 and assigning to the on-call engineer.', 'web', 'L2', 'github_issues', 1713139200000),
 ('card-gi-008', 'Can we prioritize this?', 'これを優先してもらえますか？', 'Can we prioritize this? It is blocking our team''s integration work for the next two weeks.', 'web', 'L2', 'github_issues', 1713139200000),
 ('card-gi-009', 'This is reproducible 100% of the time', 'これは100%の確率で再現できます', 'This is reproducible 100% of the time on both Chrome and Firefox — not a browser-specific bug.', 'web', 'L2', 'github_issues', 1713139200000),
-('card-gi-010', 'Workaround available', ' 回避策があります', 'Workaround available: disable the feature flag ENABLE_NEW_CHECKOUT until the fix is released.', 'web', 'L2', 'github_issues', 1713139200000),
+('card-gi-010', 'Workaround available', '回避策があります', 'Workaround available: disable the feature flag ENABLE_NEW_CHECKOUT until the fix is released.', 'web', 'L2', 'github_issues', 1713139200000),
 ('card-gi-011', 'Attaching a minimal reproduction', '最小再現コードを添付します', 'Attaching a minimal reproduction — this isolated the issue to the useEffect dependency array.', 'web', 'L2', 'github_issues', 1713139200000),
 ('card-gi-012', 'This only occurs in production, not staging', 'これは本番環境でのみ発生し、ステージングでは発生しません', 'This only occurs in production, not staging — likely related to a config or environment difference.', 'infra', 'L2', 'github_issues', 1713139200000),
 
