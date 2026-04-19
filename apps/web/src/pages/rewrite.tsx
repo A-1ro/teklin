@@ -194,6 +194,7 @@ export function RewritePage() {
         body: JSON.stringify({
           phrase: saveCard.phrase,
           translation: saveCard.translation,
+          changeIndex: saveCard.changeIndex,
         }),
       });
       setSaveCard((prev) =>

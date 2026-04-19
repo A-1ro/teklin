@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, and, lte, sql, inArray, count } from "drizzle-orm";
+import { eq, and, lte, sql, inArray, count, or, isNull } from "drizzle-orm";
 import { createDb, phraseCards, userSrs, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -100,6 +100,13 @@ function mapRowToCard(row: {
   };
 }
 
+function cardVisibilityCondition(userId: string) {
+  return or(
+    isNull(phraseCards.createdByUserId),
+    eq(phraseCards.createdByUserId, userId)
+  );
+}
+
 export const cardRoutes = new Hono<{
   Bindings: Bindings;
   Variables: AuthVariables;
@@ -146,6 +153,7 @@ cardRoutes.get("/review", async (c) => {
     .where(
       and(
         sql`${userSrs.cardId} IS NULL`,
+        cardVisibilityCondition(userId),
         sql`${phraseCards.level} IN (${sql.join(
           allowedLevels.map((l) => sql`${l}`),
           sql`, `
@@ -166,6 +174,7 @@ cardRoutes.get("/review", async (c) => {
           and(
             eq(userSrs.userId, userId),
             inArray(phraseCards.id, cached.dueCardIds),
+            cardVisibilityCondition(userId),
             sql`${phraseCards.level} IN (${sql.join(
               allowedLevels.map((l) => sql`${l}`),
               sql`, `
@@ -185,6 +194,7 @@ cardRoutes.get("/review", async (c) => {
         and(
           eq(userSrs.userId, userId),
           lte(userSrs.nextReview, now),
+          cardVisibilityCondition(userId),
           sql`${phraseCards.level} IN (${sql.join(
             allowedLevels.map((l) => sql`${l}`),
             sql`, `
@@ -266,6 +276,7 @@ cardRoutes.get("/deck/:category", async (c) => {
     .where(
       and(
         eq(phraseCards.category, category),
+        cardVisibilityCondition(userId),
         sql`${phraseCards.level} IN (${sql.join(
           allowedLevels.map((l) => sql`${l}`),
           sql`, `
@@ -382,6 +393,7 @@ cardRoutes.post("/:id/answer", async (c) => {
 // PUT /api/cards/:id — Update a phrase card
 // ---------------------------------------------------------------------------
 cardRoutes.put("/:id", async (c) => {
+  const { userId } = c.get("user");
   const cardId = c.req.param("id");
 
   let body: { phrase: string; translation: string };
@@ -397,13 +409,16 @@ cardRoutes.put("/:id", async (c) => {
 
   const db = createDb(c.env.DB);
   const existing = await db
-    .select({ id: phraseCards.id })
+    .select({ id: phraseCards.id, createdByUserId: phraseCards.createdByUserId })
     .from(phraseCards)
     .where(eq(phraseCards.id, cardId))
     .get();
 
   if (!existing) {
     return c.json({ error: "Card not found" }, 404);
+  }
+  if (existing.createdByUserId !== userId) {
+    return c.json({ error: "Forbidden" }, 403);
   }
 
   await db
@@ -462,6 +477,7 @@ cardRoutes.get("/stats", async (c) => {
       userSrs,
       and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
     )
+    .where(cardVisibilityCondition(userId))
     .groupBy(phraseCards.category);
 
   const dueCountRow = await db
@@ -472,6 +488,7 @@ cardRoutes.get("/stats", async (c) => {
       and(
         eq(userSrs.userId, userId),
         lte(userSrs.nextReview, now),
+        cardVisibilityCondition(userId),
         sql`${phraseCards.level} IN (${sql.join(
           allowedLevels.map((l) => sql`${l}`),
           sql`, `
@@ -490,6 +507,7 @@ cardRoutes.get("/stats", async (c) => {
     .where(
       and(
         sql`${userSrs.cardId} IS NULL`,
+        cardVisibilityCondition(userId),
         sql`${phraseCards.level} IN (${sql.join(
           allowedLevels.map((l) => sql`${l}`),
           sql`, `

@@ -66,6 +66,7 @@ interface ParsedExplanation {
 }
 
 interface RewriteLinkedCard {
+  changeIndex: number;
   id: string;
   phrase: string;
   translation: string;
@@ -168,18 +169,15 @@ export function RewriteDetailPage() {
 
   const explanation = parseExplanation(detail.explanation);
 
-  function findLinkedCard(change: RewriteChange): RewriteLinkedCard | undefined {
-    return linkedCards.find(
-      (card) =>
-        card.phrase === change.corrected && card.translation === change.original
-    );
+  function findLinkedCard(changeIndex: number): RewriteLinkedCard | undefined {
+    return linkedCards.find((card) => card.changeIndex === changeIndex);
   }
 
   function openSaveCard(changeIndex: number) {
     const change = explanation.changes[changeIndex];
     if (!change) return;
 
-    const linkedCard = findLinkedCard(change);
+    const linkedCard = findLinkedCard(changeIndex);
     setSaveCard({
       changeIndex,
       cardId: linkedCard?.id ?? null,
@@ -208,6 +206,7 @@ export function RewriteDetailPage() {
             body: JSON.stringify({
               phrase: saveCard.phrase,
               translation: saveCard.translation,
+              changeIndex: saveCard.changeIndex,
             }),
           }
         );
@@ -230,6 +229,7 @@ export function RewriteDetailPage() {
         setLinkedCards((prev) => [
           ...prev,
           {
+            changeIndex: saveCard.changeIndex,
             id: created.cardId,
             phrase: saveCard.phrase,
             translation: saveCard.translation,
@@ -373,7 +373,7 @@ export function RewriteDetailPage() {
                         className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:border-gray-600 hover:text-gray-200"
                       >
                         <Save className="h-3 w-3" />
-                        {findLinkedCard(change) ? "Edit Phrase Card" : "Save to Phrase Card"}
+                        {findLinkedCard(index) ? "Edit Phrase Card" : "Save to Phrase Card"}
                       </button>
                     )}
                   </div>

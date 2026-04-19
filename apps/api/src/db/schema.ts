@@ -132,6 +132,7 @@ export const phraseCards = sqliteTable("phrase_cards", {
   phrase: text("phrase").notNull(),
   translation: text("translation").notNull(),
   context: text("context").notNull(),
+  createdByUserId: text("created_by_user_id").references(() => users.id),
   // Domain: "web" | "infra" | "ml" | "mobile"
   domain: text("domain").notNull(),
   // Level: "L1" | "L2" | "L3" | "L4"
@@ -140,6 +141,28 @@ export const phraseCards = sqliteTable("phrase_cards", {
   category: text("category").notNull(),
   createdAt: integer("created_at").notNull(),
 });
+
+export const rewriteHistoryCards = sqliteTable(
+  "rewrite_history_cards",
+  {
+    id: text("id").primaryKey(),
+    historyId: text("history_id")
+      .notNull()
+      .references(() => aiRewriteHistory.id),
+    cardId: text("card_id")
+      .notNull()
+      .references(() => phraseCards.id),
+    changeIndex: integer("change_index").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("rewrite_history_cards_history_change_idx").on(
+      table.historyId,
+      table.changeIndex
+    ),
+    index("rewrite_history_cards_history_idx").on(table.historyId),
+  ]
+);
 
 /**
  * user_srs

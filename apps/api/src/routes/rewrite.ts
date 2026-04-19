@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { eq, desc, count, and } from "drizzle-orm";
-import { createDb, aiRewriteHistory, phraseCards, users } from "../db";
+import { createDb, aiRewriteHistory, phraseCards, rewriteHistoryCards, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
 import { createLLMService } from "../lib/llm";
@@ -760,20 +760,16 @@ rewriteRoutes.get("/:id/cards", async (c) => {
     return c.json({ error: "Not found" }, 404);
   }
 
-  const category = CONTEXT_TO_CATEGORY[historyRow.context as RewriteContext];
   const cards = await db
     .select({
+      changeIndex: rewriteHistoryCards.changeIndex,
       id: phraseCards.id,
       phrase: phraseCards.phrase,
       translation: phraseCards.translation,
     })
-    .from(phraseCards)
-    .where(
-      and(
-        eq(phraseCards.context, historyRow.originalText),
-        eq(phraseCards.category, category)
-      )
-    );
+    .from(rewriteHistoryCards)
+    .innerJoin(phraseCards, eq(rewriteHistoryCards.cardId, phraseCards.id))
+    .where(eq(rewriteHistoryCards.historyId, historyId));
 
   return c.json({ items: cards });
 });
@@ -785,15 +781,15 @@ rewriteRoutes.post("/:id/save-card", async (c) => {
   const { userId } = c.get("user");
   const historyId = c.req.param("id");
 
-  let body: { phrase: string; translation: string };
+  let body: { phrase: string; translation: string; changeIndex: number };
   try {
-    body = await c.req.json<{ phrase: string; translation: string }>();
+    body = await c.req.json<{ phrase: string; translation: string; changeIndex: number }>();
   } catch {
     return c.json({ error: "Invalid request body" }, 400);
   }
 
-  if (!body.phrase || !body.translation) {
-    return c.json({ error: "phrase and translation are required" }, 400);
+  if (!body.phrase || !body.translation || Number.isNaN(body.changeIndex)) {
+    return c.json({ error: "phrase, translation, and changeIndex are required" }, 400);
   }
 
   const db = createDb(c.env.DB);
@@ -830,9 +826,18 @@ rewriteRoutes.post("/:id/save-card", async (c) => {
     phrase: body.phrase,
     translation: body.translation,
     context: historyRow.originalText,
+    createdByUserId: userId,
     domain: userRow.domain,
     level: userRow.level,
     category,
+    createdAt: now,
+  });
+
+  await db.insert(rewriteHistoryCards).values({
+    id: crypto.randomUUID(),
+    historyId,
+    cardId,
+    changeIndex: body.changeIndex,
     createdAt: now,
   });
 
