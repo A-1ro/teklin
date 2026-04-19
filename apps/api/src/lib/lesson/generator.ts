@@ -140,7 +140,7 @@ function buildFallbackLesson(
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "Fill in the blank with the correct imperative verb.",
+      instruction: "空欄に正しい動詞を入れよう。",
       sentence: `___ the ${context === "commit_message" ? "bug in" : "issue with"} ${example.toLowerCase()}`,
       correctAnswer:
         context === "commit_message" ? "Fix" : "Resolve",
@@ -149,15 +149,17 @@ function buildFallbackLesson(
     {
       id: "p2",
       type: "reorder",
-      instruction: "Arrange the words to form a correct commit message.",
+      instruction: "単語を並び替えて正しいコミットメッセージを作ろう。",
       words: ["button", "Fix", "alignment", "login", "the"],
       correctAnswer: "Fix the login button alignment",
     },
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a short commit message for this change.",
-      prompt: `You just ${domain === "web" ? "fixed a CSS issue on the signup page" : "updated the deployment configuration"}.`,
+      instruction: "この変更に対するコミットメッセージを英語で書こう。",
+      prompt: domain === "web"
+        ? "サインアップページのCSSのレイアウト崩れを修正しました。"
+        : "デプロイ設定ファイルを最新の環境に合わせて更新しました。",
     },
   ];
 
@@ -191,13 +193,13 @@ function buildFallbackLesson(
     },
     practice: { exercises },
     wrapup: {
-      summary: `Today you practiced writing clear ${context.replace("_", " ")} messages using imperative verbs.`,
+      summary: `命令形の動詞を使った${context === "commit_message" ? "コミットメッセージ" : context === "pr_comment" ? "PRコメント" : "技術英語"}の書き方を練習しました。`,
       keyPoints: [
-        "Use imperative mood (Fix, Add, Update)",
-        "Be specific about what changed",
-        "Keep messages concise and clear",
+        "命令形を使う（Fix, Add, Update など過去形・進行形はNG）",
+        "何を変えたか具体的に書く",
+        "簡潔・明確に",
       ],
-      nextPreview: `Next time: Writing effective ${level === "L1" || level === "L2" ? "PR descriptions" : "technical documentation"}`,
+      nextPreview: `次回：${level === "L1" || level === "L2" ? "PR の説明文の書き方" : "技術ドキュメントの書き方"}`,
     },
   };
 }

@@ -1004,7 +1004,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "Fill in the blank with the correct conventional commit prefix.",
+      instruction: "空欄に正しいコンベンショナルコミットのプレフィックスを入れよう。",
       sentence: "___ : add user authentication feature",
       correctAnswer: "feat",
       acceptableAnswers: ["feat"],
@@ -1012,24 +1012,23 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction: "Arrange the words to form a correct commit message.",
+      instruction: "単語を並び替えて正しいコミットメッセージを作ろう。",
       words: ["alignment", "Fix", "button", "the", "login"],
       correctAnswer: "Fix the login button alignment",
     },
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a commit message for this change.",
+      instruction: "この変更に対するコミットメッセージを英語で書こう。",
       prompt:
-        "You fixed a bug where clicking the submit button twice submitted the form twice. Write a conventional commit message.",
+        "送信ボタンを2回クリックするとフォームが2回送信されるバグを修正しました。コンベンショナルコミット形式でコミットメッセージを書こう。",
     },
   ],
   "web-L2": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction:
-        "Fill in the blank with the correct PR comment prefix for a minor suggestion.",
+      instruction: "空欄に細かい提案を示す正しいPRコメントのプレフィックスを入れよう。",
       sentence: "___ : prefer const over let here since this value is never reassigned",
       correctAnswer: "nit",
       acceptableAnswers: ["nit", "Nit"],
@@ -1037,8 +1036,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct code review comment about a memory issue.",
+      instruction: "単語を並び替えてメモリ問題に関する正しいコードレビューコメントを作ろう。",
       words: [
         "cause",
         "This",
@@ -1052,16 +1050,16 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a PR comment for this situation.",
+      instruction: "この状況に対するPRコメントを英語で書こう。",
       prompt:
-        "You noticed that a colleague's PR uses a hardcoded URL string 'https://api.example.com' in three different places. Write a code review comment suggesting improvement.",
+        "同僚のPRで、'https://api.example.com' というハードコードされたURL文字列が3箇所で使われていることに気づきました。改善を提案するコードレビューコメントを書こう。",
     },
   ],
   "web-L3": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "Fill in the blank with the correct technical term.",
+      instruction: "空欄に正しい技術用語を入れよう。",
       sentence:
         "fix: resolve ___ condition in the concurrent request handler",
       correctAnswer: "race",
@@ -1070,8 +1068,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct code review comment.",
+      instruction: "単語を並び替えて正しいコードレビューコメントを作ろう。",
       words: [
         "swallow",
         "silently",
@@ -1084,17 +1081,16 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p3",
       type: "free_text",
-      instruction:
-        "Write a PR comment about this code pattern.",
+      instruction: "このコードパターンについてPRコメントを英語で書こう。",
       prompt:
-        "You see a try/catch block that catches all errors and does nothing with them (empty catch block). Write a code review comment explaining the problem and suggesting a fix.",
+        "すべてのエラーをキャッチして何もしない空のcatchブロックを含むtry/catchを見つけました。問題を説明して修正を提案するコードレビューコメントを書こう。",
     },
   ],
   "web-L4": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "Fill in the blank with the correct term.",
+      instruction: "空欄に正しい用語を入れよう。",
       sentence:
         "This is an implicit ___ coupling — the order of initialization is not obvious",
       correctAnswer: "temporal",
@@ -1103,8 +1099,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct PR comment about abstraction.",
+      instruction: "単語を並び替えて抽象化に関する正しいPRコメントを作ろう。",
       words: [
         "leaks",
         "This",
@@ -1116,17 +1111,16 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a technical PR comment.",
+      instruction: "技術的なPRコメントを英語で書こう。",
       prompt:
-        "You are reviewing a PR where a module directly accesses another module's database table by name. This creates tight coupling. Write a senior-level PR comment explaining the problem using correct terminology.",
+        "あるモジュールが別のモジュールのデータベーステーブル名に直接アクセスしているPRをレビューしています。これは密結合を生み出します。正しい技術用語を使ってシニアエンジニアレベルのPRコメントを書こう。",
     },
   ],
   "infra-L1": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction:
-        "Fill in the blank with the correct Slack phrase for proactive sharing.",
+      instruction: "空欄に情報を事前共有する正しいSlackのフレーズを入れよう。",
       sentence:
         "___ — the production deploy will run at 3pm today",
       correctAnswer: "Heads up",
@@ -1135,23 +1129,23 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction: "Arrange the words to form a correct commit message.",
+      instruction: "単語を並び替えて正しいコミットメッセージを作ろう。",
       words: ["dependencies", "chore:", "bump"],
       correctAnswer: "chore: bump dependencies",
     },
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a Slack message for this situation.",
+      instruction: "この状況に対するSlackメッセージを英語で書こう。",
       prompt:
-        "You are about to restart the backend servers for a routine maintenance task that will take about 10 minutes. Write a Slack message to inform your team.",
+        "約10分かかるルーティンメンテナンスのためにバックエンドサーバーを再起動しようとしています。チームに知らせるSlackメッセージを書こう。",
     },
   ],
   "infra-L2": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "Fill in the blank with the correct phrase.",
+      instruction: "空欄に正しい語句を入れよう。",
       sentence:
         "This ___ occurs in production, not staging — likely a config difference",
       correctAnswer: "only",
@@ -1160,8 +1154,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct Slack message.",
+      instruction: "単語を並び替えて正しいSlackメッセージを作ろう。",
       words: [
         "for",
         "you",
@@ -1173,17 +1166,16 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a GitHub issue comment.",
+      instruction: "GitHubのissueコメントを英語で書こう。",
       prompt:
-        "You discovered that a memory leak bug only appears in the production Kubernetes cluster but not in the local Docker environment. Write a bug report comment explaining the environment difference.",
+        "メモリリークのバグが本番のKubernetesクラスターにのみ現れ、ローカルのDocker環境では再現しないことがわかりました。環境の違いを説明するバグレポートのコメントを書こう。",
     },
   ],
   "infra-L3": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction:
-        "Fill in the blank with the correct retry strategy term.",
+      instruction: "空欄に正しいリトライ戦略の用語を入れよう。",
       sentence:
         "feat: implement retry with ___ backoff for the webhook processor",
       correctAnswer: "exponential",
@@ -1192,8 +1184,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct PR comment.",
+      instruction: "単語を並び替えて正しいPRコメントを作ろう。",
       words: [
         "partial",
         "not",
@@ -1208,16 +1199,16 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a PR comment about error handling.",
+      instruction: "エラーハンドリングに関するPRコメントを英語で書こう。",
       prompt:
-        "You are reviewing a PR for a service that calls an external API. The code fails immediately on the first error with no retry logic. Write a PR comment suggesting exponential backoff and explaining why it matters for distributed systems.",
+        "外部APIを呼び出すサービスのPRをレビューしています。コードは最初のエラーで即座に失敗し、リトライロジックがありません。指数バックオフを提案して分散システムにとって重要な理由を説明するPRコメントを書こう。",
     },
   ],
   "infra-L4": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "Fill in the blank with the correct architectural term.",
+      instruction: "空欄に正しいアーキテクチャ用語を入れよう。",
       sentence:
         "feat: introduce ___ sourcing for the payment audit trail",
       correctAnswer: "event",
@@ -1226,8 +1217,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct phrase for requesting exploration.",
+      instruction: "単語を並び替えて調査を求める正しいフレーズを作ろう。",
       words: [
         "spike",
         "warrants",
@@ -1240,17 +1230,16 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a GitHub issue for an architectural proposal.",
+      instruction: "アーキテクチャ提案のGitHub issueを英語で書こう。",
       prompt:
-        "Your team is considering switching from a CRUD-based audit log to event sourcing. Write a GitHub issue proposing this architectural change and requesting feedback from the team before proceeding.",
+        "チームでCRUDベースの監査ログからイベントソーシングへの移行を検討しています。このアーキテクチャ変更を提案し、着手前にチームからフィードバックを求めるGitHub issueを書こう。",
     },
   ],
   "ml-L1": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction:
-        "Fill in the blank with the correct section heading for a bug report.",
+      instruction: "空欄にバグレポートの正しいセクション見出しを入れよう。",
       sentence: "___ behavior: The model returns an error for inputs longer than 512 tokens",
       correctAnswer: "Expected",
       acceptableAnswers: ["Expected", "Actual"],
@@ -1258,25 +1247,23 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct commit message.",
+      instruction: "単語を並び替えて正しいコミットメッセージを作ろう。",
       words: ["training", "feat:", "script", "add", "model"],
       correctAnswer: "feat: add model training script",
     },
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a bug report section.",
+      instruction: "バグレポートのセクションを英語で書こう。",
       prompt:
-        "The ML model endpoint should return results in under 500ms but is taking 3 seconds for inputs larger than 1000 characters. Write the 'Expected behavior' and 'Actual behavior' sections of a GitHub issue.",
+        "MLモデルのエンドポイントは500ms以内に結果を返すべきですが、1000文字を超える入力では3秒かかっています。GitHub issueの「Expected behavior」と「Actual behavior」のセクションを書こう。",
     },
   ],
   "ml-L2": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction:
-        "Fill in the blank to complete this PR comment about memory.",
+      instruction: "空欄に正しい語句を入れてメモリに関するPRコメントを完成させよう。",
       sentence:
         "Have you considered the ___ implications here? This could cause an OOM on large datasets",
       correctAnswer: "memory",
@@ -1285,24 +1272,23 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct commit message.",
+      instruction: "単語を並び替えて正しいコミットメッセージを作ろう。",
       words: ["inference", "perf:", "model", "optimize", "pipeline"],
       correctAnswer: "perf: optimize model inference pipeline",
     },
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a PR comment about this code.",
+      instruction: "このコードに関するPRコメントを英語で書こう。",
       prompt:
-        "In a PR, you see code that loads the entire training dataset (potentially millions of rows) into memory at once before processing. Write a PR comment asking about memory implications and suggesting a more memory-efficient approach.",
+        "PRで、処理前に訓練データセット全体（数百万行になる可能性あり）を一度にメモリに読み込むコードを見つけました。メモリへの影響を指摘し、よりメモリ効率の良いアプローチを提案するPRコメントを書こう。",
     },
   ],
   "ml-L3": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "Fill in the blank with the correct term.",
+      instruction: "空欄に正しい用語を入れよう。",
       sentence:
         "The ___ cause is a missing normalization step in the feature engineering pipeline",
       correctAnswer: "root",
@@ -1311,8 +1297,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct commit message.",
+      instruction: "単語を並び替えて正しいコミットメッセージを作ろう。",
       words: [
         "sort",
         "perf:",
@@ -1327,16 +1312,16 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a root cause analysis comment.",
+      instruction: "根本原因分析のコメントを英語で書こう。",
       prompt:
-        "After investigating a bug where the ML model was producing incorrect predictions, you discovered that the data preprocessing step was not normalizing the input features to [0,1] range, causing the model to behave unexpectedly. Write a GitHub issue comment explaining the root cause.",
+        "MLモデルが誤った予測を出すバグを調査した結果、データ前処理ステップで入力特徴量を[0,1]の範囲に正規化していないことが原因でモデルが予期しない動作をしていることがわかりました。根本原因を説明するGitHub issueのコメントを書こう。",
     },
   ],
   "ml-L4": [
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "Fill in the blank with the correct term.",
+      instruction: "空欄に正しい用語を入れよう。",
       sentence:
         "The ___ between correctness and performance needs to be discussed before choosing an approach",
       correctAnswer: "trade-off",
@@ -1345,8 +1330,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p2",
       type: "reorder",
-      instruction:
-        "Arrange the words to form a correct Slack message.",
+      instruction: "単語を並び替えて正しいSlackメッセージを作ろう。",
       words: [
         "wrong",
         "solving",
@@ -1363,9 +1347,9 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p3",
       type: "free_text",
-      instruction: "Write a senior-level technical comment.",
+      instruction: "シニアエンジニアらしい技術的なコメントを英語で書こう。",
       prompt:
-        "Your team is debating whether to use an approximate nearest neighbor algorithm (faster, less accurate) or exact nearest neighbor (slower, accurate) for a recommendation system. Write a Slack message or GitHub issue comment that articulates the trade-off and suggests a path forward.",
+        "レコメンデーションシステムに近似最近傍アルゴリズム（高速・低精度）と厳密最近傍（低速・高精度）のどちらを使うかチームで議論しています。トレードオフを明確に示して今後の方針を提案するSlackメッセージかGitHub issueのコメントを書こう。",
     },
   ],
 };
@@ -1377,135 +1361,135 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
 const WRAPUP_CONTENT: Record<DomainLevel, WrapupContent> = {
   "web-L1": {
     summary:
-      "Today you practiced the foundational vocabulary of web development communication — conventional commit prefixes, PR approval phrases, and the imperative mood in commit messages.",
+      "今日はWeb開発コミュニケーションの基本語彙を練習しました。コンベンショナルコミットのプレフィックス、PR承認フレーズ、コミットメッセージの命令形の使い方です。",
     keyPoints: [
-      "Use imperative mood in commit messages: 'Fix' not 'Fixed'",
-      "LGTM means 'Looks good to me' — a common PR approval phrase",
-      "Conventional commit prefixes: fix, feat, docs, chore, style, test",
+      "コミットメッセージには命令形を使う: 'Fixed' ではなく 'Fix'",
+      "LGTM は 'Looks good to me' の略で、PRを承認するときによく使われる",
+      "コンベンショナルコミットのプレフィックス: fix, feat, docs, chore, style, test",
     ],
     nextPreview:
-      "Next: PR comment etiquette — how to give feedback that is clear and professional",
+      "次回: PRコメントのエチケット — 明確でプロフェッショナルなフィードバックの書き方",
   },
   "web-L2": {
     summary:
-      "You practiced the nuanced vocabulary of professional PR reviews — from soft suggestions ('nit') to hard blockers ('Blocking'), and how to communicate code quality concerns effectively.",
+      "プロフェッショナルなPRレビューの繊細な語彙を練習しました。ソフトな提案（'nit'）からマストフィックスのブロッカー（'Blocking'）まで、コード品質の懸念を効果的に伝える方法です。",
     keyPoints: [
-      "'nit' signals a minor, non-blocking suggestion",
-      "'Blocking' flags a must-fix issue before merging",
-      "Use consistent prefixes so reviewers can triage comments quickly",
+      "'nit' はマイナーで非ブロッキングな提案を示す",
+      "'Blocking' はマージ前に必ず修正すべき問題を示す",
+      "一貫したプレフィックスを使うとレビュアーがコメントをすばやく分類できる",
     ],
     nextPreview:
-      "Next: Advanced code review language — discussing architecture and design patterns",
+      "次回: 高度なコードレビュー表現 — アーキテクチャとデザインパターンの議論",
   },
   "web-L3": {
     summary:
-      "You practiced the advanced vocabulary of concurrent programming and code quality — terms like 'race condition', 'silently swallow', and 'discriminated union' that distinguish senior engineers in code reviews.",
+      "並行プログラミングとコード品質の高度な語彙を練習しました。'race condition'、'silently swallow'、'discriminated union' など、コードレビューでシニアエンジニアとの差をつける用語です。",
     keyPoints: [
-      "A 'race condition' is a timing-based bug in concurrent code",
-      "Code that 'silently swallows exceptions' hides errors — always re-throw or log",
-      "Use 'discriminated union' when a boolean flag creates ambiguous types",
+      "'race condition' は並行コードにおけるタイミング起因のバグ",
+      "例外を 'silently swallow' するコードはエラーを隠す — 常に再スローかログを残すこと",
+      "bool フラグが型の曖昧さを生み出すときは 'discriminated union' を使う",
     ],
     nextPreview:
-      "Next: Architectural vocabulary — discussing abstraction, coupling, and design principles",
+      "次回: アーキテクチャ語彙 — 抽象化・結合・設計原則の議論",
   },
   "web-L4": {
     summary:
-      "You practiced the architectural vocabulary used by senior engineers — terms like 'leaks the abstraction', 'temporal coupling', and 'idempotency' that communicate deep system design insights.",
+      "シニアエンジニアが使うアーキテクチャ語彙を練習しました。'leaks the abstraction'、'temporal coupling'、'idempotency' など、深いシステム設計の洞察を伝える用語です。",
     keyPoints: [
-      "'Leaks the abstraction' means implementation details are exposed through the interface",
-      "'Temporal coupling' is a hidden dependency on execution order",
-      "'Idempotency' means repeated operations produce the same result — critical for APIs",
+      "'leaks the abstraction' は実装の詳細がインターフェースを通じて露出していることを意味する",
+      "'temporal coupling' は実行順序への隠れた依存関係",
+      "'idempotency' は繰り返し実行しても同じ結果になること — APIにとって重要な性質",
     ],
     nextPreview:
-      "Next: RFC and ADR writing — proposing and documenting architectural decisions",
+      "次回: RFCとADRの書き方 — アーキテクチャ上の決定を提案・文書化する方法",
   },
   "infra-L1": {
     summary:
-      "Today you practiced the essential Slack vocabulary of infrastructure teams — 'Heads up', 'FYI', 'On it!', and conventional commits for infrastructure changes.",
+      "今日はインフラチームに必須のSlack語彙を練習しました。'Heads up'、'FYI'、'On it!'、そしてインフラ変更のコンベンショナルコミットです。",
     keyPoints: [
-      "'Heads up' is for proactive, informal warnings to teammates",
-      "'FYI' shares information without requiring action",
-      "'chore' prefix is for routine maintenance like dependency bumps",
+      "'Heads up' はチームメートへの事前の非公式な通知に使う",
+      "'FYI' はアクションを要求せずに情報を共有する",
+      "'chore' プレフィックスは依存関係のバージョン更新などのルーティンメンテナンスに使う",
     ],
     nextPreview:
-      "Next: Incident communication — how to write clear status updates during outages",
+      "次回: インシデントコミュニケーション — 障害時に明確なステータスアップデートを書く方法",
   },
   "infra-L2": {
     summary:
-      "You practiced the vocabulary of environment-specific bug reporting and team communication — essential skills for infrastructure engineers who work across multiple deployment environments.",
+      "環境固有のバグレポートとチームコミュニケーションの語彙を練習しました。複数のデプロイ環境をまたいで作業するインフラエンジニアに必須のスキルです。",
     keyPoints: [
-      "Always specify which environments are affected: 'only in production, not staging'",
-      "'Pinging for visibility' means informing without requiring action",
-      "Include environment details: OS, version, cloud provider, region",
+      "影響を受けている環境を必ず明記する: 'only in production, not staging'",
+      "'Pinging for visibility' はアクションを要求せずに知らせること",
+      "環境の詳細を含める: OS、バージョン、クラウドプロバイダー、リージョン",
     ],
     nextPreview:
-      "Next: Incident postmortem language — writing blameless root cause analyses",
+      "次回: インシデントポストモーテムの表現 — 責任追及なしの根本原因分析の書き方",
   },
   "infra-L3": {
     summary:
-      "You practiced the resilience vocabulary of distributed systems — 'exponential backoff', 'partial failures', and 'intermittently fails under load' — terms that are essential for senior infrastructure engineers.",
+      "分散システムの耐障害性語彙を練習しました。'exponential backoff'、'partial failures'、'intermittently fails under load' など、シニアインフラエンジニアに必須の用語です。",
     keyPoints: [
-      "'Exponential backoff' is the standard retry strategy for distributed systems",
-      "'Not resilient to partial failures' signals missing error handling in multi-step operations",
-      "'Intermittently fails under load' suggests a race condition or resource contention",
+      "'Exponential backoff' は分散システムの標準的なリトライ戦略",
+      "'Not resilient to partial failures' は複数ステップ処理のエラーハンドリング欠如を示す",
+      "'Intermittently fails under load' は競合状態またはリソース競合を示唆する",
     ],
     nextPreview:
-      "Next: Observability vocabulary — discussing metrics, traces, and alerting",
+      "次回: オブザーバビリティ語彙 — メトリクス・トレース・アラートの議論",
   },
   "infra-L4": {
     summary:
-      "You practiced the architectural vocabulary of platform engineering — 'event sourcing', 'observability gaps', and 'dedicated spike' — language that drives high-level technical decisions.",
+      "プラットフォームエンジニアリングのアーキテクチャ語彙を練習しました。'event sourcing'、'observability gaps'、'dedicated spike' など、高レベルの技術的意思決定を推進する言葉です。",
     keyPoints: [
-      "'Event sourcing' stores state as immutable events, not current values",
-      "'Gap in observability' means a failure mode that monitoring cannot detect",
-      "'Dedicated spike' is a time-boxed task to explore before estimating an implementation",
+      "'event sourcing' は現在の値を上書きせず、不変イベントとして状態を保存するパターン",
+      "'gap in observability' はモニタリングで検知できない障害モードがあることを意味する",
+      "'dedicated spike' は実装を見積もる前に探索するためのタイムボックスされたタスク",
     ],
     nextPreview:
-      "Next: Cross-team coordination language — writing RFCs and architectural decision records",
+      "次回: チーム横断のコーディネーション表現 — RFCとアーキテクチャ決定記録の書き方",
   },
   "ml-L1": {
     summary:
-      "Today you practiced the fundamental bug reporting vocabulary for ML systems — 'Expected behavior', 'Actual behavior', and 'Steps to reproduce' — the universal structure of effective bug reports.",
+      "今日はMLシステムの基本的なバグレポート語彙を練習しました。'Expected behavior'、'Actual behavior'、'Steps to reproduce' — 効果的なバグレポートの普遍的な構造です。",
     keyPoints: [
-      "Always separate 'Expected behavior' from 'Actual behavior' in bug reports",
-      "'Steps to reproduce' must be precise enough for another engineer to follow",
-      "Include environment details: model version, input size, hardware",
+      "バグレポートでは 'Expected behavior' と 'Actual behavior' を必ず分けて書く",
+      "'Steps to reproduce' は他のエンジニアが再現できるほど具体的に書く",
+      "環境の詳細を含める: モデルバージョン、入力サイズ、ハードウェア",
     ],
     nextPreview:
-      "Next: Performance vocabulary for ML — discussing latency, throughput, and memory",
+      "次回: MLのパフォーマンス語彙 — レイテンシ・スループット・メモリの議論",
   },
   "ml-L2": {
     summary:
-      "You practiced the performance review vocabulary for ML code — 'memory implications', 'OOM', and 'memory leak' — critical terms for engineers working with large datasets and models.",
+      "MLコードのパフォーマンスレビュー語彙を練習しました。'memory implications'、'OOM'、'memory leak' — 大規模データセットとモデルを扱うエンジニアに必須の用語です。",
     keyPoints: [
-      "'OOM' (out of memory) is a standard abbreviation in ML engineering",
-      "Ask 'Have you considered the memory implications?' to invite discussion, not confront",
-      "Memory leaks in ML often come from unreleased tensor references",
+      "'OOM'（out of memory）はMLエンジニアリングでの標準的な略語",
+      "'Have you considered the memory implications?' は対立せず議論を促す聞き方",
+      "MLにおけるメモリリークは解放されていないテンソル参照から生じることが多い",
     ],
     nextPreview:
-      "Next: Root cause analysis vocabulary — communicating what went wrong and why",
+      "次回: 根本原因分析の語彙 — 何が起きてなぜかを伝える表現",
   },
   "ml-L3": {
     summary:
-      "You practiced the root cause analysis vocabulary — 'root cause', 'label leakage', and algorithmic complexity terms like 'O(n²)' — language that signals deep debugging and optimization skills.",
+      "根本原因分析の語彙を練習しました。'root cause'、'label leakage'、'O(n²)' などのアルゴリズム計算量の表現 — 深いデバッグと最適化スキルを示す言葉です。",
     keyPoints: [
-      "'Root cause' is always two words — the fundamental reason, not just the symptom",
-      "O(n²) vs O(n log n) vs O(n) — always include Big-O when discussing algorithm optimization",
-      "'Label leakage' is ML-specific: training data contaminated with test information",
+      "'root cause' は必ず2語 — 症状ではなく根本的な理由",
+      "O(n²) vs O(n log n) vs O(n) — アルゴリズム最適化を議論するときは必ずBig-Oを含める",
+      "'label leakage' はML固有の用語: テスト情報で汚染された訓練データのこと",
     ],
     nextPreview:
-      "Next: Architectural trade-offs in ML systems — correctness vs performance",
+      "次回: MLシステムのアーキテクチャトレードオフ — 正確性とパフォーマンスの議論",
   },
   "ml-L4": {
     summary:
-      "You practiced the strategic vocabulary of ML system design — 'trade-off between correctness and performance', 'accidental complexity', and 'solving for the wrong problem' — language that distinguishes principal engineers.",
+      "MLシステム設計の戦略的語彙を練習しました。'trade-off between correctness and performance'、'accidental complexity'、'solving for the wrong problem' — プリンシパルエンジニアが使う言葉です。",
     keyPoints: [
-      "'Trade-off' uses a hyphen — correct in formal technical writing",
-      "'Accidental complexity' is complexity from implementation choices, not the problem domain",
-      "'Solving for the wrong problem' challenges the framing, not just the solution",
+      "'trade-off' はハイフンあり — 正式な技術文書での正しい表記",
+      "'accidental complexity' は問題領域ではなく実装の選択から生まれる複雑さ",
+      "'solving for the wrong problem' は解決策ではなく問題の定義自体に疑問を呈する表現",
     ],
     nextPreview:
-      "Next: Writing technical RFCs — proposing ML architecture changes to your team",
+      "次回: 技術RFCの書き方 — MLアーキテクチャ変更をチームに提案する方法",
   },
 };
 
