@@ -48,6 +48,38 @@ function buildAiOptions(gatewayId?: string): { gateway: { id: string } } | undef
   return { gateway: { id: gatewayId } };
 }
 
+function shouldFallbackToDirectWorkersAi(
+  err: unknown,
+  attemptedModel: string,
+  gatewayId?: string
+): boolean {
+  if (!gatewayId) {
+    return false;
+  }
+  if (attemptedModel === DEFAULT_MODEL) {
+    return false;
+  }
+  return String(err).includes("Insufficient balance");
+}
+
+async function runModel(
+  ai: Ai,
+  model: string,
+  body: Record<string, unknown>,
+  gatewayId?: string
+): Promise<unknown> {
+  const aiOptions = buildAiOptions(gatewayId);
+
+  try {
+    return await ai.run(model, body, aiOptions);
+  } catch (err) {
+    if (!shouldFallbackToDirectWorkersAi(err, model, gatewayId)) {
+      throw err;
+    }
+    return ai.run(DEFAULT_MODEL, body);
+  }
+}
+
 function extractText(result: WorkersAiTextResponse): string {
   if (typeof result.response === "string") {
     return result.response;
@@ -84,8 +116,6 @@ export function createWorkersAiAdapter(
   ai: Ai,
   gatewayId?: string
 ): LLMAdapter {
-  const aiOptions = buildAiOptions(gatewayId);
-
   return {
     provider: "workers-ai",
 
@@ -97,10 +127,11 @@ export function createWorkersAiAdapter(
 
       let result: WorkersAiTextResponse;
       try {
-        result = (await ai.run(
+        result = (await runModel(
+          ai,
           model,
           buildRequestBody(prompt, options),
-          aiOptions
+          gatewayId
         )) as WorkersAiTextResponse;
       } catch (err) {
         throw new LLMError(
@@ -129,10 +160,11 @@ export function createWorkersAiAdapter(
 
       (async () => {
         try {
-          const stream = (await ai.run(
+          const stream = (await runModel(
+            ai,
             model,
             buildRequestBody(prompt, options, { stream: true }),
-            aiOptions
+            gatewayId
           )) as unknown as ReadableStream<Uint8Array>;
 
           const reader = stream.getReader();
