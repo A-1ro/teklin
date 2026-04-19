@@ -29,8 +29,23 @@ const VALID_CATEGORIES: CardCategory[] = [
   "github_issues",
 ];
 
+const LEVEL_ORDER: Record<string, number> = {
+  L1: 1,
+  L2: 2,
+  L3: 3,
+  L4: 4,
+};
+
 function isValidCategory(value: string): value is CardCategory {
   return VALID_CATEGORIES.includes(value as CardCategory);
+}
+
+function getAllowedLevels(userLevel: string): string[] {
+  const userLevelNum = LEVEL_ORDER[userLevel] ?? 1;
+
+  return Object.entries(LEVEL_ORDER)
+    .filter(([, num]) => num <= userLevelNum)
+    .map(([lvl]) => lvl);
 }
 
 // Shared select columns for review queries
@@ -100,13 +115,25 @@ cardRoutes.get("/review", async (c) => {
   const now = Date.now();
   const kv = c.env.SRS_KV;
   const kvKey = srsKey(userId);
+  const db = createDb(c.env.DB);
+
+  const user = await db
+    .select({ level: users.level })
+    .from(users)
+    .where(eq(users.id, userId))
+    .get();
+
+  if (!user) {
+    return c.json({ error: "User not found" }, 404);
+  }
+
+  const allowedLevels = getAllowedLevels(user.level);
 
   // Try KV cache first
   const cached = await kv.get<SrsKvValue>(kvKey, "json");
   const isFresh =
     cached !== null && now - cached.cachedAt < SRS_CACHE_MAX_AGE_MS;
 
-  const db = createDb(c.env.DB);
   let dueCards: PhraseCardWithSrs[];
 
   if (isFresh && cached !== null) {
@@ -121,27 +148,55 @@ cardRoutes.get("/review", async (c) => {
         .where(
           and(
             eq(userSrs.userId, userId),
-            inArray(phraseCards.id, cached.dueCardIds)
+            inArray(phraseCards.id, cached.dueCardIds),
+            sql`${phraseCards.level} IN (${sql.join(
+              allowedLevels.map((l) => sql`${l}`),
+              sql`, `
+            )})`
           )
         );
 
       dueCards = rows.map(mapRowToCard);
     }
   } else {
-    // Cache miss or stale — query D1
-    const rows = await db
+    // Cache miss or stale — query due cards plus unseen cards at or below the user's level
+    const dueRows = await db
       .select(reviewSelectColumns)
       .from(phraseCards)
       .innerJoin(userSrs, eq(phraseCards.id, userSrs.cardId))
       .where(
-        and(eq(userSrs.userId, userId), lte(userSrs.nextReview, now))
+        and(
+          eq(userSrs.userId, userId),
+          lte(userSrs.nextReview, now),
+          sql`${phraseCards.level} IN (${sql.join(
+            allowedLevels.map((l) => sql`${l}`),
+            sql`, `
+          )})`
+        )
       );
 
-    dueCards = rows.map(mapRowToCard);
+    const unseenRows = await db
+      .select(reviewSelectColumns)
+      .from(phraseCards)
+      .leftJoin(
+        userSrs,
+        and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
+      )
+      .where(
+        and(
+          sql`${userSrs.cardId} IS NULL`,
+          sql`${phraseCards.level} IN (${sql.join(
+            allowedLevels.map((l) => sql`${l}`),
+            sql`, `
+          )})`
+        )
+      );
+
+    dueCards = [...dueRows, ...unseenRows].map(mapRowToCard);
 
     // Refresh KV cache
     const cacheValue: SrsKvValue = {
-      dueCardIds: dueCards.map((card) => card.id),
+      dueCardIds: dueRows.map((card) => card.id),
       cachedAt: now,
     };
     await kv.put(kvKey, JSON.stringify(cacheValue), {
@@ -331,6 +386,18 @@ cardRoutes.get("/stats", async (c) => {
   const now = Date.now();
   const db = createDb(c.env.DB);
 
+  const user = await db
+    .select({ level: users.level })
+    .from(users)
+    .where(eq(users.id, userId))
+    .get();
+
+  if (!user) {
+    return c.json({ error: "User not found" }, 404);
+  }
+
+  const allowedLevels = getAllowedLevels(user.level);
+
   const byCategory: Record<CardCategory, CategoryStats> = {
     commit_messages: { total: 0, mastered: 0, learning: 0, unseen: 0 },
     pr_comments: { total: 0, mastered: 0, learning: 0, unseen: 0 },
@@ -361,7 +428,35 @@ cardRoutes.get("/stats", async (c) => {
   const dueCountRow = await db
     .select({ value: count() })
     .from(userSrs)
-    .where(and(eq(userSrs.userId, userId), lte(userSrs.nextReview, now)))
+    .innerJoin(phraseCards, eq(userSrs.cardId, phraseCards.id))
+    .where(
+      and(
+        eq(userSrs.userId, userId),
+        lte(userSrs.nextReview, now),
+        sql`${phraseCards.level} IN (${sql.join(
+          allowedLevels.map((l) => sql`${l}`),
+          sql`, `
+        )})`
+      )
+    )
+    .get();
+
+  const unseenCountRow = await db
+    .select({ value: count() })
+    .from(phraseCards)
+    .leftJoin(
+      userSrs,
+      and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
+    )
+    .where(
+      and(
+        sql`${userSrs.cardId} IS NULL`,
+        sql`${phraseCards.level} IN (${sql.join(
+          allowedLevels.map((l) => sql`${l}`),
+          sql`, `
+        )})`
+      )
+    )
     .get();
 
   let total = 0;
@@ -384,7 +479,7 @@ cardRoutes.get("/stats", async (c) => {
     totalUnseen += row.unseen;
   }
 
-  const dueToday = dueCountRow?.value ?? 0;
+  const dueToday = (dueCountRow?.value ?? 0) + (unseenCountRow?.value ?? 0);
 
   const response: CardStatsResponse = {
     total,
