@@ -37,15 +37,12 @@ const CONTEXT_TO_CATEGORY: Record<RewriteContext, CardCategory> = {
   general: "slack_chat",
 };
 
-const REWRITE_RESPONSE_SCHEMA = {
+const REWRITE_ANALYSIS_SCHEMA = {
   type: "json_schema",
   json_schema: {
     type: "object",
     additionalProperties: false,
     properties: {
-      rewritten: {
-        type: "string",
-      },
       changes: {
         type: "array",
         items: {
@@ -68,7 +65,7 @@ const REWRITE_RESPONSE_SCHEMA = {
         items: { type: "string" },
       },
     },
-    required: ["rewritten", "changes", "tone", "tips"],
+    required: ["changes", "tone", "tips"],
   },
 } as const;
 
@@ -108,16 +105,8 @@ function buildRewriteSystemPrompt(
     "Preserve the author's intended meaning.",
     "Do not invent facts, steps, logs, versions, or conclusions.",
     "Preserve inline code, commands, file names, and technical identifiers.",
-    "",
-    "You MUST respond with valid JSON only, no markdown wrapper, no extra text.",
-    "JSON format:",
-    "{",
-    '  "rewritten": "<the rewritten text>",',
-    '  "changes": [{"original": "<original phrase>", "corrected": "<corrected phrase>", "reason": "<why this change>"}],',
-    '  "tone": "<friendly|professional|too_casual|too_formal|neutral>",',
-    '  "tips": ["<日本語の改善ポイント1>", "<日本語の改善ポイント2>"]',
-    "}",
-    'The "tips" field MUST be written in Japanese.',
+    "Return only the rewritten text.",
+    "Do not add explanations, notes, or labels like 'Improvements Made' or 'Tips'.",
   ];
 
   if (context === "github_issue") {
@@ -223,9 +212,45 @@ function buildRewriteUserPrompt(
     );
   }
 
-  prompt.push("Then return the JSON object exactly as instructed.");
+  prompt.push("Return only the rewritten text.");
 
   return prompt.join("\n");
+}
+
+function buildRewriteAnalysisSystemPrompt(context: RewriteContext): string {
+  return [
+    "You are an expert technical writing coach for software engineers.",
+    `Analyze a rewrite for the context: ${context}.`,
+    "You will receive the original text and the rewritten text.",
+    "Return only valid JSON, with no markdown wrapper and no extra text.",
+    "The 'tips' field MUST be written in Japanese.",
+    "Keep tips concise and practical.",
+  ].join("\n");
+}
+
+function buildRewriteAnalysisUserPrompt(
+  context: RewriteContext,
+  original: string,
+  rewritten: string
+): string {
+  return [
+    `Context: ${context}`,
+    "",
+    "---BEGIN ORIGINAL TEXT---",
+    original,
+    "---END ORIGINAL TEXT---",
+    "",
+    "---BEGIN REWRITTEN TEXT---",
+    rewritten,
+    "---END REWRITTEN TEXT---",
+    "",
+    "Analyze the rewrite and return JSON in this shape:",
+    "{",
+    '  "changes": [{"original": "<original phrase>", "corrected": "<corrected phrase>", "reason": "<why this change>"}],',
+    '  "tone": "<friendly|professional|too_casual|too_formal|neutral>",',
+    '  "tips": ["<日本語の改善ポイント1>", "<日本語の改善ポイント2>"]',
+    "}",
+  ].join("\n");
 }
 
 function containsJapanese(text: string): boolean {
@@ -316,12 +341,18 @@ function stripTrailingTipsSection(text: string): string {
     .trim();
 }
 
-function parseRewriteResponse(text: string): RewriteResult | null {
+function normalizeRewrittenText(text: string): string | null {
+  const normalized = text
+    .replace(/^```(?:markdown|md|text)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+
+  return normalized.length > 0 ? normalized : null;
+}
+
+function parseRewriteAnalysisResponse(text: string): Omit<RewriteResult, "rewritten"> | null {
   try {
     const parsed = JSON.parse(extractJson(text)) as Partial<RewriteResult>;
-    if (typeof parsed.rewritten !== "string") {
-      return null;
-    }
 
     const changes = Array.isArray(parsed.changes)
       ? parsed.changes.filter(
@@ -339,19 +370,12 @@ function parseRewriteResponse(text: string): RewriteResult | null {
       : [];
 
     return {
-      rewritten: parsed.rewritten.trim(),
       changes,
       tone: normalizeTone(parsed.tone),
       tips: normalizeTipsToJapanese(tips),
     };
   } catch {
-    const rewritten = stripTrailingTipsSection(text);
-    if (!rewritten) {
-      return null;
-    }
-
     return {
-      rewritten,
       changes: [],
       tone: "professional",
       tips: normalizeTipsToJapanese(parseTipsFromText(text)),
@@ -445,21 +469,19 @@ rewriteRoutes.post("/", async (c) => {
 
   const userLevel = userRow.level;
 
-  // Build custom prompts for structured JSON output
-  const systemPrompt = buildRewriteSystemPrompt(body.context, userLevel);
+  // Step 1: generate rewritten text only
+  const rewriteSystemPrompt = buildRewriteSystemPrompt(body.context, userLevel);
   const llmService = createLLMService(c.env);
-  const userPrompt = buildRewriteUserPrompt(body.context, body.text);
+  const rewriteUserPrompt = buildRewriteUserPrompt(body.context, body.text);
 
-  // Call LLM
-  let llmResponse;
+  let rewriteResponse;
   try {
-    llmResponse = await llmService.router.generate(
-      userPrompt,
+    rewriteResponse = await llmService.router.generate(
+      rewriteUserPrompt,
       {
-        system: systemPrompt,
+        system: rewriteSystemPrompt,
         maxTokens: 1400,
         temperature: 0.2,
-        responseFormat: REWRITE_RESPONSE_SCHEMA,
       },
       "lightweight"
     );
@@ -476,13 +498,11 @@ rewriteRoutes.post("/", async (c) => {
     return c.json({ error: "LLM service unavailable" }, 502);
   }
 
-  // Parse LLM response as RewriteResult
-  const result = parseRewriteResponse(llmResponse.text);
-  if (!result) {
-    console.error("[rewrite] Failed to parse LLM response as JSON", {
-      text: llmResponse.text,
+  const rewritten = normalizeRewrittenText(rewriteResponse.text);
+  if (!rewritten) {
+    console.error("[rewrite] Failed to parse rewritten text", {
+      text: rewriteResponse.text,
     });
-    // Rollback pre-incremented count
     const rollbackValue: RewriteCountValue = {
       count: currentCount,
       updatedAt: new Date().toISOString(),
@@ -492,6 +512,60 @@ rewriteRoutes.post("/", async (c) => {
     });
     return c.json({ error: "Failed to parse AI response" }, 502);
   }
+
+  // Step 2: analyze rewrite as structured JSON
+  const analysisSystemPrompt = buildRewriteAnalysisSystemPrompt(body.context);
+  const analysisUserPrompt = buildRewriteAnalysisUserPrompt(
+    body.context,
+    body.text,
+    rewritten
+  );
+
+  let analysisResponse;
+  try {
+    analysisResponse = await llmService.router.generate(
+      analysisUserPrompt,
+      {
+        system: analysisSystemPrompt,
+        maxTokens: 900,
+        temperature: 0.1,
+        responseFormat: REWRITE_ANALYSIS_SCHEMA,
+      },
+      "lightweight"
+    );
+  } catch (err) {
+    console.error("[rewrite] LLM analysis failed", { error: String(err) });
+    const rollbackValue: RewriteCountValue = {
+      count: currentCount,
+      updatedAt: new Date().toISOString(),
+    };
+    await c.env.USAGE_KV.put(countKey, JSON.stringify(rollbackValue), {
+      expirationTtl: 48 * 60 * 60,
+    });
+    return c.json({ error: "LLM service unavailable" }, 502);
+  }
+
+  const analysis = parseRewriteAnalysisResponse(analysisResponse.text);
+  if (!analysis) {
+    console.error("[rewrite] Failed to parse rewrite analysis as JSON", {
+      text: analysisResponse.text,
+    });
+    const rollbackValue: RewriteCountValue = {
+      count: currentCount,
+      updatedAt: new Date().toISOString(),
+    };
+    await c.env.USAGE_KV.put(countKey, JSON.stringify(rollbackValue), {
+      expirationTtl: 48 * 60 * 60,
+    });
+    return c.json({ error: "Failed to parse AI response" }, 502);
+  }
+
+  const result: RewriteResult = {
+    rewritten,
+    changes: analysis.changes,
+    tone: analysis.tone,
+    tips: analysis.tips,
+  };
 
   // Save to ai_rewrite_history
   const historyId = crypto.randomUUID();
@@ -513,7 +587,15 @@ rewriteRoutes.post("/", async (c) => {
   });
 
   // Track LLM usage
-  await llmService.usage.track(userId, llmResponse.usage);
+  await llmService.usage.track(userId, {
+    promptTokens:
+      rewriteResponse.usage.promptTokens + analysisResponse.usage.promptTokens,
+    completionTokens:
+      rewriteResponse.usage.completionTokens +
+      analysisResponse.usage.completionTokens,
+    totalTokens:
+      rewriteResponse.usage.totalTokens + analysisResponse.usage.totalTokens,
+  });
 
   return c.json({ id: historyId, ...result });
 });
