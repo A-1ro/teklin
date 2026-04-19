@@ -325,12 +325,9 @@ function WarmupStep({
       setSelected(choiceId);
 
       if (readOnly) {
-        // In review mode, just show which answer is correct without API call
-        setResult({
-          correct: choiceId === question.correctChoiceId,
-          score: choiceId === question.correctChoiceId ? 100 : 0,
-          correctAnswer: question.correctChoiceId,
-        });
+        // In review mode, correctChoiceId is not available on the client.
+        // Just record the selection so the Next button appears.
+        setResult({ correct: true, score: 0 });
         return;
       }
 
@@ -432,8 +429,8 @@ function WarmupStep({
         })}
       </div>
 
-      {/* Result feedback */}
-      {result && (
+      {/* Result feedback (hidden in review mode — correctChoiceId not available client-side) */}
+      {result && !readOnly && (
         <div
           className={`mb-6 rounded-lg px-5 py-4 ${
             result.correct
