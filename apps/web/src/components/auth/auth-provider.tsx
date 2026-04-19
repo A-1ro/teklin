@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import {
+  AUTH_UNAUTHORIZED_EVENT,
   type AuthUser,
   fetchCurrentUser,
   logout as apiLogout,
@@ -47,6 +48,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
+
+  useEffect(() => {
+    function handleUnauthorized() {
+      setUser(null);
+      setIsLoading(false);
+    }
+
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
+    return () =>
+      window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, handleUnauthorized);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, logout, refreshUser }}>

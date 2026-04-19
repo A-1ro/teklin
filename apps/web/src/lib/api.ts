@@ -8,9 +8,47 @@ export class ApiError extends Error {
   }
 }
 
+export const AUTH_UNAUTHORIZED_EVENT = "auth:unauthorized";
+
+let refreshPromise: Promise<boolean> | null = null;
+
+function shouldTryRefresh(path: string, options?: RequestInit): boolean {
+  const method = options?.method?.toUpperCase() ?? "GET";
+
+  if (path === "/auth/refresh") return false;
+  if (path === "/auth/logout") return false;
+
+  return method !== "OPTIONS";
+}
+
+async function refreshSession(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        const res = await fetch("/auth/refresh", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        return res.ok;
+      } catch {
+        return false;
+      }
+    })().finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
+}
+
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit,
+  hasRetried = false,
 ): Promise<T> {
   const res = await fetch(path, {
     ...options,
@@ -21,7 +59,21 @@ export async function apiFetch<T>(
     },
   });
   if (!res.ok) {
-    throw new ApiError(res.status, await res.text());
+    const message = await res.text();
+
+    if (res.status === 401 && shouldTryRefresh(path, options) && !hasRetried) {
+      const refreshed = await refreshSession();
+
+      if (refreshed) {
+        return apiFetch<T>(path, options, true);
+      }
+    }
+
+    if (res.status === 401 && typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
+    }
+
+    throw new ApiError(res.status, message);
   }
   return res.json() as Promise<T>;
 }
