@@ -10,7 +10,7 @@ import type {
   RewriteChange,
   RewriteTone,
 } from "@teklin/shared";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, Loader2, Save, X } from "lucide-react";
 
 const CONTEXT_LABELS: Record<RewriteContext, string> = {
   commit_message: "Commit Message",
@@ -65,6 +65,23 @@ interface ParsedExplanation {
   tips: string[];
 }
 
+interface RewriteLinkedCard {
+  id: string;
+  phrase: string;
+  translation: string;
+}
+
+interface SaveCardState {
+  changeIndex: number;
+  cardId: string | null;
+  isExistingCard: boolean;
+  phrase: string;
+  translation: string;
+  isSaving: boolean;
+  error: string | null;
+  saved: boolean;
+}
+
 function parseExplanation(raw: string): ParsedExplanation {
   try {
     const parsed = JSON.parse(raw);
@@ -83,14 +100,22 @@ export function RewriteDetailPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
 
   const [detail, setDetail] = useState<RewriteHistoryDetail | null>(null);
+  const [linkedCards, setLinkedCards] = useState<RewriteLinkedCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [saveCard, setSaveCard] = useState<SaveCardState | null>(null);
 
   useEffect(() => {
     if (authLoading || !user || !id) return;
 
-    apiFetch<RewriteHistoryDetail>(`/api/rewrite/history/${id}`)
-      .then((res) => setDetail(res))
+    Promise.all([
+      apiFetch<RewriteHistoryDetail>(`/api/rewrite/history/${id}`),
+      apiFetch<{ items: RewriteLinkedCard[] }>(`/api/rewrite/${id}/cards`),
+    ])
+      .then(([detailRes, cardsRes]) => {
+        setDetail(detailRes);
+        setLinkedCards(cardsRes.items);
+      })
       .catch(() => setError("Failed to load rewrite details."))
       .finally(() => setIsLoading(false));
   }, [authLoading, user, id]);
@@ -142,6 +167,96 @@ export function RewriteDetailPage() {
   });
 
   const explanation = parseExplanation(detail.explanation);
+
+  function findLinkedCard(change: RewriteChange): RewriteLinkedCard | undefined {
+    return linkedCards.find(
+      (card) =>
+        card.phrase === change.corrected && card.translation === change.original
+    );
+  }
+
+  function openSaveCard(changeIndex: number) {
+    const change = explanation.changes[changeIndex];
+    if (!change) return;
+
+    const linkedCard = findLinkedCard(change);
+    setSaveCard({
+      changeIndex,
+      cardId: linkedCard?.id ?? null,
+      isExistingCard: linkedCard != null,
+      phrase: linkedCard?.phrase ?? change.corrected,
+      translation: linkedCard?.translation ?? change.original,
+      isSaving: false,
+      error: null,
+      saved: false,
+    });
+  }
+
+  async function handleSaveCard() {
+    if (!saveCard || !id || saveCard.isSaving) return;
+
+    setSaveCard((prev) =>
+      prev ? { ...prev, isSaving: true, error: null } : null
+    );
+
+    try {
+      if (saveCard.cardId) {
+        const updated = await apiFetch<RewriteLinkedCard>(
+          `/api/cards/${saveCard.cardId}`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              phrase: saveCard.phrase,
+              translation: saveCard.translation,
+            }),
+          }
+        );
+
+        setLinkedCards((prev) =>
+          prev.map((card) => (card.id === updated.id ? updated : card))
+        );
+      } else {
+        const created = await apiFetch<{ cardId: string }>(
+          `/api/rewrite/${id}/save-card`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              phrase: saveCard.phrase,
+              translation: saveCard.translation,
+            }),
+          }
+        );
+
+        setLinkedCards((prev) => [
+          ...prev,
+          {
+            id: created.cardId,
+            phrase: saveCard.phrase,
+            translation: saveCard.translation,
+          },
+        ]);
+
+        setSaveCard((prev) =>
+          prev ? { ...prev, cardId: created.cardId } : null
+        );
+      }
+
+      setSaveCard((prev) =>
+        prev ? { ...prev, isSaving: false, saved: true } : null
+      );
+    } catch (err) {
+      setSaveCard((prev) =>
+        prev
+          ? {
+              ...prev,
+              isSaving: false,
+              error:
+                err instanceof Error ? err.message : "Failed to save card.",
+            }
+          : null
+      );
+    }
+  }
 
   return (
     <main className="min-h-screen bg-gray-950 px-4 py-8">
@@ -227,6 +342,41 @@ export function RewriteDetailPage() {
                   <p className="text-xs leading-relaxed text-gray-500">
                     {change.reason}
                   </p>
+                  <div className="mt-3">
+                    {saveCard?.changeIndex === index ? (
+                      saveCard.saved ? (
+                        <p className="text-xs font-medium text-green-400">
+                          {saveCard.isExistingCard ? "Phrase Card updated" : "Saved to Phrase Cards"}
+                        </p>
+                      ) : (
+                        <SaveCardForm
+                          saveCard={saveCard}
+                          submitLabel={saveCard.cardId ? "Update card" : "Save to Phrase Card"}
+                          onPhraseChange={(phrase) =>
+                            setSaveCard((prev) =>
+                              prev ? { ...prev, phrase } : null
+                            )
+                          }
+                          onTranslationChange={(translation) =>
+                            setSaveCard((prev) =>
+                              prev ? { ...prev, translation } : null
+                            )
+                          }
+                          onSave={handleSaveCard}
+                          onCancel={() => setSaveCard(null)}
+                        />
+                      )
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => openSaveCard(index)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:border-gray-600 hover:text-gray-200"
+                      >
+                        <Save className="h-3 w-3" />
+                        {findLinkedCard(change) ? "Edit Phrase Card" : "Save to Phrase Card"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -252,5 +402,90 @@ export function RewriteDetailPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function SaveCardForm({
+  saveCard,
+  submitLabel,
+  onPhraseChange,
+  onTranslationChange,
+  onSave,
+  onCancel,
+}: {
+  saveCard: SaveCardState;
+  submitLabel: string;
+  onPhraseChange: (value: string) => void;
+  onTranslationChange: (value: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="space-y-3 rounded-lg border border-gray-700 bg-gray-800/50 p-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-gray-400">
+          {saveCard.cardId ? "Edit Phrase Card" : "Save to Phrase Card"}
+        </p>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-700 hover:text-gray-300"
+          aria-label="Cancel"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-gray-500">Phrase (English)</label>
+        <input
+          type="text"
+          value={saveCard.phrase}
+          onChange={(e) => onPhraseChange(e.target.value)}
+          disabled={saveCard.isSaving}
+          className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-gray-500">Translation / Note</label>
+        <input
+          type="text"
+          value={saveCard.translation}
+          onChange={(e) => onTranslationChange(e.target.value)}
+          disabled={saveCard.isSaving}
+          className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
+        />
+      </div>
+      {saveCard.error && (
+        <p className="text-xs text-red-400">{saveCard.error}</p>
+      )}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saveCard.isSaving}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+        >
+          {saveCard.isSaving ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="h-3.5 w-3.5" />
+              {submitLabel}
+            </>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={saveCard.isSaving}
+          className="rounded-lg border border-gray-700 px-3 py-2 text-xs font-medium text-gray-400 transition-colors hover:border-gray-600 hover:text-gray-300"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
   );
 }

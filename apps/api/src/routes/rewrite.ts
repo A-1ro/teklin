@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc, count, and } from "drizzle-orm";
 import { createDb, aiRewriteHistory, phraseCards, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -740,6 +740,42 @@ rewriteRoutes.get("/history/:id", async (c) => {
     createdAt: new Date(row.createdAt).toISOString(),
   };
   return c.json(response);
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/rewrite/:id/cards — Cards associated with a rewrite history entry
+// ---------------------------------------------------------------------------
+rewriteRoutes.get("/:id/cards", async (c) => {
+  const { userId } = c.get("user");
+  const historyId = c.req.param("id");
+
+  const db = createDb(c.env.DB);
+  const historyRow = await db
+    .select()
+    .from(aiRewriteHistory)
+    .where(eq(aiRewriteHistory.id, historyId))
+    .get();
+
+  if (!historyRow || historyRow.userId !== userId) {
+    return c.json({ error: "Not found" }, 404);
+  }
+
+  const category = CONTEXT_TO_CATEGORY[historyRow.context as RewriteContext];
+  const cards = await db
+    .select({
+      id: phraseCards.id,
+      phrase: phraseCards.phrase,
+      translation: phraseCards.translation,
+    })
+    .from(phraseCards)
+    .where(
+      and(
+        eq(phraseCards.context, historyRow.originalText),
+        eq(phraseCards.category, category)
+      )
+    );
+
+  return c.json({ items: cards });
 });
 
 // ---------------------------------------------------------------------------

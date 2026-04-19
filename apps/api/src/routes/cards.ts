@@ -379,6 +379,45 @@ cardRoutes.post("/:id/answer", async (c) => {
 });
 
 // ---------------------------------------------------------------------------
+// PUT /api/cards/:id — Update a phrase card
+// ---------------------------------------------------------------------------
+cardRoutes.put("/:id", async (c) => {
+  const cardId = c.req.param("id");
+
+  let body: { phrase: string; translation: string };
+  try {
+    body = await c.req.json<{ phrase: string; translation: string }>();
+  } catch {
+    return c.json({ error: "Invalid request body" }, 400);
+  }
+
+  if (!body.phrase || !body.translation) {
+    return c.json({ error: "phrase and translation are required" }, 400);
+  }
+
+  const db = createDb(c.env.DB);
+  const existing = await db
+    .select({ id: phraseCards.id })
+    .from(phraseCards)
+    .where(eq(phraseCards.id, cardId))
+    .get();
+
+  if (!existing) {
+    return c.json({ error: "Card not found" }, 404);
+  }
+
+  await db
+    .update(phraseCards)
+    .set({
+      phrase: body.phrase,
+      translation: body.translation,
+    })
+    .where(eq(phraseCards.id, cardId));
+
+  return c.json({ id: cardId, phrase: body.phrase, translation: body.translation });
+});
+
+// ---------------------------------------------------------------------------
 // GET /api/cards/stats — Card statistics per category
 // ---------------------------------------------------------------------------
 cardRoutes.get("/stats", async (c) => {
