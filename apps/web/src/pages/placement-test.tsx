@@ -73,8 +73,7 @@ export function PlacementTestPage() {
         }
       );
 
-      const isSkip = answer === "__skip__";
-      if (data.feedback && !isSkip) {
+      if (data.feedback) {
         setFeedback(data.feedback);
         setPendingNext(data);
       } else if (data.isComplete) {
