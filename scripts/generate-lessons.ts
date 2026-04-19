@@ -85,10 +85,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Used in commit messages to indicate a bug fix",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "Fix login button alignment" },
-        { id: "b", text: "Fixed the login button alignment" },
-        { id: "c", text: "Fixing login button alignment" },
-        { id: "d", text: "Have fixed login button alignment" },
+        { id: "a", text: "修正する" },
+        { id: "b", text: "追加する" },
+        { id: "c", text: "削除する" },
+        { id: "d", text: "更新する" },
       ],
       correctChoiceId: "a",
     },
@@ -99,12 +99,12 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Used in PR comments to approve a pull request",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "Looks great to me" },
-        { id: "b", text: "Looks good to me" },
-        { id: "c", text: "Let's get to merging" },
-        { id: "d", text: "Let go to main" },
+        { id: "a", text: "承認、問題なし" },
+        { id: "b", text: "もっと見てください" },
+        { id: "c", text: "後で確認します" },
+        { id: "d", text: "修正が必要です" },
       ],
-      correctChoiceId: "b",
+      correctChoiceId: "a",
     },
     {
       id: "w3",
@@ -113,10 +113,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Conventional commit prefix for a new feature",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "feat: add user profile page" },
-        { id: "b", text: "feature: add user profile page" },
-        { id: "c", text: "new: add user profile page" },
-        { id: "d", text: "add: user profile page" },
+        { id: "a", text: "新機能" },
+        { id: "b", text: "バグ修正" },
+        { id: "c", text: "リファクタリング" },
+        { id: "d", text: "ドキュメント更新" },
       ],
       correctChoiceId: "a",
     },
@@ -130,10 +130,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Used in PR comments for minor, non-blocking suggestions",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "nit: prefer const over let here" },
-        { id: "b", text: "small: prefer const over let here" },
-        { id: "c", text: "minor: prefer const over let here" },
-        { id: "d", text: "detail: prefer const over let here" },
+        { id: "a", text: "細かい指摘" },
+        { id: "b", text: "重大なバグ" },
+        { id: "c", text: "ブロッカー" },
+        { id: "d", text: "承認サイン" },
       ],
       correctChoiceId: "a",
     },
@@ -144,10 +144,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Restructuring code without changing behavior",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "refactor: Extract validation logic into helper" },
-        { id: "b", text: "refactor: extracted validation logic into helper" },
-        { id: "c", text: "refactor: extracting validation logic into helper" },
-        { id: "d", text: "refactor: validation logic extraction" },
+        { id: "a", text: "リファクタリングする" },
+        { id: "b", text: "新機能を追加する" },
+        { id: "c", text: "バグを修正する" },
+        { id: "d", text: "テストを追加する" },
       ],
       correctChoiceId: "a",
     },
@@ -158,10 +158,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "PR comment indicating a must-fix issue before merging",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "Blocking: this will cause issues in production" },
-        { id: "b", text: "Block: this will cause issues in production" },
-        { id: "c", text: "Blocker: this will cause issues in production" },
-        { id: "d", text: "Blocked: this will cause issues in production" },
+        { id: "a", text: "ブロッカー" },
+        { id: "b", text: "細かい指摘" },
+        { id: "c", text: "提案" },
+        { id: "d", text: "承認" },
       ],
       correctChoiceId: "a",
     },
@@ -175,22 +175,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "A bug caused by timing issues in concurrent operations",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "fix: resolve race condition in async handler",
-        },
-        {
-          id: "b",
-          text: "fix: resolve concurrent condition in async handler",
-        },
-        {
-          id: "c",
-          text: "fix: resolve timing issue in async handler",
-        },
-        {
-          id: "d",
-          text: "fix: resolve thread issue in async handler",
-        },
+        { id: "a", text: "競合状態" },
+        { id: "b", text: "デッドロック" },
+        { id: "c", text: "メモリリーク" },
+        { id: "d", text: "スタックオーバーフロー" },
       ],
       correctChoiceId: "a",
     },
@@ -201,22 +189,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "TypeScript pattern for type-safe variants",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "Consider using a discriminated union for better type safety",
-        },
-        {
-          id: "b",
-          text: "Consider using a union type for better type safety",
-        },
-        {
-          id: "c",
-          text: "Consider using a tagged union for better type safety",
-        },
-        {
-          id: "d",
-          text: "Consider using a closed union for better type safety",
-        },
+        { id: "a", text: "判別可能なユニオン型" },
+        { id: "b", text: "交差型" },
+        { id: "c", text: "ジェネリクス型" },
+        { id: "d", text: "条件型" },
       ],
       correctChoiceId: "a",
     },
@@ -227,22 +203,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Catching exceptions without re-throwing or logging",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This could silently swallow exceptions",
-        },
-        {
-          id: "b",
-          text: "This could quietly ignore exceptions",
-        },
-        {
-          id: "c",
-          text: "This could secretly hide exceptions",
-        },
-        {
-          id: "d",
-          text: "This could softly eat exceptions",
-        },
+        { id: "a", text: "サイレントに無視する" },
+        { id: "b", text: "例外を再スローする" },
+        { id: "c", text: "エラーをログに記録する" },
+        { id: "d", text: "例外を変換する" },
       ],
       correctChoiceId: "a",
     },
@@ -256,22 +220,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "When implementation details bleed through an interface",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This leaks the abstraction — callers should not need to know about the underlying implementation",
-        },
-        {
-          id: "b",
-          text: "This breaks the abstraction — callers should not need to know about the underlying implementation",
-        },
-        {
-          id: "c",
-          text: "This exposes the abstraction — callers should not need to know about the underlying implementation",
-        },
-        {
-          id: "d",
-          text: "This violates the abstraction — callers should not need to know about the underlying implementation",
-        },
+        { id: "a", text: "抽象化が漏れている" },
+        { id: "b", text: "インターフェースが壊れている" },
+        { id: "c", text: "カプセル化が不足している" },
+        { id: "d", text: "依存関係が循環している" },
       ],
       correctChoiceId: "a",
     },
@@ -282,22 +234,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Hidden dependency on execution order",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This is an implicit temporal coupling that will bite us later",
-        },
-        {
-          id: "b",
-          text: "This is an implicit sequential coupling that will bite us later",
-        },
-        {
-          id: "c",
-          text: "This is an implicit order coupling that will bite us later",
-        },
-        {
-          id: "d",
-          text: "This is an implicit time coupling that will bite us later",
-        },
+        { id: "a", text: "時間的結合" },
+        { id: "b", text: "循環依存" },
+        { id: "c", text: "密結合" },
+        { id: "d", text: "データ競合" },
       ],
       correctChoiceId: "a",
     },
@@ -308,22 +248,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Property where repeated operations produce the same result",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "fix: ensure idempotency of payment webhook handler",
-        },
-        {
-          id: "b",
-          text: "fix: ensure idempotence of payment webhook handler",
-        },
-        {
-          id: "c",
-          text: "fix: ensure repeatability of payment webhook handler",
-        },
-        {
-          id: "d",
-          text: "fix: ensure consistency of payment webhook handler",
-        },
+        { id: "a", text: "べき等性" },
+        { id: "b", text: "原子性" },
+        { id: "c", text: "一貫性" },
+        { id: "d", text: "スレッドセーフ" },
       ],
       correctChoiceId: "a",
     },
@@ -337,10 +265,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Routine dependency upgrades",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "chore: bump dependencies" },
-        { id: "b", text: "chore: update dependencies" },
-        { id: "c", text: "chore: upgrade dependencies" },
-        { id: "d", text: "chore: fix dependencies" },
+        { id: "a", text: "依存関係のバージョンを更新" },
+        { id: "b", text: "新しいライブラリを追加" },
+        { id: "c", text: "不要なパッケージを削除" },
+        { id: "d", text: "依存関係の脆弱性を修正" },
       ],
       correctChoiceId: "a",
     },
@@ -351,22 +279,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Slack message to alert teammates proactively",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "Heads up — the staging environment will be down for maintenance",
-        },
-        {
-          id: "b",
-          text: "Notice — the staging environment will be down for maintenance",
-        },
-        {
-          id: "c",
-          text: "Alert — the staging environment will be down for maintenance",
-        },
-        {
-          id: "d",
-          text: "Warning — the staging environment will be down for maintenance",
-        },
+        { id: "a", text: "念のためお知らせします" },
+        { id: "b", text: "至急対応が必要です" },
+        { id: "c", text: "ご確認をお願いします" },
+        { id: "d", text: "承認をお願いします" },
       ],
       correctChoiceId: "a",
     },
@@ -377,13 +293,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Sharing information without requiring action",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "FYI, I pushed a hotfix to production" },
-        { id: "b", text: "For information, I pushed a hotfix to production" },
-        {
-          id: "c",
-          text: "For your information, I pushed a hotfix to production",
-        },
-        { id: "d", text: "Note, I pushed a hotfix to production" },
+        { id: "a", text: "参考までに" },
+        { id: "b", text: "至急ご対応ください" },
+        { id: "c", text: "あなたの担当です" },
+        { id: "d", text: "承認が必要です" },
       ],
       correctChoiceId: "a",
     },
@@ -397,22 +310,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Setting up CI/CD pipeline",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "ci: add GitHub Actions workflow for deployment",
-        },
-        {
-          id: "b",
-          text: "ci: added GitHub Actions workflow for deployment",
-        },
-        {
-          id: "c",
-          text: "ci: adding GitHub Actions workflow for deployment",
-        },
-        {
-          id: "d",
-          text: "ci: GitHub Actions workflow for deployment added",
-        },
+        { id: "a", text: "GitHub Actionsワークフローを追加" },
+        { id: "b", text: "Dockerイメージをビルド" },
+        { id: "c", text: "テストスイートを実行" },
+        { id: "d", text: "本番環境にデプロイ" },
       ],
       correctChoiceId: "a",
     },
@@ -423,22 +324,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Slack message to inform someone without requiring action",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "Pinging you for visibility — this incident is affecting 5% of users",
-        },
-        {
-          id: "b",
-          text: "Tagging you for visibility — this incident is affecting 5% of users",
-        },
-        {
-          id: "c",
-          text: "Notifying you for visibility — this incident is affecting 5% of users",
-        },
-        {
-          id: "d",
-          text: "Alerting you for visibility — this incident is affecting 5% of users",
-        },
+        { id: "a", text: "認識共有のためにピンしています" },
+        { id: "b", text: "至急対応をお願いしています" },
+        { id: "c", text: "レビューを依頼しています" },
+        { id: "d", text: "承認を求めています" },
       ],
       correctChoiceId: "a",
     },
@@ -449,22 +338,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Reporting an environment-specific bug",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This only occurs in production, not staging",
-        },
-        {
-          id: "b",
-          text: "This only happens in production, not staging",
-        },
-        {
-          id: "c",
-          text: "This only appears in production, not staging",
-        },
-        {
-          id: "d",
-          text: "This only shows in production, not staging",
-        },
+        { id: "a", text: "これは本番環境でのみ発生します" },
+        { id: "b", text: "これはすべての環境で発生します" },
+        { id: "c", text: "これはローカルでのみ発生します" },
+        { id: "d", text: "これはステージングでのみ発生します" },
       ],
       correctChoiceId: "a",
     },
@@ -478,22 +355,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Retry strategy with increasing delays",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "feat: implement retry with exponential backoff",
-        },
-        {
-          id: "b",
-          text: "feat: implement retry with linear backoff",
-        },
-        {
-          id: "c",
-          text: "feat: implement retry with constant backoff",
-        },
-        {
-          id: "d",
-          text: "feat: implement retry with progressive backoff",
-        },
+        { id: "a", text: "指数バックオフによるリトライ" },
+        { id: "b", text: "固定間隔でのリトライ" },
+        { id: "c", text: "タイムアウトの延長" },
+        { id: "d", text: "サーキットブレーカーの適用" },
       ],
       correctChoiceId: "a",
     },
@@ -504,22 +369,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Code review comment about error handling",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This is not resilient to partial failures",
-        },
-        {
-          id: "b",
-          text: "This is not resistant to partial failures",
-        },
-        {
-          id: "c",
-          text: "This is not robust to partial failures",
-        },
-        {
-          id: "d",
-          text: "This is not tolerant to partial failures",
-        },
+        { id: "a", text: "部分的な障害に耐性がない" },
+        { id: "b", text: "全体的な障害に耐性がない" },
+        { id: "c", text: "パフォーマンスが低下している" },
+        { id: "d", text: "メモリ使用量が多すぎる" },
       ],
       correctChoiceId: "a",
     },
@@ -530,22 +383,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Describing a flaky performance issue",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This intermittently fails under load",
-        },
-        {
-          id: "b",
-          text: "This occasionally fails under load",
-        },
-        {
-          id: "c",
-          text: "This sometimes fails under load",
-        },
-        {
-          id: "d",
-          text: "This randomly fails under load",
-        },
+        { id: "a", text: "高負荷時に断続的に失敗する" },
+        { id: "b", text: "常に失敗する" },
+        { id: "c", text: "起動時に失敗する" },
+        { id: "d", text: "低負荷時に失敗する" },
       ],
       correctChoiceId: "a",
     },
@@ -559,22 +400,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Architectural pattern using events as the source of truth",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "feat: introduce event sourcing for audit log",
-        },
-        {
-          id: "b",
-          text: "feat: introduce event logging for audit log",
-        },
-        {
-          id: "c",
-          text: "feat: introduce event streaming for audit log",
-        },
-        {
-          id: "d",
-          text: "feat: introduce event tracking for audit log",
-        },
+        { id: "a", text: "イベントソーシング" },
+        { id: "b", text: "メッセージキュー" },
+        { id: "c", text: "CQRS" },
+        { id: "d", text: "サガパターン" },
       ],
       correctChoiceId: "a",
     },
@@ -585,22 +414,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Missing monitoring coverage",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This exposes a gap in our observability",
-        },
-        {
-          id: "b",
-          text: "This reveals a gap in our observability",
-        },
-        {
-          id: "c",
-          text: "This shows a gap in our observability",
-        },
-        {
-          id: "d",
-          text: "This highlights a gap in our observability",
-        },
+        { id: "a", text: "オブザーバビリティのギャップ" },
+        { id: "b", text: "パフォーマンスのボトルネック" },
+        { id: "c", text: "セキュリティの脆弱性" },
+        { id: "d", text: "スケーラビリティの限界" },
       ],
       correctChoiceId: "a",
     },
@@ -611,22 +428,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Time-boxed exploration before committing to implementation",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This warrants a dedicated spike to explore the solution space",
-        },
-        {
-          id: "b",
-          text: "This warrants a dedicated research to explore the solution space",
-        },
-        {
-          id: "c",
-          text: "This warrants a dedicated investigation to explore the solution space",
-        },
-        {
-          id: "d",
-          text: "This warrants a dedicated analysis to explore the solution space",
-        },
+        { id: "a", text: "専用スパイク（調査タスク）" },
+        { id: "b", text: "緊急バグ修正" },
+        { id: "c", text: "コードレビュー" },
+        { id: "d", text: "定期メンテナンス" },
       ],
       correctChoiceId: "a",
     },
@@ -640,10 +445,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Adding a new ML training component",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "feat: add model training script" },
-        { id: "b", text: "feat: added model training script" },
-        { id: "c", text: "feat: adding model training script" },
-        { id: "d", text: "feat: model training script add" },
+        { id: "a", text: "モデル訓練スクリプトを追加" },
+        { id: "b", text: "モデル訓練スクリプトを削除" },
+        { id: "c", text: "推論パイプラインを最適化" },
+        { id: "d", text: "データセットを更新" },
       ],
       correctChoiceId: "a",
     },
@@ -654,22 +459,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Summarizing a long message for busy readers",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "TL;DR: the bug is a race condition in the payment handler",
-        },
-        {
-          id: "b",
-          text: "Summary: the bug is a race condition in the payment handler",
-        },
-        {
-          id: "c",
-          text: "Short: the bug is a race condition in the payment handler",
-        },
-        {
-          id: "d",
-          text: "Brief: the bug is a race condition in the payment handler",
-        },
+        { id: "a", text: "要約すると" },
+        { id: "b", text: "詳細については" },
+        { id: "c", text: "補足情報として" },
+        { id: "d", text: "ご注意ください" },
       ],
       correctChoiceId: "a",
     },
@@ -680,22 +473,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Section in a bug report describing what should happen",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "Expected behavior: The model should return predictions within 200ms",
-        },
-        {
-          id: "b",
-          text: "Expected result: The model should return predictions within 200ms",
-        },
-        {
-          id: "c",
-          text: "Expected output: The model should return predictions within 200ms",
-        },
-        {
-          id: "d",
-          text: "Expected response: The model should return predictions within 200ms",
-        },
+        { id: "a", text: "期待される動作" },
+        { id: "b", text: "実際の動作" },
+        { id: "c", text: "再現手順" },
+        { id: "d", text: "環境情報" },
       ],
       correctChoiceId: "a",
     },
@@ -709,10 +490,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Improving ML model speed",
       type: "multiple_choice",
       choices: [
-        { id: "a", text: "perf: optimize model inference pipeline" },
-        { id: "b", text: "perf: optimized model inference pipeline" },
-        { id: "c", text: "perf: optimizing model inference pipeline" },
-        { id: "d", text: "perf: model inference pipeline optimization" },
+        { id: "a", text: "モデル推論を最適化" },
+        { id: "b", text: "モデルの精度を改善" },
+        { id: "c", text: "訓練データを追加" },
+        { id: "d", text: "モデルのバージョンを更新" },
       ],
       correctChoiceId: "a",
     },
@@ -723,22 +504,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "PR comment about resource usage in ML code",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "Have you considered the memory implications here?",
-        },
-        {
-          id: "b",
-          text: "Did you think about the memory implications here?",
-        },
-        {
-          id: "c",
-          text: "Have you thought about memory usage here?",
-        },
-        {
-          id: "d",
-          text: "Did you consider the memory impact here?",
-        },
+        { id: "a", text: "メモリへの影響を考慮しましたか？" },
+        { id: "b", text: "CPUの使用率を確認しましたか？" },
+        { id: "c", text: "テストを追加しましたか？" },
+        { id: "d", text: "ドキュメントを更新しましたか？" },
       ],
       correctChoiceId: "a",
     },
@@ -749,22 +518,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Providing a stripped-down example to isolate a bug",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "Attaching a minimal reproduction",
-        },
-        {
-          id: "b",
-          text: "Attaching a minimum reproduction",
-        },
-        {
-          id: "c",
-          text: "Attaching a simple reproduction",
-        },
-        {
-          id: "d",
-          text: "Attaching a small reproduction",
-        },
+        { id: "a", text: "最小再現コードを添付します" },
+        { id: "b", text: "スクリーンショットを添付します" },
+        { id: "c", text: "ログファイルを添付します" },
+        { id: "d", text: "設定ファイルを添付します" },
       ],
       correctChoiceId: "a",
     },
@@ -778,22 +535,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Algorithm optimization in ML data preprocessing",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "perf: replace O(n²) sort with radix sort",
-        },
-        {
-          id: "b",
-          text: "perf: replace quadratic sort with radix sort",
-        },
-        {
-          id: "c",
-          text: "perf: replace slow sort with radix sort",
-        },
-        {
-          id: "d",
-          text: "perf: replace bubble sort with radix sort",
-        },
+        { id: "a", text: "O(n²)のソートをRadixソートに置き換え" },
+        { id: "b", text: "O(n log n)のソートをバブルソートに置き換え" },
+        { id: "c", text: "線形探索を二分探索に置き換え" },
+        { id: "d", text: "再帰処理を反復処理に置き換え" },
       ],
       correctChoiceId: "a",
     },
@@ -804,22 +549,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Mental effort required to understand code",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "The cognitive load here is high — consider breaking this into a pipeline",
-        },
-        {
-          id: "b",
-          text: "The mental load here is high — consider breaking this into a pipeline",
-        },
-        {
-          id: "c",
-          text: "The complexity here is high — consider breaking this into a pipeline",
-        },
-        {
-          id: "d",
-          text: "The difficulty here is high — consider breaking this into a pipeline",
-        },
+        { id: "a", text: "認知負荷" },
+        { id: "b", text: "実行コスト" },
+        { id: "c", text: "技術的負債" },
+        { id: "d", text: "保守コスト" },
       ],
       correctChoiceId: "a",
     },
@@ -830,22 +563,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Identifying the underlying reason for a bug",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "The root cause is a missing normalization step in the preprocessing pipeline",
-        },
-        {
-          id: "b",
-          text: "The main cause is a missing normalization step in the preprocessing pipeline",
-        },
-        {
-          id: "c",
-          text: "The core cause is a missing normalization step in the preprocessing pipeline",
-        },
-        {
-          id: "d",
-          text: "The underlying cause is a missing normalization step in the preprocessing pipeline",
-        },
+        { id: "a", text: "根本原因は〜です" },
+        { id: "b", text: "直接の原因は〜です" },
+        { id: "c", text: "副作用として〜が起きています" },
+        { id: "d", text: "回避策として〜があります" },
       ],
       correctChoiceId: "a",
     },
@@ -859,22 +580,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Discussion about competing goals in ML systems",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "The trade-off between correctness and performance needs to be discussed",
-        },
-        {
-          id: "b",
-          text: "The balance between correctness and performance needs to be discussed",
-        },
-        {
-          id: "c",
-          text: "The tension between correctness and performance needs to be discussed",
-        },
-        {
-          id: "d",
-          text: "The conflict between correctness and performance needs to be discussed",
-        },
+        { id: "a", text: "正確性とパフォーマンスのトレードオフ" },
+        { id: "b", text: "コストとスケーラビリティのトレードオフ" },
+        { id: "c", text: "セキュリティと利便性のトレードオフ" },
+        { id: "d", text: "保守性と開発速度のトレードオフ" },
       ],
       correctChoiceId: "a",
     },
@@ -885,22 +594,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Challenging the framing of a technical decision",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "I think we are solving for the wrong problem here",
-        },
-        {
-          id: "b",
-          text: "I think we are working on the wrong problem here",
-        },
-        {
-          id: "c",
-          text: "I think we are addressing the wrong problem here",
-        },
-        {
-          id: "d",
-          text: "I think we are tackling the wrong problem here",
-        },
+        { id: "a", text: "間違った問題を解決しようとしていると思います" },
+        { id: "b", text: "この解決策に同意します" },
+        { id: "c", text: "もっと良い実装方法があると思います" },
+        { id: "d", text: "この変更は不要だと思います" },
       ],
       correctChoiceId: "a",
     },
@@ -911,22 +608,10 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       context: "Complexity introduced by implementation choices, not the domain",
       type: "multiple_choice",
       choices: [
-        {
-          id: "a",
-          text: "This introduces accidental complexity that the domain does not require",
-        },
-        {
-          id: "b",
-          text: "This introduces unnecessary complexity that the domain does not require",
-        },
-        {
-          id: "c",
-          text: "This introduces incidental complexity that the domain does not require",
-        },
-        {
-          id: "d",
-          text: "This introduces avoidable complexity that the domain does not require",
-        },
+        { id: "a", text: "偶有的複雑性" },
+        { id: "b", text: "本質的複雑性" },
+        { id: "c", text: "循環的複雑度" },
+        { id: "d", text: "認知的複雑性" },
       ],
       correctChoiceId: "a",
     },
