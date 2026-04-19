@@ -79,7 +79,7 @@ export async function scoreFreeTextWithFeedback(
     sanitizedAnswer,
     "---END USER RESPONSE---",
     "",
-    'Return only valid JSON: {"score": <number 0-100>, "feedback": "<brief feedback in English>"}',
+    'Return only valid JSON: {"score": <number 0-100>, "feedback": "<brief feedback in Japanese (日本語で)>"}',
   ].join("\n");
 
   try {
@@ -98,10 +98,12 @@ export async function scoreFreeTextWithFeedback(
         ? Math.max(0, Math.min(100, Math.round(result.score)))
         : 50;
     const feedback =
-      typeof result.feedback === "string" ? result.feedback : "";
+      typeof result.feedback === "string" && result.feedback.trim().length > 0
+        ? result.feedback
+        : "回答を受け付けました。引き続き練習を続けましょう！";
 
     return { score, feedback };
   } catch {
-    return { score: 50, feedback: "" };
+    return { score: 50, feedback: "採点中にエラーが発生しました。次の問題に進んでください。" };
   }
 }
