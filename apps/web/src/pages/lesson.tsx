@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch } from "@/lib/api";
 import type {
   LessonContent,
   LessonStep,
@@ -37,6 +37,25 @@ const LEVEL_META: Record<Level, { label: string; color: string }> = {
 };
 
 const STEPS: StepId[] = ["warmup", "focus", "practice", "wrapup"];
+
+function parseApiErrorMessage(err: unknown): string {
+  if (!(err instanceof ApiError)) {
+    return "フィードバックの取得に失敗しました。少し時間をおいて再試行してください。";
+  }
+
+  try {
+    const parsed = JSON.parse(err.message) as { error?: unknown };
+    if (typeof parsed.error === "string" && parsed.error.trim().length > 0) {
+      return parsed.error;
+    }
+  } catch {
+    if (err.message.trim().length > 0) {
+      return err.message;
+    }
+  }
+
+  return "フィードバックの取得に失敗しました。少し時間をおいて再試行してください。";
+}
 
 // ---------------------------------------------------------------------------
 // LessonPage
@@ -727,8 +746,12 @@ function FillInBlank({
         },
       );
       onAnswer(res);
-    } catch {
-      onAnswer({ correct: false, score: 0 });
+    } catch (err) {
+      onAnswer({
+        correct: false,
+        score: 0,
+        feedback: parseApiErrorMessage(err),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -863,8 +886,12 @@ function ReorderExercise({
         },
       );
       onAnswer(res);
-    } catch {
-      onAnswer({ correct: false, score: 0 });
+    } catch (err) {
+      onAnswer({
+        correct: false,
+        score: 0,
+        feedback: parseApiErrorMessage(err),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -987,8 +1014,12 @@ function FreeTextExercise({
         },
       );
       onAnswer(res);
-    } catch {
-      onAnswer({ correct: false, score: 0 });
+    } catch (err) {
+      onAnswer({
+        correct: false,
+        score: 0,
+        feedback: parseApiErrorMessage(err),
+      });
     } finally {
       setIsSubmitting(false);
     }

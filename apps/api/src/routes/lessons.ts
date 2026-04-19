@@ -306,14 +306,31 @@ lessonRoutes.post("/:id/answer", async (c) => {
   const today = todayString();
   const kv = c.env.SESSION_KV;
   const sessionKvKey = lessonSessionKey(userId, today);
+  const db = createDb(c.env.DB);
 
   const session = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
-  if (!session || session.lessonId !== lessonId) {
-    return c.json({ error: "Lesson session not found" }, 404);
+  const hasActiveSession = session?.lessonId === lessonId;
+
+  const userLesson = await db
+    .select()
+    .from(userLessons)
+    .where(
+      and(eq(userLessons.userId, userId), eq(userLessons.lessonId, lessonId))
+    )
+    .get();
+
+  if (!userLesson) {
+    return c.json({ error: "Lesson not found" }, 404);
   }
 
-  // Review mode: lesson already completed — score the answer but don't record it
-  const isReview = session.completedAt !== null;
+  // Review mode should keep working even if the short-lived KV session expired.
+  const isReview =
+    userLesson.completedAt !== null ||
+    (hasActiveSession && session.completedAt !== null);
+
+  if (!hasActiveSession && !isReview) {
+    return c.json({ error: "Lesson session not found" }, 404);
+  }
 
   let body: { step?: string; exerciseId?: string; answer?: string };
   try {
@@ -337,7 +354,7 @@ lessonRoutes.post("/:id/answer", async (c) => {
   }
 
   // Prevent duplicate answers only in normal (non-review) mode
-  if (!isReview) {
+  if (!isReview && hasActiveSession) {
     const alreadyAnswered = session.answers.find(
       (a) => a.exerciseId === exerciseId && a.step === step
     );
@@ -347,7 +364,6 @@ lessonRoutes.post("/:id/answer", async (c) => {
   }
 
   // Load lesson content from D1
-  const db = createDb(c.env.DB);
   const lesson = await db
     .select()
     .from(lessons)
@@ -407,7 +423,7 @@ lessonRoutes.post("/:id/answer", async (c) => {
   }
 
   // In review mode, skip recording the answer to avoid mutating completed sessions
-  if (!isReview) {
+  if (!isReview && hasActiveSession) {
     const answerRecord: LessonAnswerRecord = {
       step,
       exerciseId,
