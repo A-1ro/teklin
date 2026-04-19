@@ -69,37 +69,37 @@ export async function scoreFreeTextWithFeedback(
   answer: string,
   llm: LLMService
 ): Promise<{ score: number; feedback: string }> {
-  const sanitizedAnswer = sanitizeForPrompt(answer);
-  const sanitizedInstruction = sanitizeForPrompt(exercise.instruction);
-  const context = exercise.prompt
-    ? `\n\nExercise prompt: ${sanitizeForPrompt(exercise.prompt)}`
-    : "";
-
-  const system = [
-    "You are an English writing evaluator for software engineers.",
-    "Assess the given text for technical accuracy, grammar, clarity, and",
-    "professional tone appropriate for engineering communication.",
-    "Return a JSON object with fields:",
-    "score (0-100) and feedback (string).",
-  ].join(" ");
-
-  const user = [
-    "Evaluate the following response to a technical English exercise:",
-    "",
-    `Exercise instruction: ${sanitizedInstruction}${context}`,
-    "",
-    "---BEGIN USER RESPONSE---",
-    sanitizedAnswer,
-    "---END USER RESPONSE---",
-    "",
-    'Return only valid JSON: {"score": <number 0-100>, "feedback": "<brief feedback in Japanese (日本語で)>"}',
-  ].join("\n");
-
   try {
+    const sanitizedAnswer = sanitizeForPrompt(answer);
+    const sanitizedInstruction = sanitizeForPrompt(exercise.instruction ?? "");
+    const context = exercise.prompt
+      ? `\n\nExercise prompt: ${sanitizeForPrompt(exercise.prompt)}`
+      : "";
+
+    const system = [
+      "You are an English writing evaluator for software engineers.",
+      "Assess the given text for technical accuracy, grammar, clarity, and",
+      "professional tone appropriate for engineering communication.",
+      "Return a JSON object with fields:",
+      "score (0-100) and feedback (string).",
+    ].join(" ");
+
+    const user = [
+      "Evaluate the following response to a technical English exercise:",
+      "",
+      `Exercise instruction: ${sanitizedInstruction}${context}`,
+      "",
+      "---BEGIN USER RESPONSE---",
+      sanitizedAnswer,
+      "---END USER RESPONSE---",
+      "",
+      'Return only valid JSON: {"score": <number 0-100>, "feedback": "<brief feedback in Japanese (日本語で)>"}',
+    ].join("\n");
+
     const response = await llm.router.generate(
       user,
       { system, maxTokens: 256, temperature: 0.1 },
-      "quality"
+      "lightweight"
     );
 
     // Extract JSON even if the model wraps it in markdown code fences
@@ -118,7 +118,8 @@ export async function scoreFreeTextWithFeedback(
         : "回答を受け付けました。引き続き練習を続けましょう！";
 
     return { score, feedback };
-  } catch {
-    return { score: 50, feedback: "採点中にエラーが発生しました。次の問題に進んでください。" };
+  } catch (err) {
+    console.error("[scoreFreeTextWithFeedback] failed:", err);
+    return { score: 50, feedback: "回答を受け付けました。引き続き練習を続けましょう！" };
   }
 }
