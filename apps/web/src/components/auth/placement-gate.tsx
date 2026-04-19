@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { hasPlacementResult as fetchHasPlacementResult } from "@/lib/api";
 import { useRequireAuth } from "@/lib/auth";
@@ -15,10 +15,22 @@ export function PlacementGate() {
   const [hasPlacementResult, setHasPlacementResult] = useState<boolean | null>(
     null
   );
+  const prevPathnameRef = useRef<string>(location.pathname);
 
   useEffect(() => {
     if (authLoading || !user) return;
 
+    const prevPathname = prevPathnameRef.current;
+    prevPathnameRef.current = location.pathname;
+
+    // プレースメント完了後に別ページへ遷移する場合のみ再取得する
+    const isTransitioningFromPlacement =
+      PLACEMENT_ALLOWED_PATHS.has(prevPathname) &&
+      !PLACEMENT_ALLOWED_PATHS.has(location.pathname);
+
+    if (hasPlacementResult !== null && !isTransitioningFromPlacement) return;
+
+    setHasPlacementResult(null);
     let cancelled = false;
 
     fetchHasPlacementResult()
@@ -35,7 +47,8 @@ export function PlacementGate() {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, location.pathname]);
 
   if (authLoading || hasPlacementResult === null) {
     return (
