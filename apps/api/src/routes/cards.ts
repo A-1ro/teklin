@@ -136,10 +136,27 @@ cardRoutes.get("/review", async (c) => {
 
   let dueCards: PhraseCardWithSrs[];
 
+  const unseenRows = await db
+    .select(reviewSelectColumns)
+    .from(phraseCards)
+    .leftJoin(
+      userSrs,
+      and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
+    )
+    .where(
+      and(
+        sql`${userSrs.cardId} IS NULL`,
+        sql`${phraseCards.level} IN (${sql.join(
+          allowedLevels.map((l) => sql`${l}`),
+          sql`, `
+        )})`
+      )
+    );
+
   if (isFresh && cached !== null) {
     // Cache hit: use cached dueCardIds as the filter
     if (cached.dueCardIds.length === 0) {
-      dueCards = [];
+      dueCards = unseenRows.map(mapRowToCard);
     } else {
       const rows = await db
         .select(reviewSelectColumns)
@@ -156,7 +173,7 @@ cardRoutes.get("/review", async (c) => {
           )
         );
 
-      dueCards = rows.map(mapRowToCard);
+      dueCards = [...rows, ...unseenRows].map(mapRowToCard);
     }
   } else {
     // Cache miss or stale — query due cards plus unseen cards at or below the user's level
@@ -168,23 +185,6 @@ cardRoutes.get("/review", async (c) => {
         and(
           eq(userSrs.userId, userId),
           lte(userSrs.nextReview, now),
-          sql`${phraseCards.level} IN (${sql.join(
-            allowedLevels.map((l) => sql`${l}`),
-            sql`, `
-          )})`
-        )
-      );
-
-    const unseenRows = await db
-      .select(reviewSelectColumns)
-      .from(phraseCards)
-      .leftJoin(
-        userSrs,
-        and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
-      )
-      .where(
-        and(
-          sql`${userSrs.cardId} IS NULL`,
           sql`${phraseCards.level} IN (${sql.join(
             allowedLevels.map((l) => sql`${l}`),
             sql`, `
