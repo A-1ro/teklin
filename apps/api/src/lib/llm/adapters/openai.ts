@@ -57,7 +57,7 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
       options: LLMOptions = {}
     ): Promise<LLMResponse> {
       const body = {
-        model: DEFAULT_MODEL,
+        model: options.model ?? DEFAULT_MODEL,
         messages: buildMessages(prompt, options.system),
         max_tokens: options.maxTokens ?? 1024,
         temperature: options.temperature ?? 0.7,
@@ -96,7 +96,7 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
       return {
         text,
         provider: "openai",
-        model: data.model ?? DEFAULT_MODEL,
+        model: data.model ?? (options.model ?? DEFAULT_MODEL),
         usage: {
           promptTokens: data.usage.prompt_tokens,
           completionTokens: data.usage.completion_tokens,
@@ -107,7 +107,7 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
 
     stream(prompt: string, options: LLMOptions = {}): ReadableStream<string> {
       const body = {
-        model: DEFAULT_MODEL,
+        model: options.model ?? DEFAULT_MODEL,
         messages: buildMessages(prompt, options.system),
         max_tokens: options.maxTokens ?? 1024,
         temperature: options.temperature ?? 0.7,

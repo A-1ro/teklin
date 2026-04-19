@@ -24,6 +24,23 @@ function resolveModel(options: LLMOptions): string {
   return options.model ?? DEFAULT_MODEL;
 }
 
+function buildRequestBody(
+  prompt: string,
+  options: LLMOptions,
+  extras: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return {
+    messages: [{ role: "user", content: prompt }],
+    max_tokens: options.maxTokens ?? 1024,
+    temperature: options.temperature ?? 0.7,
+    ...(options.system ? { system: options.system } : {}),
+    ...(options.responseFormat
+      ? { response_format: options.responseFormat }
+      : {}),
+    ...extras,
+  };
+}
+
 function extractText(result: WorkersAiTextResponse): string {
   if (typeof result.response === "string") {
     return result.response;
@@ -65,22 +82,13 @@ export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
       options: LLMOptions = {}
     ): Promise<LLMResponse> {
       const model = resolveModel(options);
-      const messages: Array<{ role: string; content: string }> = [];
-      if (options.system) {
-        messages.push({ role: "system", content: options.system });
-      }
-      messages.push({ role: "user", content: prompt });
 
       let result: WorkersAiTextResponse;
       try {
-        result = (await ai.run(model, {
-          messages,
-          max_tokens: options.maxTokens ?? 1024,
-          temperature: options.temperature ?? 0.7,
-          ...(options.responseFormat
-            ? { response_format: options.responseFormat }
-            : {}),
-        })) as WorkersAiTextResponse;
+        result = (await ai.run(
+          model,
+          buildRequestBody(prompt, options)
+        )) as WorkersAiTextResponse;
       } catch (err) {
         throw new LLMError(
           `Workers AI request failed: ${String(err)}`,
@@ -102,26 +110,16 @@ export function createWorkersAiAdapter(ai: Ai): LLMAdapter {
 
     stream(prompt: string, options: LLMOptions = {}): ReadableStream<string> {
       const model = resolveModel(options);
-      const messages: Array<{ role: string; content: string }> = [];
-      if (options.system) {
-        messages.push({ role: "system", content: options.system });
-      }
-      messages.push({ role: "user", content: prompt });
 
       const { readable, writable } = new TransformStream<string, string>();
       const writer = writable.getWriter();
 
       (async () => {
         try {
-          const stream = (await ai.run(model, {
-            messages,
-            max_tokens: options.maxTokens ?? 1024,
-            temperature: options.temperature ?? 0.7,
-            stream: true,
-            ...(options.responseFormat
-              ? { response_format: options.responseFormat }
-              : {}),
-          })) as unknown as ReadableStream<Uint8Array>;
+          const stream = (await ai.run(
+            model,
+            buildRequestBody(prompt, options, { stream: true })
+          )) as unknown as ReadableStream<Uint8Array>;
 
           const reader = stream.getReader();
           const decoder = new TextDecoder();

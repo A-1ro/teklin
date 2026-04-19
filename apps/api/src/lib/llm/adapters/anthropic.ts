@@ -46,7 +46,7 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
       ];
 
       const body: Record<string, unknown> = {
-        model: DEFAULT_MODEL,
+        model: options.model ?? DEFAULT_MODEL,
         messages,
         max_tokens: options.maxTokens ?? 1024,
         temperature: options.temperature ?? 0.7,
@@ -90,7 +90,7 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
       return {
         text,
         provider: "anthropic",
-        model: data.model ?? DEFAULT_MODEL,
+        model: data.model ?? (options.model ?? DEFAULT_MODEL),
         usage: {
           promptTokens: data.usage.input_tokens,
           completionTokens: data.usage.output_tokens,
@@ -105,7 +105,7 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
       ];
 
       const body: Record<string, unknown> = {
-        model: DEFAULT_MODEL,
+        model: options.model ?? DEFAULT_MODEL,
         messages,
         max_tokens: options.maxTokens ?? 1024,
         temperature: options.temperature ?? 0.7,
