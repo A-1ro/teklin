@@ -99,6 +99,18 @@ export async function fetchCurrentUser(): Promise<AuthUser | null> {
   }
 }
 
+export async function hasPlacementResult(): Promise<boolean> {
+  try {
+    await apiFetch("/api/placement/result");
+    return true;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      return false;
+    }
+    throw err;
+  }
+}
+
 export async function logout(): Promise<void> {
   await apiFetch<void>("/auth/logout", { method: "POST" });
 }

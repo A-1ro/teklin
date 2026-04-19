@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchCurrentUser } from "@/lib/api";
+import { fetchCurrentUser, hasPlacementResult } from "@/lib/api";
 import { useAuth } from "@/components/auth/auth-provider";
 
 export function AuthCallbackPage() {
@@ -16,7 +16,11 @@ export function AuthCallbackPage() {
         if (cancelled) return;
         if (user) {
           await refreshUser();
-          navigate("/dashboard", { replace: true });
+          const hasResult = await hasPlacementResult();
+          if (cancelled) return;
+          navigate(hasResult ? "/dashboard" : "/placement", {
+            replace: true,
+          });
         } else {
           navigate("/login?error=auth_failed", { replace: true });
         }

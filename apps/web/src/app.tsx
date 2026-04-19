@@ -14,6 +14,7 @@ import { PlacementResultPage } from "@/pages/placement-result";
 import { RewritePage } from "@/pages/rewrite";
 import { RewriteHistoryPage } from "@/pages/rewrite-history";
 import { RewriteDetailPage } from "@/pages/rewrite-detail";
+import { PlacementGate } from "@/components/auth/placement-gate";
 
 export function App() {
   return (
@@ -21,18 +22,20 @@ export function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/lesson" element={<LessonHomePage />} />
-      <Route path="/lesson/:id" element={<LessonPage />} />
-      <Route path="/cards" element={<CardsPage />} />
-      <Route path="/cards/review" element={<ReviewPage />} />
-      <Route path="/cards/deck/:category" element={<DeckCategoryPage />} />
-      <Route path="/placement" element={<PlacementPage />} />
-      <Route path="/placement/test" element={<PlacementTestPage />} />
-      <Route path="/placement/result" element={<PlacementResultPage />} />
-      <Route path="/rewrite" element={<RewritePage />} />
-      <Route path="/rewrite/history" element={<RewriteHistoryPage />} />
-      <Route path="/rewrite/history/:id" element={<RewriteDetailPage />} />
+      <Route element={<PlacementGate />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/lesson" element={<LessonHomePage />} />
+        <Route path="/lesson/:id" element={<LessonPage />} />
+        <Route path="/cards" element={<CardsPage />} />
+        <Route path="/cards/review" element={<ReviewPage />} />
+        <Route path="/cards/deck/:category" element={<DeckCategoryPage />} />
+        <Route path="/placement" element={<PlacementPage />} />
+        <Route path="/placement/test" element={<PlacementTestPage />} />
+        <Route path="/placement/result" element={<PlacementResultPage />} />
+        <Route path="/rewrite" element={<RewritePage />} />
+        <Route path="/rewrite/history" element={<RewriteHistoryPage />} />
+        <Route path="/rewrite/history/:id" element={<RewriteDetailPage />} />
+      </Route>
     </Routes>
   );
 }

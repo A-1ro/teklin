@@ -5,6 +5,15 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { apiFetch } from "@/lib/api";
 import type { TodayLessonResponse } from "@teklin/shared";
 
+const PLACEMENT_PROMPT_DISMISS_KEY = "dashboard:placement-prompt-dismissed";
+
+function getLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 const LEVEL_LABELS: Record<string, string> = {
   L1: "L1 - Starter",
   L2: "L2 - Reader",
@@ -28,6 +37,8 @@ export function DashboardPage() {
     null
   );
   const [lessonLoading, setLessonLoading] = useState(true);
+  const [isPlacementPromptDismissed, setIsPlacementPromptDismissed] =
+    useState(false);
 
   useEffect(() => {
     if (isLoading || !user) return;
@@ -65,6 +76,29 @@ export function DashboardPage() {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+  const currentStreak = lessonData?.streak.currentStreak ?? 0;
+  const todayKey = getLocalDateString(new Date());
+  const placementPromptDismissValue = `${user.id}:${todayKey}`;
+  const shouldShowPlacementPrompt =
+    !lessonLoading &&
+    currentStreak > 0 &&
+    currentStreak % 7 === 0 &&
+    !isPlacementPromptDismissed;
+
+  useEffect(() => {
+    const dismissedValue = window.localStorage.getItem(
+      PLACEMENT_PROMPT_DISMISS_KEY
+    );
+    setIsPlacementPromptDismissed(dismissedValue === placementPromptDismissValue);
+  }, [placementPromptDismissValue]);
+
+  const handleDismissPlacementPrompt = () => {
+    window.localStorage.setItem(
+      PLACEMENT_PROMPT_DISMISS_KEY,
+      placementPromptDismissValue
+    );
+    setIsPlacementPromptDismissed(true);
+  };
 
   return (
     <main className="min-h-screen bg-gray-950 px-4 py-8">
@@ -146,6 +180,48 @@ export function DashboardPage() {
         </div>
 
         <TodayLessonCard data={lessonData} isLoading={lessonLoading} />
+
+        {shouldShowPlacementPrompt && (
+          <div className="relative mt-6 rounded-2xl border border-amber-700/40 bg-amber-950/20 p-5">
+            <button
+              type="button"
+              onClick={handleDismissPlacementPrompt}
+              className="absolute right-3 top-3 rounded-md p-1 text-amber-200/70 transition-colors hover:bg-amber-100/10 hover:text-amber-100"
+              aria-label="今日のリマインダーを閉じる"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <div className="flex flex-col gap-4 pr-8 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-amber-300">
+                  今のレベルを測ってみませんか？
+                </p>
+                <p className="mt-1 text-sm text-amber-100/75">
+                  {currentStreak}日連続で学習できています。今の到達度をプレースメントテストで確認しましょう。
+                </p>
+              </div>
+              <Link
+                to="/placement"
+                className="inline-flex shrink-0 items-center justify-center rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-gray-950 transition-colors hover:bg-amber-400"
+              >
+                プレースメントテストへ
+              </Link>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 grid grid-cols-2 gap-4">
           <Link
