@@ -1,3 +1,9 @@
+export interface LessonGenerationMessage {
+  userId: string;
+  /** YYYY-MM-DD Teklin day to generate the lesson for */
+  today: string;
+}
+
 export type Bindings = {
   DB: D1Database;
   SESSION_KV: KVNamespace;
@@ -7,6 +13,7 @@ export type Bindings = {
   CONTENT_BUCKET: R2Bucket;
   AI: Ai;
   ASSETS: Fetcher;
+  LESSON_QUEUE: Queue<LessonGenerationMessage>;
   ENVIRONMENT: string;
   JWT_SECRET: string;
   GITHUB_CLIENT_ID: string;

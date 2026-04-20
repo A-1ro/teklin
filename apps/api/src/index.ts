@@ -6,7 +6,8 @@ import { placementRoutes } from "./routes/placement";
 import { lessonRoutes } from "./routes/lessons";
 import { cardRoutes } from "./routes/cards";
 import { rewriteRoutes } from "./routes/rewrite";
-import type { Bindings } from "./types";
+import { handleScheduled, handleLessonQueue } from "./scheduled";
+import type { Bindings, LessonGenerationMessage } from "./types";
 
 export type { Bindings };
 
@@ -37,4 +38,19 @@ app.get("*", async (c) => {
   return c.env.ASSETS.fetch(new Request(new URL("/index.html", c.req.url)));
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  scheduled: async (
+    _event: ScheduledEvent,
+    env: Bindings,
+    ctx: ExecutionContext
+  ) => {
+    ctx.waitUntil(handleScheduled(env));
+  },
+  queue: async (
+    batch: MessageBatch<LessonGenerationMessage>,
+    env: Bindings
+  ) => {
+    await handleLessonQueue(batch, env);
+  },
+};
