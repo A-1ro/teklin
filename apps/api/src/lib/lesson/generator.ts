@@ -46,21 +46,14 @@ function extractJson(text: string): string {
   return text.trim();
 }
 
-/** Validate that parsed lesson data has the required structure */
-function isValidLessonShape(data: unknown): data is LessonContentInternal {
+/** Check that the basic top-level sections exist (before normalization) */
+function hasBasicLessonStructure(data: unknown): boolean {
   if (typeof data !== "object" || data === null) return false;
   const d = data as Record<string, unknown>;
   if (!d.warmup || !d.focus || !d.practice || !d.wrapup) return false;
 
   const warmup = d.warmup as Record<string, unknown>;
   if (!Array.isArray(warmup.questions) || warmup.questions.length === 0) {
-    return false;
-  }
-  const hasValidChoices = (warmup.questions as unknown[]).every((q) => {
-    const question = q as Record<string, unknown>;
-    return Array.isArray(question.choices) && question.choices.length > 0;
-  });
-  if (!hasValidChoices) {
     return false;
   }
 
@@ -81,6 +74,17 @@ function isValidLessonShape(data: unknown): data is LessonContentInternal {
   }
 
   return true;
+}
+
+/** Validate that all warmup questions have properly structured choices */
+function hasValidWarmupChoices(lesson: LessonContentInternal): boolean {
+  return lesson.warmup.questions.every(
+    (q) =>
+      q.choices.length > 0 &&
+      q.choices.every(
+        (ch) => typeof ch.id === "string" && typeof ch.text === "string" && ch.text.length > 0
+      )
+  );
 }
 
 /** Build a fallback lesson when LLM generation fails */
@@ -244,24 +248,52 @@ export async function generateLesson(
     const jsonText = extractJson(response.text);
     const parsed: unknown = JSON.parse(jsonText);
 
-    if (!isValidLessonShape(parsed)) {
+    // Step 1: Basic structure check (sections exist)
+    if (!hasBasicLessonStructure(parsed)) {
       console.error(
-        "[generateLesson] LLM response failed shape validation, using fallback"
+        "[generateLesson] LLM response failed basic structure check, using fallback"
       );
       return buildFallbackLesson(options.level, options.domain, context);
     }
 
-    // Ensure all warmup questions have required fields
+    // Step 2: Normalize warmup choices (handle strings, missing id/text, etc.)
     const lesson = parsed as LessonContentInternal;
-    lesson.warmup.questions = lesson.warmup.questions.map((q, i) => ({
-      id: q.id ?? `w${i + 1}`,
-      phrase: q.phrase ?? "",
-      translation: q.translation ?? "",
-      context: q.context ?? "",
-      type: "multiple_choice" as const,
-      choices: Array.isArray(q.choices) ? q.choices : [],
-      correctChoiceId: q.correctChoiceId ?? "",
-    }));
+    const CHOICE_IDS = ["a", "b", "c", "d"];
+    lesson.warmup.questions = lesson.warmup.questions.map((q, i) => {
+      let normalizedChoices: { id: string; text: string }[] = [];
+
+      if (Array.isArray(q.choices)) {
+        normalizedChoices = (q.choices as unknown[]).map((ch, ci) => {
+          if (typeof ch === "object" && ch !== null) {
+            const obj = ch as Record<string, unknown>;
+            return {
+              id:
+                typeof obj.id === "string"
+                  ? obj.id
+                  : (CHOICE_IDS[ci] ?? `c${ci}`),
+              text:
+                typeof obj.text === "string"
+                  ? obj.text
+                  : String(
+                      obj.text ?? obj.label ?? obj.value ?? ""
+                    ),
+            };
+          }
+          // Choice is a plain string — wrap it
+          return { id: CHOICE_IDS[ci] ?? `c${ci}`, text: String(ch) };
+        });
+      }
+
+      return {
+        id: q.id ?? `w${i + 1}`,
+        phrase: q.phrase ?? "",
+        translation: q.translation ?? "",
+        context: q.context ?? "",
+        type: "multiple_choice" as const,
+        choices: normalizedChoices,
+        correctChoiceId: q.correctChoiceId ?? "",
+      };
+    });
 
     lesson.practice.exercises = lesson.practice.exercises.map((e, i) => ({
       id: e.id ?? `p${i + 1}`,
@@ -273,6 +305,14 @@ export async function generateLesson(
       correctAnswer: e.correctAnswer,
       acceptableAnswers: e.acceptableAnswers,
     }));
+
+    // Step 3: Validate choices AFTER normalization
+    if (!hasValidWarmupChoices(lesson)) {
+      console.error(
+        "[generateLesson] Warmup choices invalid after normalization, using fallback"
+      );
+      return buildFallbackLesson(options.level, options.domain, context);
+    }
 
     return lesson;
   } catch (err) {

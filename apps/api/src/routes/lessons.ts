@@ -116,9 +116,18 @@ lessonRoutes.get("/today", async (c) => {
     if (lesson) {
       const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
 
-      // Detect corrupted warmup (choices missing or empty) and force re-generation
+      // Detect corrupted warmup (choices missing, empty, or malformed)
       const hasValidChoices = content.warmup.questions.every(
-        (q) => Array.isArray(q.choices) && q.choices.length > 0
+        (q) =>
+          Array.isArray(q.choices) &&
+          q.choices.length > 0 &&
+          q.choices.every(
+            (ch) =>
+              typeof ch === "object" &&
+              ch !== null &&
+              typeof ch.id === "string" &&
+              typeof ch.text === "string"
+          )
       );
       if (hasValidChoices) {
         const isCompleted =
