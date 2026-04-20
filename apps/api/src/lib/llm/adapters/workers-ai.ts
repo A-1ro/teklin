@@ -4,8 +4,15 @@ import { LLMError } from "../types";
 const DEFAULT_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
 
 interface WorkersAiTextResponse {
+  // Workers AI native format
   response?: unknown;
+  // Anthropic format
   content?: Array<{ type?: string; text?: string }>;
+  // OpenAI-compatible format (Qwen3, Gemma 4, etc.)
+  choices?: Array<{
+    message?: { role?: string; content?: string };
+    finish_reason?: string;
+  }>;
   model?: string;
   id?: string;
   type?: string;
@@ -89,14 +96,23 @@ async function runModel(
 }
 
 function extractText(result: WorkersAiTextResponse): string {
+  // Workers AI native format: { response: "..." }
   if (typeof result.response === "string") {
     return result.response;
   }
-
   if (result.response != null) {
     return JSON.stringify(result.response);
   }
 
+  // OpenAI-compatible format: { choices: [{ message: { content: "..." } }] }
+  if (result.choices && result.choices.length > 0) {
+    const content = result.choices[0].message?.content;
+    if (typeof content === "string") {
+      return content;
+    }
+  }
+
+  // Anthropic format: { content: [{ type: "text", text: "..." }] }
   const text = result.content
     ?.filter((block) => block.type === "text" && typeof block.text === "string")
     .map((block) => block.text)
