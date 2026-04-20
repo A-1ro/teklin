@@ -10,7 +10,11 @@ interface WorkersAiTextResponse {
   content?: Array<{ type?: string; text?: string }>;
   // OpenAI-compatible format (Qwen3, Gemma 4, etc.)
   choices?: Array<{
-    message?: { role?: string; content?: string };
+    message?: {
+      role?: string;
+      content?: string | null;
+      reasoning_content?: string | null;
+    };
     finish_reason?: string;
   }>;
   model?: string;
@@ -31,9 +35,14 @@ function resolveModel(options: LLMAdapterOptions): string {
   return options.model ?? DEFAULT_MODEL;
 }
 
+function isThinkingModel(model: string): boolean {
+  return model.includes("qwen3");
+}
+
 function buildRequestBody(
   prompt: string,
   options: LLMAdapterOptions,
+  model: string,
   extras: Record<string, unknown> = {}
 ): Record<string, unknown> {
   const messages: { role: string; content: string }[] = [];
@@ -42,12 +51,21 @@ function buildRequestBody(
   }
   messages.push({ role: "user", content: prompt });
 
+  // Disable thinking for thinking models (Qwen 3) when structured output is
+  // requested — reasoning burns tokens and the model may exhaust max_tokens
+  // before producing the actual content.
+  const disableThinking =
+    isThinkingModel(model) && options.responseFormat != null;
+
   return {
     messages,
     max_tokens: options.maxTokens ?? 1024,
     temperature: options.temperature ?? 0.7,
     ...(options.responseFormat
       ? { response_format: options.responseFormat }
+      : {}),
+    ...(disableThinking
+      ? { chat_template_kwargs: { enable_thinking: false } }
       : {}),
     ...extras,
   };
@@ -106,9 +124,13 @@ function extractText(result: WorkersAiTextResponse): string {
 
   // OpenAI-compatible format: { choices: [{ message: { content: "..." } }] }
   if (result.choices && result.choices.length > 0) {
-    const content = result.choices[0].message?.content;
-    if (typeof content === "string") {
-      return content;
+    const msg = result.choices[0].message;
+    if (typeof msg?.content === "string") {
+      return msg.content;
+    }
+    // Qwen 3 thinking mode: content may be null with text in reasoning_content
+    if (typeof msg?.reasoning_content === "string" && msg.reasoning_content) {
+      return msg.reasoning_content;
     }
   }
 
@@ -154,7 +176,7 @@ export function createWorkersAiAdapter(
         result = (await runModel(
           ai,
           model,
-          buildRequestBody(prompt, options),
+          buildRequestBody(prompt, options, model),
           gatewayId
         )) as WorkersAiTextResponse;
       } catch (err) {
@@ -191,7 +213,7 @@ export function createWorkersAiAdapter(
           const stream = (await runModel(
             ai,
             model,
-            buildRequestBody(prompt, options, { stream: true }),
+            buildRequestBody(prompt, options, model, { stream: true }),
             gatewayId
           )) as unknown as ReadableStream<Uint8Array>;
 
@@ -217,7 +239,10 @@ export function createWorkersAiAdapter(
                   content_block?: { type?: string; text?: string };
                   // OpenAI-compatible (Qwen3, Gemma 4, etc.)
                   choices?: Array<{
-                    delta?: { content?: string };
+                    delta?: {
+                      content?: string | null;
+                      reasoning_content?: string | null;
+                    };
                   }>;
                 };
                 // Workers AI native format
@@ -226,7 +251,9 @@ export function createWorkersAiAdapter(
                   continue;
                 }
                 // OpenAI-compatible format
-                const deltaContent = parsed.choices?.[0]?.delta?.content;
+                const delta = parsed.choices?.[0]?.delta;
+                const deltaContent =
+                  delta?.content ?? delta?.reasoning_content;
                 if (typeof deltaContent === "string" && deltaContent) {
                   await writer.write(deltaContent);
                   continue;
