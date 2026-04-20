@@ -209,15 +209,29 @@ export function createWorkersAiAdapter(
               if (data === "[DONE]") break;
               try {
                 const parsed = JSON.parse(data) as {
+                  // Workers AI native
                   response?: string;
+                  // Anthropic
                   type?: string;
                   delta?: { type?: string; text?: string };
                   content_block?: { type?: string; text?: string };
+                  // OpenAI-compatible (Qwen3, Gemma 4, etc.)
+                  choices?: Array<{
+                    delta?: { content?: string };
+                  }>;
                 };
+                // Workers AI native format
                 if (typeof parsed.response === "string" && parsed.response) {
                   await writer.write(parsed.response);
                   continue;
                 }
+                // OpenAI-compatible format
+                const deltaContent = parsed.choices?.[0]?.delta?.content;
+                if (typeof deltaContent === "string" && deltaContent) {
+                  await writer.write(deltaContent);
+                  continue;
+                }
+                // Anthropic format
                 if (
                   parsed.type === "content_block_delta" &&
                   parsed.delta?.type === "text_delta" &&
