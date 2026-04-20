@@ -1,4 +1,4 @@
-import type { LLMAdapter, LLMOptions, LLMResponse } from "../types";
+import type { LLMAdapter, LLMAdapterOptions, LLMResponse } from "../types";
 import { LLMError } from "../types";
 
 const DEFAULT_MODEL = "gpt-4.1";
@@ -54,7 +54,7 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
 
     async generate(
       prompt: string,
-      options: LLMOptions = {}
+      options: LLMAdapterOptions = {}
     ): Promise<LLMResponse> {
       const body = {
         model: options.model ?? DEFAULT_MODEL,
@@ -105,7 +105,7 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
       };
     },
 
-    stream(prompt: string, options: LLMOptions = {}): ReadableStream<string> {
+    stream(prompt: string, options: LLMAdapterOptions = {}): ReadableStream<string> {
       const body = {
         model: options.model ?? DEFAULT_MODEL,
         messages: buildMessages(prompt, options.system),

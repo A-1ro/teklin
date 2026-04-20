@@ -1,5 +1,12 @@
 // Re-exports
-export type { LLMOptions, LLMUsage, LLMResponse, LLMAdapter } from "./types";
+export type {
+  LLMOptions,
+  LLMJsonOptions,
+  LLMAdapterOptions,
+  LLMUsage,
+  LLMResponse,
+  LLMAdapter,
+} from "./types";
 export { LLMError } from "./types";
 export type { RouterConfig, TaskRouteConfig, LLMRouter } from "./router";
 export { createLLMRouter, DEFAULT_ROUTER_CONFIG } from "./router";

@@ -1,4 +1,4 @@
-import type { LLMAdapter, LLMOptions, LLMResponse } from "../types";
+import type { LLMAdapter, LLMAdapterOptions, LLMResponse } from "../types";
 import { LLMError } from "../types";
 
 const DEFAULT_MODEL = "claude-sonnet-4-20250514";
@@ -39,7 +39,7 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
 
     async generate(
       prompt: string,
-      options: LLMOptions = {}
+      options: LLMAdapterOptions = {}
     ): Promise<LLMResponse> {
       const messages: AnthropicMessage[] = [
         { role: "user", content: prompt },
@@ -99,7 +99,7 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
       };
     },
 
-    stream(prompt: string, options: LLMOptions = {}): ReadableStream<string> {
+    stream(prompt: string, options: LLMAdapterOptions = {}): ReadableStream<string> {
       const messages: AnthropicMessage[] = [
         { role: "user", content: prompt },
       ];

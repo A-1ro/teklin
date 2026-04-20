@@ -1,4 +1,4 @@
-import type { LLMAdapter, LLMOptions, LLMResponse } from "../types";
+import type { LLMAdapter, LLMAdapterOptions, LLMResponse } from "../types";
 import { LLMError } from "../types";
 
 const DEFAULT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
@@ -20,13 +20,13 @@ interface WorkersAiTextResponse {
   };
 }
 
-function resolveModel(options: LLMOptions): string {
+function resolveModel(options: LLMAdapterOptions): string {
   return options.model ?? DEFAULT_MODEL;
 }
 
 function buildRequestBody(
   prompt: string,
-  options: LLMOptions,
+  options: LLMAdapterOptions,
   extras: Record<string, unknown> = {}
 ): Record<string, unknown> {
   return {
@@ -143,7 +143,7 @@ export function createWorkersAiAdapter(
 
     async generate(
       prompt: string,
-      options: LLMOptions = {}
+      options: LLMAdapterOptions = {}
     ): Promise<LLMResponse> {
       const model = resolveModel(options);
 
@@ -174,7 +174,7 @@ export function createWorkersAiAdapter(
       };
     },
 
-    stream(prompt: string, options: LLMOptions = {}): ReadableStream<string> {
+    stream(prompt: string, options: LLMAdapterOptions = {}): ReadableStream<string> {
       const model = resolveModel(options);
 
       const { readable, writable } = new TransformStream<string, string>();

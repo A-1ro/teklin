@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, desc, count, and } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import { createDb, aiRewriteHistory, phraseCards, rewriteHistoryCards, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -317,21 +317,6 @@ function buildRewriteTipsUserPrompt(
   ].join("\n");
 }
 
-function extractJson(text: string): string {
-  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (codeBlockMatch) {
-    return codeBlockMatch[1].trim();
-  }
-
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    return text.slice(firstBrace, lastBrace + 1);
-  }
-
-  return text.trim();
-}
-
 function normalizeTone(value: unknown): RewriteResult["tone"] {
   return value === "friendly" ||
     value === "professional" ||
@@ -349,48 +334,6 @@ function normalizeRewrittenText(text: string): string | null {
     .trim();
 
   return normalized.length > 0 ? normalized : null;
-}
-
-function parseRewriteMetadataResponse(
-  text: string
-): Pick<RewriteResult, "changes" | "tone"> | null {
-  try {
-    const parsed = JSON.parse(extractJson(text)) as Partial<RewriteResult>;
-
-    const changes = Array.isArray(parsed.changes)
-      ? parsed.changes.filter(
-          (item): item is RewriteResult["changes"][number] =>
-            typeof item === "object" &&
-            item !== null &&
-            typeof item.original === "string" &&
-            typeof item.corrected === "string" &&
-            typeof item.reason === "string"
-        )
-      : [];
-
-    return {
-      changes,
-      tone: normalizeTone(parsed.tone),
-    };
-  } catch {
-    return null;
-  }
-}
-
-function parseRewriteTipsResponse(text: string): string[] | null {
-  try {
-    const parsed = JSON.parse(extractJson(text)) as { tips?: unknown };
-    if (!Array.isArray(parsed.tips)) {
-      return null;
-    }
-    const tips = parsed.tips
-      .filter((item): item is string => typeof item === "string")
-      .map((tip) => tip.trim())
-      .filter(Boolean);
-    return tips.length > 0 ? tips : [];
-  } catch {
-    return null;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -531,9 +474,10 @@ rewriteRoutes.post("/", async (c) => {
     rewritten
   );
 
-  let analysisResponse;
+  let metadata: Pick<RewriteResult, "changes" | "tone">;
+  let analysisUsage: { promptTokens: number; completionTokens: number; totalTokens: number };
   try {
-    analysisResponse = await llmService.router.generate(
+    const { data, raw } = await llmService.router.generateJson<Partial<RewriteResult>>(
       analysisUserPrompt,
       {
         system: analysisSystemPrompt,
@@ -543,6 +487,18 @@ rewriteRoutes.post("/", async (c) => {
       },
       "lightweight"
     );
+    analysisUsage = raw.usage;
+    const changes = Array.isArray(data.changes)
+      ? data.changes.filter(
+          (item): item is RewriteResult["changes"][number] =>
+            typeof item === "object" &&
+            item !== null &&
+            typeof item.original === "string" &&
+            typeof item.corrected === "string" &&
+            typeof item.reason === "string"
+        )
+      : [];
+    metadata = { changes, tone: normalizeTone(data.tone) };
   } catch (err) {
     console.error("[rewrite] LLM analysis failed", { error: String(err) });
     const rollbackValue: RewriteCountValue = {
@@ -555,21 +511,6 @@ rewriteRoutes.post("/", async (c) => {
     return c.json({ error: "LLM service unavailable" }, 502);
   }
 
-  const metadata = parseRewriteMetadataResponse(analysisResponse.text);
-  if (!metadata) {
-    console.error("[rewrite] Failed to parse rewrite metadata as JSON", {
-      text: analysisResponse.text,
-    });
-    const rollbackValue: RewriteCountValue = {
-      count: currentCount,
-      updatedAt: new Date().toISOString(),
-    };
-    await c.env.USAGE_KV.put(countKey, JSON.stringify(rollbackValue), {
-      expirationTtl: 48 * 60 * 60,
-    });
-    return c.json({ error: "Failed to parse AI response" }, 502);
-  }
-
   // Step 3: generate Japanese tips only
   const tipsSystemPrompt = buildRewriteTipsSystemPrompt(body.context);
   const tipsUserPrompt = buildRewriteTipsUserPrompt(
@@ -578,9 +519,10 @@ rewriteRoutes.post("/", async (c) => {
     rewritten
   );
 
-  let tipsResponse;
+  let tips: string[];
+  let tipsUsage: { promptTokens: number; completionTokens: number; totalTokens: number };
   try {
-    tipsResponse = await llmService.router.generate(
+    const tipsResult = await llmService.router.generateJson<{ tips?: unknown }>(
       tipsUserPrompt,
       {
         system: tipsSystemPrompt,
@@ -590,6 +532,13 @@ rewriteRoutes.post("/", async (c) => {
       },
       "lightweight"
     );
+    tipsUsage = tipsResult.raw.usage;
+    tips = Array.isArray(tipsResult.data.tips)
+      ? tipsResult.data.tips
+          .filter((item): item is string => typeof item === "string")
+          .map((tip) => tip.trim())
+          .filter(Boolean)
+      : [];
   } catch (err) {
     console.error("[rewrite] LLM tips generation failed", { error: String(err) });
     const rollbackValue: RewriteCountValue = {
@@ -600,21 +549,6 @@ rewriteRoutes.post("/", async (c) => {
       expirationTtl: 48 * 60 * 60,
     });
     return c.json({ error: "LLM service unavailable" }, 502);
-  }
-
-  const tips = parseRewriteTipsResponse(tipsResponse.text);
-  if (tips == null) {
-    console.error("[rewrite] Failed to parse rewrite tips as JSON", {
-      text: tipsResponse.text,
-    });
-    const rollbackValue: RewriteCountValue = {
-      count: currentCount,
-      updatedAt: new Date().toISOString(),
-    };
-    await c.env.USAGE_KV.put(countKey, JSON.stringify(rollbackValue), {
-      expirationTtl: 48 * 60 * 60,
-    });
-    return c.json({ error: "Failed to parse AI response" }, 502);
   }
 
   const result: RewriteResult = {
@@ -647,16 +581,16 @@ rewriteRoutes.post("/", async (c) => {
   await llmService.usage.track(userId, {
     promptTokens:
       rewriteResponse.usage.promptTokens +
-      analysisResponse.usage.promptTokens +
-      tipsResponse.usage.promptTokens,
+      analysisUsage.promptTokens +
+      tipsUsage.promptTokens,
     completionTokens:
       rewriteResponse.usage.completionTokens +
-      analysisResponse.usage.completionTokens +
-      tipsResponse.usage.completionTokens,
+      analysisUsage.completionTokens +
+      tipsUsage.completionTokens,
     totalTokens:
       rewriteResponse.usage.totalTokens +
-      analysisResponse.usage.totalTokens +
-      tipsResponse.usage.totalTokens,
+      analysisUsage.totalTokens +
+      tipsUsage.totalTokens,
   });
 
   return c.json({ id: historyId, ...result });

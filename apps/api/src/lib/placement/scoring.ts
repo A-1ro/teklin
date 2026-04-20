@@ -3,6 +3,20 @@ import type { PlacementAnswerRecord } from "../../kv";
 import type { LLMService } from "../llm";
 import { PLACEMENT_QUESTIONS } from "./questions";
 
+const PLACEMENT_SCORE_RESPONSE_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      score: { type: "number" },
+      level: { type: "string", enum: ["L1", "L2", "L3", "L4"] },
+      feedback: { type: "string" },
+    },
+    required: ["score", "level", "feedback"],
+  },
+} as const;
+
 /** Score a multiple-choice answer (0 or 100) */
 export function scoreMultipleChoice(
   questionId: string,
@@ -42,28 +56,32 @@ export async function scoreWriting(
     { text: sanitizedAnswer + criteria }
   );
 
-  const response = await llm.router.generate(
-    user,
-    { system, maxTokens: 256, temperature: 0.1 },
-    "quality"
-  );
-
   try {
-    const result = JSON.parse(response.text) as {
+    const { data } = await llm.router.generateJson<{
       score?: unknown;
       level?: unknown;
       feedback?: unknown;
-    };
-    const score = typeof result.score === "number" ? result.score : 0;
+    }>(
+      user,
+      {
+        system,
+        maxTokens: 256,
+        temperature: 0.1,
+        responseFormat: PLACEMENT_SCORE_RESPONSE_SCHEMA,
+      },
+      "quality"
+    );
+
+    const score = typeof data.score === "number" ? data.score : 0;
     const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
 
     const validLevels = new Set(["L1", "L2", "L3", "L4"]);
-    if (result.level && !validLevels.has(String(result.level))) {
+    if (data.level && !validLevels.has(String(data.level))) {
       return { score: 50, advice: "" };
     }
 
     const advice =
-      typeof result.feedback === "string" ? result.feedback.trim() : "";
+      typeof data.feedback === "string" ? data.feedback.trim() : "";
 
     return { score: clampedScore, advice };
   } catch {

@@ -157,25 +157,6 @@ const LESSON_RESPONSE_SCHEMA = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// JSON extraction (fallback for models that ignore response_format)
-// ---------------------------------------------------------------------------
-
-function extractJson(text: string): string {
-  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (codeBlockMatch) {
-    return codeBlockMatch[1].trim();
-  }
-
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    return text.slice(firstBrace, lastBrace + 1);
-  }
-
-  return text.trim();
-}
-
-// ---------------------------------------------------------------------------
 // Validation (lightweight sanity check after schema-enforced output)
 // ---------------------------------------------------------------------------
 
@@ -365,7 +346,7 @@ export async function generateLesson(
   );
 
   try {
-    const response = await llm.router.generate(
+    const { data } = await llm.router.generateJson<unknown>(
       user,
       {
         system,
@@ -376,26 +357,12 @@ export async function generateLesson(
       "quality"
     );
 
-    const jsonText = extractJson(response.text);
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(jsonText);
-    } catch (parseErr) {
-      console.error(
-        "[generateLesson] JSON parse failed:",
-        parseErr,
-        "raw (first 500):",
-        response.text.slice(0, 500)
-      );
-      return buildFallbackLesson(options.level, options.domain, context);
-    }
-
-    if (!isValidLesson(parsed)) {
+    if (!isValidLesson(data)) {
       console.error(
         "[generateLesson] Validation failed after schema-enforced output, using fallback.",
         "warmup questions:",
         JSON.stringify(
-          (parsed as Record<string, unknown>).warmup,
+          (data as Record<string, unknown>).warmup,
           null,
           0
         )?.slice(0, 300)
@@ -403,7 +370,7 @@ export async function generateLesson(
       return buildFallbackLesson(options.level, options.domain, context);
     }
 
-    const lesson = parsed as LessonContentInternal;
+    const lesson = data;
 
     // Fill in defaults for optional exercise fields
     lesson.practice.exercises = lesson.practice.exercises.map((e, i) => ({

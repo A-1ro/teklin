@@ -1,5 +1,11 @@
 import type { LLMTaskType, LLMProvider } from "@teklin/shared";
-import type { LLMAdapter, LLMOptions, LLMResponse } from "./types";
+import type {
+  LLMAdapter,
+  LLMOptions,
+  LLMJsonOptions,
+  LLMAdapterOptions,
+  LLMResponse,
+} from "./types";
 import { LLMError } from "./types";
 
 export interface TaskRouteConfig {
@@ -26,12 +32,49 @@ export const DEFAULT_ROUTER_CONFIG: RouterConfig = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// JSON extraction helper (handles ```json blocks, stray text, etc.)
+// ---------------------------------------------------------------------------
+
+function extractJson(text: string): string {
+  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return text.slice(firstBrace, lastBrace + 1);
+  }
+
+  return text.trim();
+}
+
+// ---------------------------------------------------------------------------
+// Router interface
+// ---------------------------------------------------------------------------
+
 export interface LLMRouter {
+  /** Generate plain text. Use generateJson() when you need structured output. */
   generate(
     prompt: string,
     options?: LLMOptions,
     taskType?: LLMTaskType
   ): Promise<LLMResponse>;
+
+  /**
+   * Generate structured JSON with a required response_format schema.
+   * Handles JSON extraction + parsing internally.
+   * Returns `{ data, raw }` where `data` is the parsed object and `raw` is
+   * the underlying LLMResponse (for usage tracking, etc.).
+   */
+  generateJson<T = unknown>(
+    prompt: string,
+    options: LLMJsonOptions,
+    taskType?: LLMTaskType
+  ): Promise<{ data: T; raw: LLMResponse }>;
+
   stream(
     prompt: string,
     options?: LLMOptions,
@@ -64,37 +107,56 @@ export function createLLMRouter(
       .filter((a): a is LLMAdapter => a != null);
   }
 
+  async function runGenerate(
+    prompt: string,
+    options: LLMAdapterOptions,
+    taskType?: LLMTaskType
+  ): Promise<LLMResponse> {
+    const candidates = resolveAdapter(taskType);
+    if (candidates.length === 0) {
+      throw new LLMError("No LLM adapters available", null);
+    }
+
+    let lastError: unknown;
+    for (const adapter of candidates) {
+      try {
+        const route = taskType != null ? config.taskRouting[taskType] : null;
+        const mergedOptions =
+          route?.provider === adapter.provider && route.model
+            ? { ...options, model: route.model }
+            : options;
+        return await adapter.generate(prompt, mergedOptions);
+      } catch (err) {
+        lastError = err;
+        // Continue to next adapter
+      }
+    }
+
+    throw new LLMError(
+      `All LLM adapters failed. Last error: ${String(lastError)}`,
+      candidates[candidates.length - 1].provider,
+      lastError
+    );
+  }
+
   return {
     async generate(
       prompt: string,
       options: LLMOptions = {},
       taskType?: LLMTaskType
     ): Promise<LLMResponse> {
-      const candidates = resolveAdapter(taskType);
-      if (candidates.length === 0) {
-        throw new LLMError("No LLM adapters available", null);
-      }
+      return runGenerate(prompt, options, taskType);
+    },
 
-      let lastError: unknown;
-      for (const adapter of candidates) {
-        try {
-          const route = taskType != null ? config.taskRouting[taskType] : null;
-          const mergedOptions =
-            route?.provider === adapter.provider && route.model
-              ? { ...options, model: route.model }
-              : options;
-          return await adapter.generate(prompt, mergedOptions);
-        } catch (err) {
-          lastError = err;
-          // Continue to next adapter
-        }
-      }
-
-      throw new LLMError(
-        `All LLM adapters failed. Last error: ${String(lastError)}`,
-        candidates[candidates.length - 1].provider,
-        lastError
-      );
+    async generateJson<T = unknown>(
+      prompt: string,
+      options: LLMJsonOptions,
+      taskType?: LLMTaskType
+    ): Promise<{ data: T; raw: LLMResponse }> {
+      const raw = await runGenerate(prompt, options, taskType);
+      const jsonText = extractJson(raw.text);
+      const data = JSON.parse(jsonText) as T;
+      return { data, raw };
     },
 
     stream(
@@ -110,11 +172,6 @@ export function createLLMRouter(
         return readable;
       }
 
-      // Streaming fallback is not supported: once a stream begins, switching
-      // providers mid-stream is not feasible. If the preferred adapter fails
-      // before streaming starts (e.g., network error), the error propagates
-      // to the caller. Consider retrying with generate() as a fallback
-      // strategy at the call site if stream reliability is critical.
       const route = taskType != null ? config.taskRouting[taskType] : null;
       const mergedOptions =
         route?.provider === candidates[0].provider && route.model

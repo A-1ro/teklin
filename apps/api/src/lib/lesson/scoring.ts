@@ -19,19 +19,6 @@ const FREE_TEXT_SCORE_RESPONSE_SCHEMA = {
 } as const;
 
 /**
- * Extract a JSON object from an LLM response that may include markdown fences
- * or surrounding prose (same logic as generator.ts).
- */
-function extractJson(text: string): string {
-  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (codeBlockMatch) return codeBlockMatch[1].trim();
-  const first = text.indexOf("{");
-  const last = text.lastIndexOf("}");
-  if (first !== -1 && last > first) return text.slice(first, last + 1);
-  return text.trim();
-}
-
-/**
  * Sanitize text before embedding it in an LLM prompt.
  * Escapes delimiter markers to prevent prompt injection.
  */
@@ -79,7 +66,6 @@ export function scoreReorder(exercise: Exercise, answer: string): number {
 
 /**
  * Score a free_text exercise using LLM and return both score and feedback.
- * Follows the same pattern as placement/scoring.ts scoreWriting.
  */
 export async function scoreFreeTextWithFeedback(
   exercise: Exercise,
@@ -113,7 +99,10 @@ export async function scoreFreeTextWithFeedback(
       'Return only valid JSON: {"score": <number 0-100>, "feedback": "<brief feedback in Japanese (日本語で)>"}',
     ].join("\n");
 
-    const response = await llm.router.generate(
+    const { data } = await llm.router.generateJson<{
+      score?: unknown;
+      feedback?: unknown;
+    }>(
       user,
       {
         system,
@@ -124,19 +113,13 @@ export async function scoreFreeTextWithFeedback(
       "lightweight"
     );
 
-    // Extract JSON even if the model wraps it in markdown code fences
-    const jsonText = extractJson(response.text);
-    const result = JSON.parse(jsonText) as {
-      score?: unknown;
-      feedback?: unknown;
-    };
     const score =
-      typeof result.score === "number"
-        ? Math.max(0, Math.min(100, Math.round(result.score)))
+      typeof data.score === "number"
+        ? Math.max(0, Math.min(100, Math.round(data.score)))
         : 50;
     const feedback =
-      typeof result.feedback === "string" && result.feedback.trim().length > 0
-        ? result.feedback
+      typeof data.feedback === "string" && data.feedback.trim().length > 0
+        ? data.feedback
         : "回答を受け付けました。引き続き練習を続けましょう！";
 
     return { score, feedback };
