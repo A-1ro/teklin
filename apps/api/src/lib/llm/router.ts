@@ -154,9 +154,22 @@ export function createLLMRouter(
       taskType?: LLMTaskType
     ): Promise<{ data: T; raw: LLMResponse }> {
       const raw = await runGenerate(prompt, options, taskType);
-      const jsonText = extractJson(raw.text);
-      const data = JSON.parse(jsonText) as T;
-      return { data, raw };
+      console.log(
+        `[generateJson] model=${raw.model} tokens=${raw.usage.totalTokens} text_len=${raw.text.length}`
+      );
+      let jsonText: string;
+      try {
+        jsonText = extractJson(raw.text);
+        const data = JSON.parse(jsonText) as T;
+        return { data, raw };
+      } catch (err) {
+        console.error(
+          "[generateJson] JSON parse failed.",
+          "raw text (first 500):",
+          raw.text.slice(0, 500)
+        );
+        throw err;
+      }
     },
 
     stream(
