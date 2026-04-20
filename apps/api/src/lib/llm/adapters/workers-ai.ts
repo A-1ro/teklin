@@ -29,11 +29,16 @@ function buildRequestBody(
   options: LLMAdapterOptions,
   extras: Record<string, unknown> = {}
 ): Record<string, unknown> {
+  const messages: { role: string; content: string }[] = [];
+  if (options.system) {
+    messages.push({ role: "system", content: options.system });
+  }
+  messages.push({ role: "user", content: prompt });
+
   return {
-    messages: [{ role: "user", content: prompt }],
+    messages,
     max_tokens: options.maxTokens ?? 1024,
     temperature: options.temperature ?? 0.7,
-    ...(options.system ? { system: options.system } : {}),
     ...(options.responseFormat
       ? { response_format: options.responseFormat }
       : {}),
@@ -61,24 +66,6 @@ function shouldFallbackToDirectWorkersAi(
   return true;
 }
 
-/**
- * Convert request body for native Workers AI models.
- * Moves top-level `system` into the messages array because
- * native Workers AI models expect system role in messages,
- * not as a top-level parameter (which is the Anthropic format).
- */
-function toNativeWorkersAiBody(
-  body: Record<string, unknown>
-): Record<string, unknown> {
-  if (typeof body.system !== "string" || !body.system) return body;
-  const { system, ...rest } = body;
-  const messages = Array.isArray(rest.messages) ? rest.messages : [];
-  return {
-    ...rest,
-    messages: [{ role: "system", content: system }, ...messages],
-  };
-}
-
 async function runModel(
   ai: Ai,
   model: string,
@@ -97,7 +84,7 @@ async function runModel(
       `[WorkersAI] Falling back from ${model} to ${DEFAULT_MODEL}:`,
       String(err)
     );
-    return ai.run(DEFAULT_MODEL, toNativeWorkersAiBody(body));
+    return ai.run(DEFAULT_MODEL, body);
   }
 }
 
