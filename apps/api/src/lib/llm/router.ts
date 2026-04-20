@@ -23,11 +23,11 @@ export const DEFAULT_ROUTER_CONFIG: RouterConfig = {
   taskRouting: {
     lightweight: {
       provider: "workers-ai",
-      model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      model: "@cf/qwen/qwen3-30b-a3b-fp8",
     },
     quality: {
       provider: "workers-ai",
-      model: "anthropic/claude-sonnet-4.6",
+      model: "@cf/qwen/qwen3-30b-a3b-fp8",
     },
   },
 };

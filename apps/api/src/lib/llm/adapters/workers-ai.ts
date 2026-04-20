@@ -1,7 +1,7 @@
 import type { LLMAdapter, LLMAdapterOptions, LLMResponse } from "../types";
 import { LLMError } from "../types";
 
-const DEFAULT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const DEFAULT_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
 
 interface WorkersAiTextResponse {
   response?: unknown;
