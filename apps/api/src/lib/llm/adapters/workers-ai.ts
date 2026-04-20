@@ -49,17 +49,16 @@ function buildAiOptions(gatewayId?: string): { gateway: { id: string } } | undef
 }
 
 function shouldFallbackToDirectWorkersAi(
-  err: unknown,
+  _err: unknown,
   attemptedModel: string,
   gatewayId?: string
 ): boolean {
-  if (!gatewayId) {
-    return false;
-  }
-  if (attemptedModel === DEFAULT_MODEL) {
-    return false;
-  }
-  return String(err).includes("Insufficient balance");
+  // Gateway 経由の外部モデル（Claude 等）が失敗した場合、
+  // ネイティブ Workers AI モデル（Llama）で再試行する。
+  // 既にデフォルトモデルで失敗している場合はリトライしない。
+  if (!gatewayId) return false;
+  if (attemptedModel === DEFAULT_MODEL) return false;
+  return true;
 }
 
 /**
