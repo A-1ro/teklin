@@ -25,18 +25,147 @@ export interface GenerateOptions {
   completedLessonCount: number; // for rotation
 }
 
-/**
- * Extract JSON from LLM response text.
- * Handles ```json blocks and stray text around the JSON object.
- */
+// ---------------------------------------------------------------------------
+// JSON Schema for structured output — forces LLM to return exact shape
+// ---------------------------------------------------------------------------
+
+const CHOICE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    id: { type: "string" },
+    text: { type: "string" },
+  },
+  required: ["id", "text"],
+} as const;
+
+const WARMUP_QUESTION_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    id: { type: "string" },
+    phrase: { type: "string" },
+    translation: { type: "string" },
+    context: { type: "string" },
+    type: { type: "string", enum: ["multiple_choice"] },
+    choices: {
+      type: "array",
+      items: CHOICE_SCHEMA,
+      minItems: 4,
+      maxItems: 4,
+    },
+    correctChoiceId: { type: "string" },
+  },
+  required: [
+    "id",
+    "phrase",
+    "translation",
+    "context",
+    "type",
+    "choices",
+    "correctChoiceId",
+  ],
+} as const;
+
+const EXAMPLE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    english: { type: "string" },
+    japanese: { type: "string" },
+    context: { type: "string" },
+  },
+  required: ["english", "japanese", "context"],
+} as const;
+
+const EXERCISE_SCHEMA = {
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    type: { type: "string", enum: ["fill_in_blank", "reorder", "free_text"] },
+    instruction: { type: "string" },
+    sentence: { type: "string" },
+    words: { type: "array", items: { type: "string" } },
+    prompt: { type: "string" },
+    correctAnswer: { type: "string" },
+    acceptableAnswers: { type: "array", items: { type: "string" } },
+  },
+  required: ["id", "type", "instruction"],
+} as const;
+
+const LESSON_RESPONSE_SCHEMA = {
+  type: "json_schema",
+  json_schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      warmup: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          questions: {
+            type: "array",
+            items: WARMUP_QUESTION_SCHEMA,
+            minItems: 3,
+            maxItems: 3,
+          },
+        },
+        required: ["questions"],
+      },
+      focus: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          phrase: { type: "string" },
+          explanation: { type: "string" },
+          examples: {
+            type: "array",
+            items: EXAMPLE_SCHEMA,
+            minItems: 3,
+            maxItems: 3,
+          },
+          tips: { type: "array", items: { type: "string" } },
+        },
+        required: ["phrase", "explanation", "examples", "tips"],
+      },
+      practice: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          exercises: {
+            type: "array",
+            items: EXERCISE_SCHEMA,
+            minItems: 3,
+            maxItems: 3,
+          },
+        },
+        required: ["exercises"],
+      },
+      wrapup: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          summary: { type: "string" },
+          keyPoints: { type: "array", items: { type: "string" } },
+          nextPreview: { type: "string" },
+        },
+        required: ["summary", "keyPoints", "nextPreview"],
+      },
+    },
+    required: ["warmup", "focus", "practice", "wrapup"],
+  },
+} as const;
+
+// ---------------------------------------------------------------------------
+// JSON extraction (fallback for models that ignore response_format)
+// ---------------------------------------------------------------------------
+
 function extractJson(text: string): string {
-  // Try to extract from ```json ... ``` block
   const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (codeBlockMatch) {
     return codeBlockMatch[1].trim();
   }
 
-  // Try to find a top-level JSON object
   const firstBrace = text.indexOf("{");
   const lastBrace = text.lastIndexOf("}");
   if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
@@ -46,8 +175,11 @@ function extractJson(text: string): string {
   return text.trim();
 }
 
-/** Check that the basic top-level sections exist (before normalization) */
-function hasBasicLessonStructure(data: unknown): boolean {
+// ---------------------------------------------------------------------------
+// Validation (lightweight sanity check after schema-enforced output)
+// ---------------------------------------------------------------------------
+
+function isValidLesson(data: unknown): data is LessonContentInternal {
   if (typeof data !== "object" || data === null) return false;
   const d = data as Record<string, unknown>;
   if (!d.warmup || !d.focus || !d.practice || !d.wrapup) return false;
@@ -57,37 +189,27 @@ function hasBasicLessonStructure(data: unknown): boolean {
     return false;
   }
 
-  const focus = d.focus as Record<string, unknown>;
-  if (
-    typeof focus.phrase !== "string" ||
-    typeof focus.explanation !== "string"
-  ) {
-    return false;
-  }
-
-  const practice = d.practice as Record<string, unknown>;
-  if (
-    !Array.isArray(practice.exercises) ||
-    practice.exercises.length === 0
-  ) {
-    return false;
-  }
-
-  return true;
+  return (warmup.questions as unknown[]).every((q) => {
+    const question = q as Record<string, unknown>;
+    if (!Array.isArray(question.choices) || question.choices.length === 0) {
+      return false;
+    }
+    return (question.choices as unknown[]).every((ch) => {
+      if (typeof ch !== "object" || ch === null) return false;
+      const c = ch as Record<string, unknown>;
+      return (
+        typeof c.id === "string" &&
+        typeof c.text === "string" &&
+        c.text.length > 0
+      );
+    });
+  });
 }
 
-/** Validate that all warmup questions have properly structured choices */
-function hasValidWarmupChoices(lesson: LessonContentInternal): boolean {
-  return lesson.warmup.questions.every(
-    (q) =>
-      q.choices.length > 0 &&
-      q.choices.every(
-        (ch) => typeof ch.id === "string" && typeof ch.text === "string" && ch.text.length > 0
-      )
-  );
-}
+// ---------------------------------------------------------------------------
+// Fallback lesson
+// ---------------------------------------------------------------------------
 
-/** Build a fallback lesson when LLM generation fails */
 function buildFallbackLesson(
   level: Level,
   domain: Domain,
@@ -215,6 +337,10 @@ function buildFallbackLesson(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Main generation function
+// ---------------------------------------------------------------------------
+
 /** Generate a personalized daily lesson using LLM */
 export async function generateLesson(
   llm: LLMService,
@@ -241,60 +367,45 @@ export async function generateLesson(
   try {
     const response = await llm.router.generate(
       user,
-      { system, temperature: 0.7, maxTokens: 3000 },
+      {
+        system,
+        temperature: 0.7,
+        maxTokens: 3000,
+        responseFormat: LESSON_RESPONSE_SCHEMA,
+      },
       "quality"
     );
 
     const jsonText = extractJson(response.text);
-    const parsed: unknown = JSON.parse(jsonText);
-
-    // Step 1: Basic structure check (sections exist)
-    if (!hasBasicLessonStructure(parsed)) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch (parseErr) {
       console.error(
-        "[generateLesson] LLM response failed basic structure check, using fallback"
+        "[generateLesson] JSON parse failed:",
+        parseErr,
+        "raw (first 500):",
+        response.text.slice(0, 500)
       );
       return buildFallbackLesson(options.level, options.domain, context);
     }
 
-    // Step 2: Normalize warmup choices (handle strings, missing id/text, etc.)
+    if (!isValidLesson(parsed)) {
+      console.error(
+        "[generateLesson] Validation failed after schema-enforced output, using fallback.",
+        "warmup questions:",
+        JSON.stringify(
+          (parsed as Record<string, unknown>).warmup,
+          null,
+          0
+        )?.slice(0, 300)
+      );
+      return buildFallbackLesson(options.level, options.domain, context);
+    }
+
     const lesson = parsed as LessonContentInternal;
-    const CHOICE_IDS = ["a", "b", "c", "d"];
-    lesson.warmup.questions = lesson.warmup.questions.map((q, i) => {
-      let normalizedChoices: { id: string; text: string }[] = [];
 
-      if (Array.isArray(q.choices)) {
-        normalizedChoices = (q.choices as unknown[]).map((ch, ci) => {
-          if (typeof ch === "object" && ch !== null) {
-            const obj = ch as Record<string, unknown>;
-            return {
-              id:
-                typeof obj.id === "string"
-                  ? obj.id
-                  : (CHOICE_IDS[ci] ?? `c${ci}`),
-              text:
-                typeof obj.text === "string"
-                  ? obj.text
-                  : String(
-                      obj.text ?? obj.label ?? obj.value ?? ""
-                    ),
-            };
-          }
-          // Choice is a plain string — wrap it
-          return { id: CHOICE_IDS[ci] ?? `c${ci}`, text: String(ch) };
-        });
-      }
-
-      return {
-        id: q.id ?? `w${i + 1}`,
-        phrase: q.phrase ?? "",
-        translation: q.translation ?? "",
-        context: q.context ?? "",
-        type: "multiple_choice" as const,
-        choices: normalizedChoices,
-        correctChoiceId: q.correctChoiceId ?? "",
-      };
-    });
-
+    // Fill in defaults for optional exercise fields
     lesson.practice.exercises = lesson.practice.exercises.map((e, i) => ({
       id: e.id ?? `p${i + 1}`,
       type: e.type ?? "free_text",
@@ -306,14 +417,7 @@ export async function generateLesson(
       acceptableAnswers: e.acceptableAnswers,
     }));
 
-    // Step 3: Validate choices AFTER normalization
-    if (!hasValidWarmupChoices(lesson)) {
-      console.error(
-        "[generateLesson] Warmup choices invalid after normalization, using fallback"
-      );
-      return buildFallbackLesson(options.level, options.domain, context);
-    }
-
+    console.log("[generateLesson] Successfully generated lesson from LLM");
     return lesson;
   } catch (err) {
     console.error("[generateLesson] Failed to generate lesson:", err);

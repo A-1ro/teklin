@@ -62,6 +62,24 @@ function shouldFallbackToDirectWorkersAi(
   return String(err).includes("Insufficient balance");
 }
 
+/**
+ * Convert request body for native Workers AI models.
+ * Moves top-level `system` into the messages array because
+ * native Workers AI models expect system role in messages,
+ * not as a top-level parameter (which is the Anthropic format).
+ */
+function toNativeWorkersAiBody(
+  body: Record<string, unknown>
+): Record<string, unknown> {
+  if (typeof body.system !== "string" || !body.system) return body;
+  const { system, ...rest } = body;
+  const messages = Array.isArray(rest.messages) ? rest.messages : [];
+  return {
+    ...rest,
+    messages: [{ role: "system", content: system }, ...messages],
+  };
+}
+
 async function runModel(
   ai: Ai,
   model: string,
@@ -76,7 +94,11 @@ async function runModel(
     if (!shouldFallbackToDirectWorkersAi(err, model, gatewayId)) {
       throw err;
     }
-    return ai.run(DEFAULT_MODEL, body);
+    console.warn(
+      `[WorkersAI] Falling back from ${model} to ${DEFAULT_MODEL}:`,
+      String(err)
+    );
+    return ai.run(DEFAULT_MODEL, toNativeWorkersAiBody(body));
   }
 }
 
