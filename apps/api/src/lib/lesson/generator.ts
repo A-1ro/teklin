@@ -322,11 +322,16 @@ function buildFallbackLesson(
 // Main generation function
 // ---------------------------------------------------------------------------
 
+export interface GenerateResult {
+  content: LessonContentInternal;
+  context: RewriteContext;
+}
+
 /** Generate a personalized daily lesson using LLM */
 export async function generateLesson(
   llm: LLMService,
   options: GenerateOptions
-): Promise<LessonContentInternal> {
+): Promise<GenerateResult> {
   const contextIndex = options.completedLessonCount % CONTEXTS.length;
   const context = CONTEXTS[contextIndex];
 
@@ -367,7 +372,10 @@ export async function generateLesson(
           0
         )?.slice(0, 300)
       );
-      return buildFallbackLesson(options.level, options.domain, context);
+      return {
+        content: buildFallbackLesson(options.level, options.domain, context),
+        context,
+      };
     }
 
     const lesson = data;
@@ -385,9 +393,12 @@ export async function generateLesson(
     }));
 
     console.log("[generateLesson] Successfully generated lesson from LLM");
-    return lesson;
+    return { content: lesson, context };
   } catch (err) {
     console.error("[generateLesson] Failed to generate lesson:", err);
-    return buildFallbackLesson(options.level, options.domain, context);
+    return {
+      content: buildFallbackLesson(options.level, options.domain, context),
+      context,
+    };
   }
 }

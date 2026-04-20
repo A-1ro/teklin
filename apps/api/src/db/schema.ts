@@ -90,6 +90,8 @@ export const lessons = sqliteTable("lessons", {
   contentJson: text("content_json").notNull(),
   // LessonType: "vocabulary" | "rewrite" | "reading" | "listening"
   type: text("type").notNull(),
+  // RewriteContext: "commit_message" | "pr_comment" | "github_issue" | "slack" | "general"
+  context: text("context"),
   // JSON string: SkillAxis[] e.g. '["reading","writing"]'
   targetWeaknesses: text("target_weaknesses"),
   createdAt: integer("created_at").notNull(),

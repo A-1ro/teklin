@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, and, desc, count } from "drizzle-orm";
+import { eq, and, desc, count, not, isNull } from "drizzle-orm";
 import { createDb, lessons, userLessons, streaks, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -18,7 +18,12 @@ import {
   scoreReorder,
   scoreFreeTextWithFeedback,
 } from "../lib/lesson";
-import type { LessonContent, LessonContentInternal } from "@teklin/shared";
+import type {
+  LessonContent,
+  LessonContentInternal,
+  LessonHistoryItem,
+  LessonHistoryResponse,
+} from "@teklin/shared";
 
 const LESSON_SESSION_TTL = 86400; // 24 hours
 
@@ -191,13 +196,14 @@ lessonRoutes.get("/today", async (c) => {
     : [];
 
   const llm = createLLMService(c.env);
-  const lessonContent = await generateLesson(llm, {
-    level: user.level as Parameters<typeof generateLesson>[1]["level"],
-    domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
-    weaknesses:
-      weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
-    completedLessonCount: completedCount,
-  });
+  const { content: lessonContent, context: lessonContext } =
+    await generateLesson(llm, {
+      level: user.level as Parameters<typeof generateLesson>[1]["level"],
+      domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
+      weaknesses:
+        weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
+      completedLessonCount: completedCount,
+    });
 
   // Persist lesson to D1
   const lessonId = crypto.randomUUID();
@@ -209,6 +215,7 @@ lessonRoutes.get("/today", async (c) => {
     level: user.level,
     contentJson: JSON.stringify(lessonContent),
     type: "rewrite",
+    context: lessonContext,
     targetWeaknesses: JSON.stringify(weaknesses),
     createdAt: now,
   });
@@ -249,6 +256,77 @@ lessonRoutes.get("/today", async (c) => {
     streak: streakInfo,
     isCompleted: false,
   });
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/lessons/history — Paginated list of completed lessons
+// ---------------------------------------------------------------------------
+lessonRoutes.get("/history", async (c) => {
+  const { userId } = c.get("user");
+  const db = createDb(c.env.DB);
+
+  const url = new URL(c.req.url);
+  const limit = Math.min(Number(url.searchParams.get("limit") ?? 20), 100);
+  const offset = Number(url.searchParams.get("offset") ?? 0);
+
+  const rows = await db
+    .select({
+      id: userLessons.id,
+      lessonId: userLessons.lessonId,
+      score: userLessons.score,
+      feedback: userLessons.feedback,
+      completedAt: userLessons.completedAt,
+      domain: lessons.domain,
+      level: lessons.level,
+      context: lessons.context,
+      contentJson: lessons.contentJson,
+    })
+    .from(userLessons)
+    .innerJoin(lessons, eq(userLessons.lessonId, lessons.id))
+    .where(
+      and(eq(userLessons.userId, userId), not(isNull(userLessons.completedAt)))
+    )
+    .orderBy(desc(userLessons.completedAt))
+    .limit(limit)
+    .offset(offset)
+    .all();
+
+  const totalResult = await db
+    .select({ value: count() })
+    .from(userLessons)
+    .where(
+      and(eq(userLessons.userId, userId), not(isNull(userLessons.completedAt)))
+    )
+    .get();
+
+  const items: LessonHistoryItem[] = rows.map((row) => {
+    let focusPhrase = "";
+    try {
+      const content = JSON.parse(row.contentJson) as LessonContentInternal;
+      focusPhrase = content.focus.phrase;
+    } catch {
+      // ignore parse errors
+    }
+
+    return {
+      id: row.id,
+      lessonId: row.lessonId,
+      domain: row.domain as LessonHistoryItem["domain"],
+      level: row.level as LessonHistoryItem["level"],
+      score: row.score,
+      feedback: (row.feedback as LessonHistoryItem["feedback"]) ?? null,
+      focusPhrase,
+      context: (row.context as LessonHistoryItem["context"]) ?? null,
+      completedAt: new Date(row.completedAt!).toISOString(),
+    };
+  });
+
+  const response: LessonHistoryResponse = {
+    items,
+    total: totalResult?.value ?? 0,
+  };
+
+  return c.json(response);
 });
 
 // ---------------------------------------------------------------------------

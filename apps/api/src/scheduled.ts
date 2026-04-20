@@ -156,13 +156,14 @@ export async function handleLessonQueue(
 
       // Generate lesson via LLM
       const llm = createLLMService(env);
-      const lessonContent = await generateLesson(llm, {
-        level: user.level as Parameters<typeof generateLesson>[1]["level"],
-        domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
-        weaknesses:
-          weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
-        completedLessonCount: completedCount,
-      });
+      const { content: lessonContent, context: lessonContext } =
+        await generateLesson(llm, {
+          level: user.level as Parameters<typeof generateLesson>[1]["level"],
+          domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
+          weaknesses:
+            weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
+          completedLessonCount: completedCount,
+        });
 
       // Persist lesson to D1
       const lessonId = crypto.randomUUID();
@@ -174,6 +175,7 @@ export async function handleLessonQueue(
         level: user.level,
         contentJson: JSON.stringify(lessonContent),
         type: "rewrite",
+        context: lessonContext,
         targetWeaknesses: JSON.stringify(weaknesses),
         createdAt: now,
       });

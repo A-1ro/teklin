@@ -166,6 +166,27 @@ export interface LessonFeedbackResponse {
   recorded: boolean;
 }
 
+/** A single lesson history entry (list view) */
+export interface LessonHistoryItem {
+  id: string;
+  lessonId: string;
+  domain: Domain;
+  level: Level;
+  score: number;
+  feedback: DifficultyFeedback | null;
+  /** Focus phrase from the lesson content */
+  focusPhrase: string;
+  /** Lesson context (commit_message, pr_comment, etc.) */
+  context: RewriteContext | null;
+  completedAt: string;
+}
+
+/** Response from GET /api/lessons/history */
+export interface LessonHistoryResponse {
+  items: LessonHistoryItem[];
+  total: number;
+}
+
 // ---------------------------------------------------------------------------
 // Card / SRS API types
 // ---------------------------------------------------------------------------

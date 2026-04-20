@@ -14,6 +14,7 @@ import { PlacementResultPage } from "@/pages/placement-result";
 import { RewritePage } from "@/pages/rewrite";
 import { RewriteHistoryPage } from "@/pages/rewrite-history";
 import { RewriteDetailPage } from "@/pages/rewrite-detail";
+import { LessonHistoryPage } from "@/pages/lesson-history";
 import { PlacementGate } from "@/components/auth/placement-gate";
 
 export function App() {
@@ -25,6 +26,7 @@ export function App() {
       <Route element={<PlacementGate />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/lesson" element={<LessonHomePage />} />
+        <Route path="/lesson/history" element={<LessonHistoryPage />} />
         <Route path="/lesson/:id" element={<LessonPage />} />
         <Route path="/cards" element={<CardsPage />} />
         <Route path="/cards/review" element={<ReviewPage />} />

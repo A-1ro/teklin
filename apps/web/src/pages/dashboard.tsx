@@ -245,11 +245,15 @@ export function DashboardPage() {
             <p className="mt-1 text-xs text-gray-500">SRS flashcard review</p>
           </Link>
           <Link
-            to="/lesson"
+            to="/lesson/history"
             className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center transition-colors hover:border-gray-700 hover:bg-gray-800"
           >
-            <p className="text-sm font-semibold text-gray-200">All Lessons</p>
-            <p className="mt-1 text-xs text-gray-500">View lesson details</p>
+            <p className="text-sm font-semibold text-gray-200">
+              Lesson History
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              View past lessons &amp; scores
+            </p>
           </Link>
           <Link
             to="/placement"
