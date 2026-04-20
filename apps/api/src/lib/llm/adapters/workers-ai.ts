@@ -149,6 +149,10 @@ export function createWorkersAiAdapter(
         );
       }
 
+      console.log(
+        `[WorkersAI] model=${model} raw_keys=${Object.keys(result)} raw_snippet=${JSON.stringify(result).slice(0, 500)}`
+      );
+
       const text = extractText(result);
       const usage = extractUsage(result);
 
