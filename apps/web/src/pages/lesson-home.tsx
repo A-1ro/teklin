@@ -39,16 +39,16 @@ export function LessonHomePage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-paper">
+      <div className="flex min-h-[300px] items-center justify-center">
         <div className="text-center">
           <div
             className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
             role="status"
             aria-label="Loading lesson"
           />
-          <p className="text-sm text-ink-2">Loading...</p>
+          <p className="text-sm text-ink-2">読み込み中...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -58,19 +58,17 @@ export function LessonHomePage() {
 
   if (error || !data) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
-        <div className="text-center">
-          <p className="mb-4 text-ink-2">
-            {error || "No lesson available."}
-          </p>
-          <Link
-            to="/dashboard"
-            className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
-      </main>
+      <div className="flex min-h-[300px] flex-col items-center justify-center">
+        <p className="mb-4 text-ink-2">
+          {error || "レッスンが見つかりません。"}
+        </p>
+        <Link
+          to="/dashboard"
+          className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
+        >
+          ダッシュボードに戻る
+        </Link>
+      </div>
     );
   }
 
@@ -78,18 +76,8 @@ export function LessonHomePage() {
   const levelMeta = lesson ? LEVEL_META[lesson.level] : null;
 
   return (
-    <main className="min-h-screen bg-paper px-4 py-8">
+    <div>
       <div className="mx-auto max-w-2xl">
-        <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-ink">Teklin</h1>
-          <Link
-            to="/dashboard"
-            className="rounded-lg px-4 py-2 text-sm text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
-          >
-            Dashboard
-          </Link>
-        </header>
-
         <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -239,6 +227,6 @@ export function LessonHomePage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
