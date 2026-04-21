@@ -159,6 +159,7 @@ export const templates = {
       "Rules:",
       "- Warmup shows an English phrase and asks the user to pick the correct Japanese meaning from 4 Japanese choices",
       "- Warmup choices MUST all be in Japanese (one correct translation, three plausible but wrong Japanese translations)",
+      "- CRITICAL: Warmup distractors must be SUBTLE. All 4 choices should share the same easy/common vocabulary (e.g. if the phrase has 'adds', ALL choices must include '追加' — never make a basic word the differentiator). The differences between choices should require understanding the FULL sentence structure, not just one keyword. Good distractors differ in: modifier scope, object relationships, tense/aspect nuance, or who does what to whom. Bad distractors just swap the main verb for an obviously different one.",
       "- Focus phrase must be at the right difficulty for level {{level}}",
       "- Focus explanation and examples MUST be in English (this is the English learning content)",
       "- Practice exercise instruction, prompt, and all wrapup text MUST be in Japanese",
