@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type {
   ReviewCardsResponse,
   CardAnswerResponse,
   CardRating,
+  CardDirection,
   PhraseCardWithSrs,
   CardCategory,
   Level,
@@ -77,8 +78,16 @@ const RATING_BUTTONS: {
   },
 ];
 
+const DIRECTION_LABELS: Record<CardDirection, string> = {
+  jp_to_en: "日本語 → English",
+  en_to_jp: "English → 日本語",
+};
+
 export function ReviewPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
+  const [searchParams] = useSearchParams();
+  const direction: CardDirection =
+    searchParams.get("direction") === "en_to_jp" ? "en_to_jp" : "jp_to_en";
 
   const [cards, setCards] = useState<PhraseCardWithSrs[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -97,7 +106,9 @@ export function ReviewPage() {
   useEffect(() => {
     if (authLoading || !user) return;
 
-    apiFetch<ReviewCardsResponse>("/api/cards/review")
+    apiFetch<ReviewCardsResponse>(
+      `/api/cards/review?direction=${direction}`
+    )
       .then((res) => {
         setCards(res.cards);
         if (res.cards.length === 0) {
@@ -106,7 +117,7 @@ export function ReviewPage() {
       })
       .catch(() => setError("復習カードの取得に失敗しました。"))
       .finally(() => setIsLoading(false));
-  }, [authLoading, user]);
+  }, [authLoading, user, direction]);
 
   const handleFlip = useCallback(() => {
     if (!isFlipped) {
@@ -125,7 +136,7 @@ export function ReviewPage() {
       try {
         await apiFetch<CardAnswerResponse>(`/api/cards/${card.id}/answer`, {
           method: "POST",
-          body: JSON.stringify({ rating }),
+          body: JSON.stringify({ rating, direction }),
         });
 
         setAnswers((prev) => ({ ...prev, [rating]: prev[rating] + 1 }));
@@ -318,6 +329,9 @@ export function ReviewPage() {
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <h1 className="text-lg font-bold text-ink">復習</h1>
+            <span className="rounded-full bg-paper-2 px-2.5 py-0.5 text-[11px] font-medium text-ink-2">
+              {DIRECTION_LABELS[direction]}
+            </span>
           </div>
           <span className="font-mono text-sm text-ink-2">
             {progress} / {cards.length}
@@ -374,11 +388,17 @@ export function ReviewPage() {
                 </span>
               </div>
 
-              {/* Japanese translation */}
+              {/* Front: question text */}
               <div className="flex flex-1 items-center justify-center py-6">
-                <p className="text-center text-xl font-semibold leading-relaxed text-ink">
-                  {card.translation}
-                </p>
+                {direction === "jp_to_en" ? (
+                  <p className="text-center text-xl font-semibold leading-relaxed text-ink">
+                    {card.translation}
+                  </p>
+                ) : (
+                  <p className="text-center font-mono text-lg font-semibold leading-relaxed text-ink">
+                    {card.phrase}
+                  </p>
+                )}
               </div>
 
               {/* Hint */}
@@ -404,11 +424,17 @@ export function ReviewPage() {
                 </span>
               </div>
 
-              {/* English phrase */}
+              {/* Back: answer text */}
               <div className="flex items-center justify-center py-4">
-                <p className="text-center font-mono text-lg font-semibold leading-relaxed text-ink">
-                  {card.phrase}
-                </p>
+                {direction === "jp_to_en" ? (
+                  <p className="text-center font-mono text-lg font-semibold leading-relaxed text-ink">
+                    {card.phrase}
+                  </p>
+                ) : (
+                  <p className="text-center text-xl font-semibold leading-relaxed text-ink">
+                    {card.translation}
+                  </p>
+                )}
               </div>
 
               {/* Context */}

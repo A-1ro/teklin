@@ -145,62 +145,122 @@ export function CardsPage() {
         </p>
       </div>
 
-      {/* Today's review CTA */}
-      {stats.dueToday > 0 ? (
-        <PaperCard
-          accent="var(--color-teal)"
-          hoverable
-          onClick={() => navigate("/cards/review")}
-          style={{ padding: "20px 24px", marginBottom: 24 }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 16,
-            }}
-          >
-            <div>
+      {/* Today's review CTA — per direction */}
+      {stats.dueTodayJpToEn > 0 || stats.dueTodayEnToJp > 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+          {stats.dueTodayJpToEn > 0 && (
+            <PaperCard
+              accent="var(--color-teal)"
+              hoverable
+              onClick={() => navigate("/cards/review?direction=jp_to_en")}
+              style={{ padding: "20px 24px" }}
+            >
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
-                  marginBottom: 6,
+                  justifyContent: "space-between",
+                  gap: 16,
                 }}
               >
-                <TapeTag color="teal">today</TapeTag>
-                <Kicker color="var(--color-ink-3)">due for review</Kicker>
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 6,
+                    }}
+                  >
+                    <TapeTag color="teal">JP → EN</TapeTag>
+                    <Kicker color="var(--color-ink-3)">日本語 → English</Kicker>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 500,
+                      color: "var(--color-ink)",
+                      margin: "0 0 4px",
+                    }}
+                  >
+                    日本語から英語を思い出す
+                  </p>
+                  <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: 700,
+                        color: "var(--color-teal-dark)",
+                      }}
+                    >
+                      {stats.dueTodayJpToEn}
+                    </span>{" "}
+                    枚のカードが待っています
+                  </p>
+                </div>
+                <TkButton variant="teal" size="sm" kicker="→">
+                  復習する
+                </TkButton>
               </div>
-              <p
+            </PaperCard>
+          )}
+          {stats.dueTodayEnToJp > 0 && (
+            <PaperCard
+              accent="var(--color-plum)"
+              hoverable
+              onClick={() => navigate("/cards/review?direction=en_to_jp")}
+              style={{ padding: "20px 24px" }}
+            >
+              <div
                 style={{
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: "var(--color-ink)",
-                  margin: "0 0 4px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 16,
                 }}
               >
-                今日の復習
-              </p>
-              <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontWeight: 700,
-                    color: "var(--color-teal-dark)",
-                  }}
-                >
-                  {stats.dueToday}
-                </span>{" "}
-                枚のカードが待っています
-              </p>
-            </div>
-            <TkButton variant="teal" size="sm" kicker="→">
-              復習を始める
-            </TkButton>
-          </div>
-        </PaperCard>
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 6,
+                    }}
+                  >
+                    <TapeTag color="plum">EN → JP</TapeTag>
+                    <Kicker color="var(--color-ink-3)">English → 日本語</Kicker>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 500,
+                      color: "var(--color-ink)",
+                      margin: "0 0 4px",
+                    }}
+                  >
+                    英語から日本語の意味を思い出す
+                  </p>
+                  <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: 700,
+                        color: "var(--color-plum)",
+                      }}
+                    >
+                      {stats.dueTodayEnToJp}
+                    </span>{" "}
+                    枚のカードが待���ています
+                  </p>
+                </div>
+                <TkButton variant="plum" size="sm" kicker="→">
+                  復習する
+                </TkButton>
+              </div>
+            </PaperCard>
+          )}
+        </div>
       ) : (
         <PaperCard style={{ padding: "20px 24px", marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -217,7 +277,7 @@ export function CardsPage() {
                 今日の復習は完了
               </p>
               <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
-                お疲れ様でした！明日またチェックしてください。
+                お��れ様でした！明日ま��チェックしてください。
               </p>
             </div>
           </div>

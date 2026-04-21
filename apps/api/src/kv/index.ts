@@ -1,5 +1,5 @@
 // KV namespace key schema and type definitions for Teklin.
-import type { SkillAxis } from "@teklin/shared";
+import type { CardDirection, SkillAxis } from "@teklin/shared";
 //
 // Bindings:
 //   SESSION_KV  — user session data + placement test sessions
@@ -65,8 +65,11 @@ export function sessionKey(sessionId: string): SessionKvKey {
   return `session:${sessionId}`;
 }
 
-export function srsKey(userId: string): SrsKvKey {
-  return `srs:${userId}`;
+export function srsKey(
+  userId: string,
+  direction: CardDirection = "jp_to_en"
+): SrsKvKey {
+  return `srs:${userId}:${direction}`;
 }
 
 /**
@@ -80,8 +83,12 @@ export interface NewCardsKvValue {
   updatedAt: string;
 }
 
-export function newCardsKey(userId: string, date: string): NewCardsKvKey {
-  return `newcards:${userId}:${date}`;
+export function newCardsKey(
+  userId: string,
+  date: string,
+  direction: CardDirection = "jp_to_en"
+): NewCardsKvKey {
+  return `newcards:${userId}:${date}:${direction}`;
 }
 
 export function streakKey(userId: string): StreakKvKey {

@@ -7,6 +7,7 @@ import { srsKey, newCardsKey, type SrsKvValue, type NewCardsKvValue } from "../k
 import { calculateSrs } from "../lib/srs";
 import type {
   CardCategory,
+  CardDirection,
   CardAnswerPayload,
   PhraseCardWithSrs,
   ReviewCardsResponse,
@@ -53,8 +54,17 @@ function todayUtc(): string {
   return now.toISOString().slice(0, 10);
 }
 
+const VALID_DIRECTIONS: CardDirection[] = ["jp_to_en", "en_to_jp"];
+
 function isValidCategory(value: string): value is CardCategory {
   return VALID_CATEGORIES.includes(value as CardCategory);
+}
+
+function parseDirection(value: string | undefined): CardDirection {
+  if (value && VALID_DIRECTIONS.includes(value as CardDirection)) {
+    return value as CardDirection;
+  }
+  return "jp_to_en";
 }
 
 function getAllowedLevels(userLevel: string): string[] {
@@ -74,6 +84,7 @@ const reviewSelectColumns = {
   domain: phraseCards.domain,
   level: phraseCards.level,
   category: phraseCards.category,
+  srsDirection: userSrs.direction,
   srsInterval: userSrs.interval,
   srsEaseFactor: userSrs.easeFactor,
   srsNextReview: userSrs.nextReview,
@@ -89,6 +100,7 @@ function mapRowToCard(row: {
   domain: string;
   level: string;
   category: string;
+  srsDirection: string | null;
   srsInterval: number | null;
   srsEaseFactor: number | null;
   srsNextReview: number | null;
@@ -136,9 +148,10 @@ cardRoutes.use("/*", authMiddleware);
 // ---------------------------------------------------------------------------
 cardRoutes.get("/review", async (c) => {
   const { userId } = c.get("user");
+  const direction = parseDirection(c.req.query("direction"));
   const now = Date.now();
   const kv = c.env.SRS_KV;
-  const kvKey = srsKey(userId);
+  const kvKey = srsKey(userId, direction);
   const db = createDb(c.env.DB);
 
   const user = await db
@@ -153,9 +166,9 @@ cardRoutes.get("/review", async (c) => {
 
   const allowedLevels = getAllowedLevels(user.level);
 
-  // Check how many new cards the user has already started today
+  // Check how many new cards the user has already started today (per direction)
   const today = todayUtc();
-  const ncKey = newCardsKey(userId, today);
+  const ncKey = newCardsKey(userId, today, direction);
   const ncValue = await kv.get<NewCardsKvValue>(ncKey, "json");
   const newCardsStartedToday = ncValue?.count ?? 0;
   const newCardsRemaining = Math.max(0, NEW_CARDS_PER_DAY - newCardsStartedToday);
@@ -167,13 +180,18 @@ cardRoutes.get("/review", async (c) => {
 
   let dueCards: PhraseCardWithSrs[];
 
+  // Unseen = no user_srs row for this (userId, cardId, direction) combo
   const unseenRows = newCardsRemaining > 0
     ? await db
         .select(reviewSelectColumns)
         .from(phraseCards)
         .leftJoin(
           userSrs,
-          and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
+          and(
+            eq(phraseCards.id, userSrs.cardId),
+            eq(userSrs.userId, userId),
+            eq(userSrs.direction, direction)
+          )
         )
         .where(
           and(
@@ -200,6 +218,7 @@ cardRoutes.get("/review", async (c) => {
         .where(
           and(
             eq(userSrs.userId, userId),
+            eq(userSrs.direction, direction),
             inArray(phraseCards.id, cached.dueCardIds),
             cardVisibilityCondition(userId),
             sql`${phraseCards.level} IN (${sql.join(
@@ -220,6 +239,7 @@ cardRoutes.get("/review", async (c) => {
       .where(
         and(
           eq(userSrs.userId, userId),
+          eq(userSrs.direction, direction),
           lte(userSrs.nextReview, now),
           cardVisibilityCondition(userId),
           sql`${phraseCards.level} IN (${sql.join(
@@ -292,13 +312,19 @@ cardRoutes.get("/deck/:category", async (c) => {
     .filter(([, num]) => num <= userLevelNum)
     .map(([lvl]) => lvl);
 
-  // Query phrase_cards left-joined with user_srs, filtered by category and level
+  const direction = parseDirection(c.req.query("direction"));
+
+  // Query phrase_cards left-joined with user_srs, filtered by category, level, and direction
   const rows = await db
     .select(reviewSelectColumns)
     .from(phraseCards)
     .leftJoin(
       userSrs,
-      and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
+      and(
+        eq(phraseCards.id, userSrs.cardId),
+        eq(userSrs.userId, userId),
+        eq(userSrs.direction, direction)
+      )
     )
     .where(
       and(
@@ -340,6 +366,7 @@ cardRoutes.post("/:id/answer", async (c) => {
   }
 
   const { rating } = body;
+  const direction = parseDirection(body.direction);
   const validRatings = ["again", "hard", "good", "easy"];
   if (!rating || !validRatings.includes(rating)) {
     return c.json(
@@ -361,11 +388,17 @@ cardRoutes.post("/:id/answer", async (c) => {
     return c.json({ error: "Card not found" }, 404);
   }
 
-  // Look up current SRS state (null for new card)
+  // Look up current SRS state for this direction (null for new card)
   const existing = await db
     .select()
     .from(userSrs)
-    .where(and(eq(userSrs.userId, userId), eq(userSrs.cardId, cardId)))
+    .where(
+      and(
+        eq(userSrs.userId, userId),
+        eq(userSrs.cardId, cardId),
+        eq(userSrs.direction, direction)
+      )
+    )
     .get();
 
   const currentState = existing
@@ -390,12 +423,19 @@ cardRoutes.post("/:id/answer", async (c) => {
         nextReview: newState.nextReview,
         updatedAt: now,
       })
-      .where(and(eq(userSrs.userId, userId), eq(userSrs.cardId, cardId)));
+      .where(
+        and(
+          eq(userSrs.userId, userId),
+          eq(userSrs.cardId, cardId),
+          eq(userSrs.direction, direction)
+        )
+      );
   } else {
     await db.insert(userSrs).values({
       id: crypto.randomUUID(),
       userId,
       cardId,
+      direction,
       interval: newState.interval,
       easeFactor: newState.easeFactor,
       repetitions: newState.repetitions,
@@ -403,9 +443,9 @@ cardRoutes.post("/:id/answer", async (c) => {
       updatedAt: now,
     });
 
-    // Increment daily new card counter
+    // Increment daily new card counter (per direction)
     const today = todayUtc();
-    const ncKey = newCardsKey(userId, today);
+    const ncKey = newCardsKey(userId, today, direction);
     const ncValue = await c.env.SRS_KV.get<NewCardsKvValue>(ncKey, "json");
     const newCount = (ncValue?.count ?? 0) + 1;
     await c.env.SRS_KV.put(
@@ -415,8 +455,8 @@ cardRoutes.post("/:id/answer", async (c) => {
     );
   }
 
-  // Invalidate SRS KV cache for this user
-  await c.env.SRS_KV.delete(srsKey(userId));
+  // Invalidate SRS KV cache for this user + direction
+  await c.env.SRS_KV.delete(srsKey(userId, direction));
 
   const response: CardAnswerResponse = {
     nextReview: new Date(newState.nextReview).toISOString(),
@@ -495,7 +535,7 @@ cardRoutes.get("/stats", async (c) => {
     github_issues: { total: 0, mastered: 0, learning: 0, unseen: 0 },
   };
 
-  // Drizzle GROUP BY aggregation per category
+  // Drizzle GROUP BY aggregation per category (uses jp_to_en direction for overall stats)
   const statsRows = await db
     .select({
       category: phraseCards.category,
@@ -510,46 +550,65 @@ cardRoutes.get("/stats", async (c) => {
     .from(phraseCards)
     .leftJoin(
       userSrs,
-      and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
+      and(
+        eq(phraseCards.id, userSrs.cardId),
+        eq(userSrs.userId, userId),
+        eq(userSrs.direction, "jp_to_en")
+      )
     )
     .where(cardVisibilityCondition(userId))
     .groupBy(phraseCards.category);
 
-  const dueCountRow = await db
-    .select({ value: count() })
-    .from(userSrs)
-    .innerJoin(phraseCards, eq(userSrs.cardId, phraseCards.id))
-    .where(
-      and(
-        eq(userSrs.userId, userId),
-        lte(userSrs.nextReview, now),
-        cardVisibilityCondition(userId),
-        sql`${phraseCards.level} IN (${sql.join(
-          allowedLevels.map((l) => sql`${l}`),
-          sql`, `
-        )})`
+  // Helper: count due + unseen cards for a given direction
+  async function countDueForDirection(dir: string): Promise<number> {
+    const dueRow = await db
+      .select({ value: count() })
+      .from(userSrs)
+      .innerJoin(phraseCards, eq(userSrs.cardId, phraseCards.id))
+      .where(
+        and(
+          eq(userSrs.userId, userId),
+          eq(userSrs.direction, dir),
+          lte(userSrs.nextReview, now),
+          cardVisibilityCondition(userId),
+          sql`${phraseCards.level} IN (${sql.join(
+            allowedLevels.map((l) => sql`${l}`),
+            sql`, `
+          )})`
+        )
       )
-    )
-    .get();
+      .get();
 
-  const unseenCountRow = await db
-    .select({ value: count() })
-    .from(phraseCards)
-    .leftJoin(
-      userSrs,
-      and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
-    )
-    .where(
-      and(
-        sql`${userSrs.cardId} IS NULL`,
-        cardVisibilityCondition(userId),
-        sql`${phraseCards.level} IN (${sql.join(
-          allowedLevels.map((l) => sql`${l}`),
-          sql`, `
-        )})`
+    const unseenRow = await db
+      .select({ value: count() })
+      .from(phraseCards)
+      .leftJoin(
+        userSrs,
+        and(
+          eq(phraseCards.id, userSrs.cardId),
+          eq(userSrs.userId, userId),
+          eq(userSrs.direction, dir)
+        )
       )
-    )
-    .get();
+      .where(
+        and(
+          sql`${userSrs.cardId} IS NULL`,
+          cardVisibilityCondition(userId),
+          sql`${phraseCards.level} IN (${sql.join(
+            allowedLevels.map((l) => sql`${l}`),
+            sql`, `
+          )})`
+        )
+      )
+      .get();
+
+    return (dueRow?.value ?? 0) + (unseenRow?.value ?? 0);
+  }
+
+  const [dueTodayJpToEn, dueTodayEnToJp] = await Promise.all([
+    countDueForDirection("jp_to_en"),
+    countDueForDirection("en_to_jp"),
+  ]);
 
   let total = 0;
   let totalMastered = 0;
@@ -571,14 +630,14 @@ cardRoutes.get("/stats", async (c) => {
     totalUnseen += row.unseen;
   }
 
-  const dueToday = (dueCountRow?.value ?? 0) + (unseenCountRow?.value ?? 0);
-
   const response: CardStatsResponse = {
     total,
     mastered: totalMastered,
     learning: totalLearning,
     unseen: totalUnseen,
-    dueToday,
+    dueToday: dueTodayJpToEn + dueTodayEnToJp,
+    dueTodayJpToEn,
+    dueTodayEnToJp,
     byCategory,
   };
   return c.json(response);

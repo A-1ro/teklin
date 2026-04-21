@@ -181,6 +181,8 @@ export const userSrs = sqliteTable(
     cardId: text("card_id")
       .notNull()
       .references(() => phraseCards.id),
+    // CardDirection: "jp_to_en" | "en_to_jp"
+    direction: text("direction").notNull().default("jp_to_en"),
     interval: integer("interval").notNull(),
     // SM-2 ease factor, default 2.5
     easeFactor: real("ease_factor").notNull().default(2.5),
@@ -189,8 +191,16 @@ export const userSrs = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
-    uniqueIndex("user_srs_user_card_idx").on(table.userId, table.cardId),
-    index("user_srs_user_next_review_idx").on(table.userId, table.nextReview),
+    uniqueIndex("user_srs_user_card_dir_idx").on(
+      table.userId,
+      table.cardId,
+      table.direction
+    ),
+    index("user_srs_user_next_review_dir_idx").on(
+      table.userId,
+      table.nextReview,
+      table.direction
+    ),
   ]
 );
 

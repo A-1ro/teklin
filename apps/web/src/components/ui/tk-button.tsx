@@ -17,6 +17,11 @@ const variants = {
     fg: "#fff",
     border: "var(--color-coral)",
   },
+  plum: {
+    bg: "var(--color-plum)",
+    fg: "#fff",
+    border: "var(--color-plum)",
+  },
   ghost: {
     bg: "transparent",
     fg: "var(--color-ink)",

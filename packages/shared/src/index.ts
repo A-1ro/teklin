@@ -20,6 +20,9 @@ export type RewriteContext =
 /** SRS answer quality (SM-2 algorithm) */
 export type SrsQuality = 0 | 1 | 2 | 3 | 4 | 5;
 
+/** Card review direction */
+export type CardDirection = "jp_to_en" | "en_to_jp";
+
 /** Phrase card categories */
 export type CardCategory =
   | "commit_messages"
@@ -227,6 +230,7 @@ export interface DeckCardsResponse {
 /** Request body for POST /api/cards/:id/answer */
 export interface CardAnswerPayload {
   rating: CardRating;
+  direction?: CardDirection;
 }
 
 /** Response from POST /api/cards/:id/answer */
@@ -252,6 +256,8 @@ export interface CardStatsResponse {
   learning: number;
   unseen: number;
   dueToday: number;
+  dueTodayJpToEn: number;
+  dueTodayEnToJp: number;
   byCategory: Record<CardCategory, CategoryStats>;
 }
 
