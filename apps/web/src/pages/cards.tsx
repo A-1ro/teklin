@@ -12,7 +12,12 @@ import type { CardStatsResponse, CardCategory } from "@teklin/shared";
 
 const CATEGORY_META: Record<
   CardCategory,
-  { label: string; code: string; accent: string; tagColor: "teal" | "plum" | "coral" | "mustard" | "ghost" }
+  {
+    label: string;
+    code: string;
+    accent: string;
+    tagColor: "teal" | "plum" | "coral" | "mustard" | "ghost";
+  }
 > = {
   commit_messages: {
     label: "コミットメッセージ",
@@ -147,7 +152,14 @@ export function CardsPage() {
 
       {/* Today's review CTA — per direction */}
       {stats.dueTodayJpToEn > 0 || stats.dueTodayEnToJp > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            marginBottom: 24,
+          }}
+        >
           {stats.dueTodayJpToEn > 0 && (
             <PaperCard
               accent="var(--color-teal)"
@@ -185,7 +197,13 @@ export function CardsPage() {
                   >
                     日本語から英語を思い出す
                   </p>
-                  <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: "var(--color-ink-2)",
+                      margin: 0,
+                    }}
+                  >
                     <span
                       style={{
                         fontFamily: "var(--font-mono)",
@@ -241,7 +259,13 @@ export function CardsPage() {
                   >
                     英語から日本語の意味を思い出す
                   </p>
-                  <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: "var(--color-ink-2)",
+                      margin: 0,
+                    }}
+                  >
                     <span
                       style={{
                         fontFamily: "var(--font-mono)",
@@ -251,7 +275,7 @@ export function CardsPage() {
                     >
                       {stats.dueTodayEnToJp}
                     </span>{" "}
-                    枚のカードが待���ています
+                    枚のカードが待っています
                   </p>
                 </div>
                 <TkButton variant="plum" size="sm" kicker="→">
@@ -276,7 +300,9 @@ export function CardsPage() {
               >
                 今日の復習は完了
               </p>
-              <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
+              <p
+                style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}
+              >
                 お��れ様でした！明日ま��チェックしてください。
               </p>
             </div>
@@ -431,125 +457,123 @@ export function CardsPage() {
           </p>
         </PaperCard>
       ) : (
-      <div>
-        <div style={{ marginBottom: 12 }}>
-          <Kicker color="var(--color-ink-3)">categories</Kicker>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
-          {CATEGORY_ORDER.map((category) => {
-            const meta = CATEGORY_META[category];
-            const catStats = stats.byCategory[category];
-            const catTotal = catStats?.total ?? 0;
-            const catMastered = catStats?.mastered ?? 0;
-            const catLearning = catStats?.learning ?? 0;
-            const catUnseen = catStats?.unseen ?? 0;
-            const catProgress =
-              catTotal > 0
-                ? Math.round((catMastered / catTotal) * 100)
-                : 0;
+        <div>
+          <div style={{ marginBottom: 12 }}>
+            <Kicker color="var(--color-ink-3)">categories</Kicker>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
+            {CATEGORY_ORDER.map((category) => {
+              const meta = CATEGORY_META[category];
+              const catStats = stats.byCategory[category];
+              const catTotal = catStats?.total ?? 0;
+              const catMastered = catStats?.mastered ?? 0;
+              const catLearning = catStats?.learning ?? 0;
+              const catUnseen = catStats?.unseen ?? 0;
+              const catProgress =
+                catTotal > 0 ? Math.round((catMastered / catTotal) * 100) : 0;
 
-            return (
-              <Link
-                key={category}
-                to={`/cards/deck/${category}`}
-                style={{ textDecoration: "none", display: "block" }}
-              >
-                <PaperCard
-                  accent={meta.accent}
-                  hoverable
-                  style={{ padding: "18px 20px" }}
+              return (
+                <Link
+                  key={category}
+                  to={`/cards/deck/${category}`}
+                  style={{ textDecoration: "none", display: "block" }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      marginBottom: 10,
-                    }}
-                  >
-                    <TapeTag color={meta.tagColor}>{meta.code}</TapeTag>
-                    <span
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 500,
-                        color: "var(--color-ink)",
-                      }}
-                    >
-                      {meta.label}
-                    </span>
-                  </div>
-
-                  <div
-                    style={{
-                      height: 5,
-                      background: "var(--color-paper-2)",
-                      borderRadius: 999,
-                      overflow: "hidden",
-                      marginBottom: 10,
-                    }}
+                  <PaperCard
+                    accent={meta.accent}
+                    hoverable
+                    style={{ padding: "18px 20px" }}
                   >
                     <div
                       style={{
-                        height: "100%",
-                        width: `${catProgress}%`,
-                        background: meta.accent,
-                        borderRadius: 999,
-                        transition: "width 500ms ease",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 10,
                       }}
-                    />
-                  </div>
+                    >
+                      <TapeTag color={meta.tagColor}>{meta.code}</TapeTag>
+                      <span
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: "var(--color-ink)",
+                        }}
+                      >
+                        {meta.label}
+                      </span>
+                    </div>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                    }}
-                  >
-                    <span
+                    <div
                       style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        color: "var(--color-teal-dark)",
+                        height: 5,
+                        background: "var(--color-paper-2)",
+                        borderRadius: 999,
+                        overflow: "hidden",
+                        marginBottom: 10,
                       }}
                     >
-                      ● {catMastered}
-                    </span>
-                    <span
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${catProgress}%`,
+                          background: meta.accent,
+                          borderRadius: 999,
+                          transition: "width 500ms ease",
+                        }}
+                      />
+                    </div>
+
+                    <div
                       style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        color: "var(--color-mustard-fg)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
                       }}
                     >
-                      ● {catLearning}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        color: "var(--color-ink-3)",
-                      }}
-                    >
-                      ● {catUnseen}
-                    </span>
-                    <span
-                      style={{
-                        marginLeft: "auto",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        color: "var(--color-ink-3)",
-                      }}
-                    >
-                      {catTotal} total
-                    </span>
-                  </div>
-                </PaperCard>
-              </Link>
-            );
-          })}
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          color: "var(--color-teal-dark)",
+                        }}
+                      >
+                        ● {catMastered}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          color: "var(--color-mustard-fg)",
+                        }}
+                      >
+                        ● {catLearning}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          color: "var(--color-ink-3)",
+                        }}
+                      >
+                        ● {catUnseen}
+                      </span>
+                      <span
+                        style={{
+                          marginLeft: "auto",
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          color: "var(--color-ink-3)",
+                        }}
+                      >
+                        {catTotal} total
+                      </span>
+                    </div>
+                  </PaperCard>
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      </div>
       )}
     </div>
   );
