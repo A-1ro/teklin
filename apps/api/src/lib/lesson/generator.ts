@@ -23,6 +23,7 @@ export interface GenerateOptions {
   domain: Domain;
   weaknesses: SkillAxis[];
   completedLessonCount: number; // for rotation
+  previousNextPreview?: string; // wrapup.nextPreview from previous lesson
 }
 
 // ---------------------------------------------------------------------------
@@ -374,6 +375,7 @@ export async function generateLesson(
       domain: options.domain,
       context,
       weaknesses: weaknessText,
+      previousNextPreview: options.previousNextPreview ?? "",
     }
   );
 

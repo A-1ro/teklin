@@ -195,6 +195,34 @@ lessonRoutes.get("/today", async (c) => {
     ? (JSON.parse(latestPlacement.weaknesses) as string[])
     : [];
 
+  // Get nextPreview from the most recent completed lesson
+  const lastUserLesson = await db
+    .select({ lessonId: userLessons.lessonId })
+    .from(userLessons)
+    .where(eq(userLessons.userId, userId))
+    .orderBy(desc(userLessons.completedAt))
+    .limit(1)
+    .get();
+
+  let previousNextPreview: string | undefined;
+  if (lastUserLesson) {
+    const lastLesson = await db
+      .select({ contentJson: lessons.contentJson })
+      .from(lessons)
+      .where(eq(lessons.id, lastUserLesson.lessonId))
+      .get();
+    if (lastLesson) {
+      try {
+        const parsed = JSON.parse(lastLesson.contentJson) as {
+          wrapup?: { nextPreview?: string };
+        };
+        previousNextPreview = parsed.wrapup?.nextPreview;
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }
+
   const llm = createLLMService(c.env);
   const { content: lessonContent, context: lessonContext } =
     await generateLesson(llm, {
@@ -203,6 +231,7 @@ lessonRoutes.get("/today", async (c) => {
       weaknesses:
         weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
       completedLessonCount: completedCount,
+      previousNextPreview,
     });
 
   // Persist lesson to D1
