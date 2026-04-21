@@ -170,7 +170,7 @@ export function LessonHomePage() {
                     d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                5 min
+                約5分
               </span>
               <span className="flex items-center gap-1.5">
                 <svg
@@ -187,7 +187,7 @@ export function LessonHomePage() {
                     d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"
                   />
                 </svg>
-                4 steps
+                {lesson.content.warmup.questions.length + lesson.content.practice.exercises.length}問
               </span>
             </div>
 
