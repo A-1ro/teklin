@@ -3,7 +3,7 @@ import { eq, and, lte, sql, inArray, count, or, isNull } from "drizzle-orm";
 import { createDb, phraseCards, userSrs, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
-import { srsKey, type SrsKvValue } from "../kv";
+import { srsKey, newCardsKey, type SrsKvValue, type NewCardsKvValue } from "../kv";
 import { calculateSrs } from "../lib/srs";
 import type {
   CardCategory,
@@ -20,6 +20,8 @@ import type {
 
 const SRS_CACHE_TTL = 3600; // 1 hour in seconds
 const SRS_CACHE_MAX_AGE_MS = 3600 * 1000; // 1 hour in ms
+const NEW_CARDS_PER_DAY = 10;
+const NEW_CARDS_KV_TTL = 48 * 60 * 60; // 48 hours in seconds
 
 const VALID_CATEGORIES: CardCategory[] = [
   "commit_messages",
@@ -35,6 +37,21 @@ const LEVEL_ORDER: Record<string, number> = {
   L3: 3,
   L4: 4,
 };
+
+/**
+ * Get today's date key in YYYY-MM-DD format.
+ * A "Teklin day" starts at JST 05:00 (= UTC 20:00 the previous calendar day).
+ */
+function todayUtc(): string {
+  const now = new Date();
+  if (now.getUTCHours() >= 20) {
+    const next = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)
+    );
+    return next.toISOString().slice(0, 10);
+  }
+  return now.toISOString().slice(0, 10);
+}
 
 function isValidCategory(value: string): value is CardCategory {
   return VALID_CATEGORIES.includes(value as CardCategory);
@@ -136,6 +153,13 @@ cardRoutes.get("/review", async (c) => {
 
   const allowedLevels = getAllowedLevels(user.level);
 
+  // Check how many new cards the user has already started today
+  const today = todayUtc();
+  const ncKey = newCardsKey(userId, today);
+  const ncValue = await kv.get<NewCardsKvValue>(ncKey, "json");
+  const newCardsStartedToday = ncValue?.count ?? 0;
+  const newCardsRemaining = Math.max(0, NEW_CARDS_PER_DAY - newCardsStartedToday);
+
   // Try KV cache first
   const cached = await kv.get<SrsKvValue>(kvKey, "json");
   const isFresh =
@@ -143,23 +167,26 @@ cardRoutes.get("/review", async (c) => {
 
   let dueCards: PhraseCardWithSrs[];
 
-  const unseenRows = await db
-    .select(reviewSelectColumns)
-    .from(phraseCards)
-    .leftJoin(
-      userSrs,
-      and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
-    )
-    .where(
-      and(
-        sql`${userSrs.cardId} IS NULL`,
-        cardVisibilityCondition(userId),
-        sql`${phraseCards.level} IN (${sql.join(
-          allowedLevels.map((l) => sql`${l}`),
-          sql`, `
-        )})`
-      )
-    );
+  const unseenRows = newCardsRemaining > 0
+    ? await db
+        .select(reviewSelectColumns)
+        .from(phraseCards)
+        .leftJoin(
+          userSrs,
+          and(eq(phraseCards.id, userSrs.cardId), eq(userSrs.userId, userId))
+        )
+        .where(
+          and(
+            sql`${userSrs.cardId} IS NULL`,
+            cardVisibilityCondition(userId),
+            sql`${phraseCards.level} IN (${sql.join(
+              allowedLevels.map((l) => sql`${l}`),
+              sql`, `
+            )})`
+          )
+        )
+        .limit(newCardsRemaining)
+    : [];
 
   if (isFresh && cached !== null) {
     // Cache hit: use cached dueCardIds as the filter
@@ -375,6 +402,17 @@ cardRoutes.post("/:id/answer", async (c) => {
       nextReview: newState.nextReview,
       updatedAt: now,
     });
+
+    // Increment daily new card counter
+    const today = todayUtc();
+    const ncKey = newCardsKey(userId, today);
+    const ncValue = await c.env.SRS_KV.get<NewCardsKvValue>(ncKey, "json");
+    const newCount = (ncValue?.count ?? 0) + 1;
+    await c.env.SRS_KV.put(
+      ncKey,
+      JSON.stringify({ count: newCount, updatedAt: new Date().toISOString() }),
+      { expirationTtl: NEW_CARDS_KV_TTL }
+    );
   }
 
   // Invalidate SRS KV cache for this user

@@ -69,6 +69,21 @@ export function srsKey(userId: string): SrsKvKey {
   return `srs:${userId}`;
 }
 
+/**
+ * SRS_KV keys: `newcards:{userId}:{YYYY-MM-DD}`
+ * Tracks how many new (unseen) cards a user has started reviewing today.
+ */
+export type NewCardsKvKey = `newcards:${string}:${string}`;
+
+export interface NewCardsKvValue {
+  count: number;
+  updatedAt: string;
+}
+
+export function newCardsKey(userId: string, date: string): NewCardsKvKey {
+  return `newcards:${userId}:${date}`;
+}
+
 export function streakKey(userId: string): StreakKvKey {
   return `streak:${userId}`;
 }
