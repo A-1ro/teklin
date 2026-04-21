@@ -167,8 +167,7 @@ export function DashboardPage() {
         {/* Today's lesson card */}
         <PaperCard
           accent="var(--color-teal)"
-          className="p-5 md:px-8 md:py-7"
-          style={{ position: "relative" }}
+          style={{ padding: "28px 32px", position: "relative" }}
         >
           <div
             className="hidden sm:block"
@@ -330,7 +329,7 @@ export function DashboardPage() {
       {shouldShowPlacementPrompt && (
         <PaperCard
           accent="var(--color-mustard)"
-          className="mb-5 p-4 md:mb-7 md:px-6 md:py-5"
+          style={{ padding: "20px 24px", marginBottom: 28 }}
         >
           <div
             className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"

@@ -31,7 +31,6 @@ export function PaperCard({
         background: "#fff",
         border: `1px solid ${hoverable && hover ? "var(--color-teal)" : "var(--color-rule)"}`,
         borderRadius: 14,
-        padding: 0,
         overflow: "hidden",
         transition: "transform 150ms, border-color 150ms",
         transform: hoverable && hover ? "translateY(-2px)" : "none",
