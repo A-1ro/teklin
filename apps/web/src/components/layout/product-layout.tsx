@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Wordmark } from "@/components/ui/wordmark";
 import { TekkiIdle } from "@/components/mascot/Tekki";
@@ -176,28 +176,8 @@ export function ProductLayout() {
               </span>
             )}
 
-            {/* Avatar */}
-            {user && (
-              <span
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  background: "var(--color-teal-50)",
-                  color: "var(--color-teal-dark)",
-                  fontWeight: 600,
-                  fontSize: 12,
-                  border: "1px solid #bfdedd",
-                  fontFamily: "var(--font-mono)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                {initials}
-              </span>
-            )}
+            {/* Avatar + menu */}
+            {user && <AvatarMenu initials={initials} />}
           </div>
         </div>
       </header>
@@ -268,6 +248,146 @@ export function ProductLayout() {
           );
         })}
       </nav>
+    </div>
+  );
+}
+
+function AvatarMenu({ initials }: { initials: string }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } finally {
+      setLoggingOut(false);
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="ユーザーメニュー"
+        aria-expanded={open}
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          background: "var(--color-teal-50)",
+          color: "var(--color-teal-dark)",
+          fontWeight: 600,
+          fontSize: 12,
+          border: "1px solid #bfdedd",
+          fontFamily: "var(--font-mono)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          cursor: "pointer",
+        }}
+      >
+        {initials}
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            top: "calc(100% + 8px)",
+            width: 220,
+            background: "#fff",
+            border: "1px solid var(--color-rule)",
+            borderRadius: 12,
+            overflow: "hidden",
+            zIndex: 200,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+          }}
+        >
+          {user && (
+            <div
+              style={{
+                padding: "12px 16px",
+                borderBottom: "1px dashed var(--color-rule)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--color-ink)",
+                  marginBottom: 2,
+                }}
+              >
+                {user.name}
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "var(--color-ink-3)",
+                  fontFamily: "var(--font-mono)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {user.email}
+              </div>
+            </div>
+          )}
+          <div style={{ padding: "6px 8px" }}>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                width: "100%",
+                padding: "8px 10px",
+                background: "none",
+                border: "none",
+                borderRadius: 8,
+                cursor: loggingOut ? "default" : "pointer",
+                fontSize: 13,
+                color: "var(--color-coral)",
+                fontFamily: "inherit",
+                fontWeight: 500,
+                opacity: loggingOut ? 0.5 : 1,
+                transition: "background 120ms",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget.style.background) = "var(--color-coral-50, #fef2f2)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.style.background) = "none";
+              }}
+            >
+              {loggingOut ? "ログアウト中..." : "ログアウト"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
