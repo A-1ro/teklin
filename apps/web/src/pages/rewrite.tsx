@@ -16,6 +16,7 @@ import type {
   RewriteRemainingResponse,
   RewriteTone,
 } from "@teklin/shared";
+import { playSound } from "@/lib/sound";
 
 const CONTEXT_OPTIONS: { value: RewriteContext; label: string }[] = [
   { value: "commit_message", label: "Commit Message" },
@@ -98,6 +99,7 @@ export function RewritePage() {
         body: JSON.stringify(payload),
       });
       setResult(res);
+      playSound("success");
 
       // Update remaining count
       if (remaining) {
@@ -164,6 +166,7 @@ export function RewritePage() {
       setSaveCard((prev) =>
         prev ? { ...prev, isSaving: false, saved: true } : null
       );
+      playSound("success");
     } catch (err) {
       setSaveCard((prev) =>
         prev

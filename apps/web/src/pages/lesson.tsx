@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { ApiError, apiFetch } from "@/lib/api";
+import { playSound } from "@/lib/sound";
 import { FlameIcon } from "@/components/icons/flame-icon";
 import type {
   LessonContent,
@@ -362,6 +363,7 @@ function WarmupStep({
           },
         );
         setResult(res);
+        playSound(res.correct ? "correct" : "incorrect");
       } catch {
         setResult({ correct: false, score: 0 });
       } finally {
@@ -751,6 +753,7 @@ function FillInBlank({
         },
       );
       onAnswer(res);
+      playSound(res.correct ? "correct" : "incorrect");
     } catch (err) {
       onAnswer({
         correct: false,
@@ -891,6 +894,7 @@ function ReorderExercise({
         },
       );
       onAnswer(res);
+      playSound(res.correct ? "correct" : "incorrect");
     } catch (err) {
       onAnswer({
         correct: false,
@@ -1019,6 +1023,7 @@ function FreeTextExercise({
         },
       );
       onAnswer(res);
+      playSound(res.correct ? "correct" : "incorrect");
     } catch (err) {
       onAnswer({
         correct: false,
@@ -1174,6 +1179,14 @@ function CompleteScreen({
   completionData: LessonCompleteResponse | null;
   onNavigate: (path: string) => void;
 }) {
+  useEffect(() => {
+    playSound("complete");
+    if (completionData?.streak.isNewRecord) {
+      const t = setTimeout(() => playSound("newRecord"), 700);
+      return () => clearTimeout(t);
+    }
+  }, [completionData]);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8">
       <div className="w-full max-w-md text-center">

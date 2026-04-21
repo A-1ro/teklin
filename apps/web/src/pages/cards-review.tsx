@@ -12,6 +12,7 @@ import type {
   Domain,
 } from "@teklin/shared";
 import { ArrowLeft, RotateCcw, Check } from "lucide-react";
+import { playSound } from "@/lib/sound";
 
 const CATEGORY_LABELS: Record<CardCategory, string> = {
   commit_messages: "コミットメッセージ",
@@ -110,6 +111,7 @@ export function ReviewPage() {
   const handleFlip = useCallback(() => {
     if (!isFlipped) {
       setIsFlipped(true);
+      playSound("flip");
     }
   }, [isFlipped]);
 
@@ -131,6 +133,7 @@ export function ReviewPage() {
         const nextIndex = currentIndex + 1;
         if (nextIndex >= cards.length) {
           setIsComplete(true);
+          playSound("complete");
         } else {
           setCurrentIndex(nextIndex);
           setIsFlipped(false);
@@ -151,9 +154,7 @@ export function ReviewPage() {
 
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
-        if (!isFlipped) {
-          setIsFlipped(true);
-        }
+        handleFlip();
         return;
       }
 

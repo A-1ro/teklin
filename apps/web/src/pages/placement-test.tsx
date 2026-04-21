@@ -8,6 +8,7 @@ import type {
   PlacementQuestionClient,
   SkillAxis,
 } from "@teklin/shared";
+import { playSound } from "@/lib/sound";
 
 const AXIS_META: Record<SkillAxis, { label: string; color: string }> = {
   reading: { label: "リーディング", color: "bg-teal-50 text-teal" },
@@ -76,6 +77,16 @@ export function PlacementTestPage() {
       if (data.feedback) {
         setFeedback(data.feedback);
         setPendingNext(data);
+        const fb = data.feedback;
+        if (fb.type === "multiple_choice") {
+          playSound(fb.isCorrect ? "correct" : "incorrect");
+        } else if (fb.type === "free_text") {
+          playSound(
+            fb.rating === "Excellent!!!" || fb.rating === "Good!"
+              ? "correct"
+              : "incorrect",
+          );
+        }
       } else if (data.isComplete) {
         setIsComplete(true);
       } else {
