@@ -35,3 +35,92 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* === Tekki mascot animations === */
+
+.tk-blink { animation: tk-blink 4.2s infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes tk-blink { 0%,92%,100% { transform: scaleY(1); } 95%,97% { transform: scaleY(0.08); } }
+
+.tk-float { animation: tk-float 3.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes tk-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+.tk-wave { animation: tk-wave 2.2s ease-in-out infinite; transform-origin: 196px 110px; transform-box: view-box; }
+@keyframes tk-wave { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-18deg); } 75% { transform: rotate(14deg); } }
+
+.tk-sparkA { animation: tk-sparkA 2.2s ease-in-out infinite; transform-box: fill-box; }
+.tk-sparkB { animation: tk-sparkA 2.2s ease-in-out infinite; animation-delay: 0.25s; transform-box: fill-box; }
+@keyframes tk-sparkA {
+  0%,30%,100% { opacity: 0; transform: translate(0,0); }
+  50% { opacity: 1; transform: translate(2px,-3px); }
+  70% { opacity: 0; transform: translate(4px,-6px); }
+}
+
+.tk-jump { animation: tk-jump 1.6s cubic-bezier(.4,0,.2,1) infinite; transform-origin: center bottom; transform-box: fill-box; }
+@keyframes tk-jump {
+  0%,60%,100% { transform: translateY(0) scaleY(1); }
+  20% { transform: translateY(0) scaleY(0.88) scaleX(1.08); }
+  40% { transform: translateY(-12px) scaleY(1.04) scaleX(0.96); }
+}
+.tk-sparkUp1 { animation: tk-sparkUp 1.6s ease-out infinite; transform-box: fill-box; }
+.tk-sparkUp2 { animation: tk-sparkUp 1.6s ease-out infinite; animation-delay: 0.2s; transform-box: fill-box; }
+.tk-sparkUp3 { animation: tk-sparkUp 1.6s ease-out infinite; animation-delay: 0.4s; transform-box: fill-box; }
+@keyframes tk-sparkUp {
+  0% { opacity: 0; transform: translateY(6px) scale(0.6); }
+  40% { opacity: 1; transform: translateY(-4px) scale(1); }
+  100% { opacity: 0; transform: translateY(-20px) scale(0.4); }
+}
+
+.tk-tilt { animation: tk-tilt 3.2s ease-in-out infinite; transform-origin: 90px 80px; transform-box: view-box; }
+@keyframes tk-tilt { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-4deg); } }
+.tk-think1 { animation: tk-think 2.4s ease-in-out infinite; }
+.tk-think2 { animation: tk-think 2.4s ease-in-out infinite; animation-delay: 0.35s; }
+.tk-think3 { animation: tk-think 2.4s ease-in-out infinite; animation-delay: 0.7s; }
+@keyframes tk-think {
+  0%,70%,100% { opacity: 0; transform: translateY(6px); }
+  25%,55% { opacity: 0.95; transform: translateY(0); }
+}
+
+.tk-typeL { animation: tk-typeL 0.32s ease-in-out infinite; transform-origin: 42px 112px; transform-box: view-box; }
+.tk-typeR { animation: tk-typeR 0.32s ease-in-out infinite; transform-origin: 138px 112px; transform-box: view-box; }
+@keyframes tk-typeL { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes tk-typeR { 0%,100% { transform: translateY(-2px); } 50% { transform: translateY(0); } }
+.tk-caret { animation: tk-caret 0.9s steps(2) infinite; }
+@keyframes tk-caret { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+
+.tk-shake { animation: tk-shake 0.9s ease-in-out infinite; transform-box: fill-box; }
+@keyframes tk-shake {
+  0%,100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-2px) rotate(-1.5deg); }
+  40% { transform: translateX(2px) rotate(1.5deg); }
+  60% { transform: translateX(-1.5px) rotate(-1deg); }
+  80% { transform: translateX(1.5px) rotate(1deg); }
+}
+.tk-sweat { animation: tk-sweat 2.4s ease-in infinite; transform-box: fill-box; }
+@keyframes tk-sweat {
+  0% { opacity: 0; transform: translateY(-4px) scale(0.8); }
+  25% { opacity: 1; transform: translateY(0) scale(1); }
+  85% { opacity: 1; transform: translateY(30px) scale(1); }
+  100% { opacity: 0; transform: translateY(40px) scale(0.6); }
+}
+
+.tk-flame { animation: tk-flame 0.6s ease-in-out infinite; transform-origin: center bottom; transform-box: fill-box; }
+@keyframes tk-flame { 0%,100% { transform: scaleY(1) scaleX(1); } 50% { transform: scaleY(0.92) scaleX(1.06); } }
+.tk-flameIn { animation: tk-flameIn 0.45s ease-in-out infinite; transform-origin: center bottom; transform-box: fill-box; }
+@keyframes tk-flameIn { 0%,100% { transform: scaleY(1) translateY(0); } 50% { transform: scaleY(1.08) translateY(-1px); } }
+.tk-torch { animation: tk-torch 2.4s ease-in-out infinite; transform-origin: 152px 88px; transform-box: view-box; }
+@keyframes tk-torch { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-6deg); } }
+
+.tk-breathe { animation: tk-breathe 3.2s ease-in-out infinite; transform-origin: center bottom; transform-box: fill-box; }
+@keyframes tk-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.025); } }
+.tk-z1 { animation: tk-z 3s ease-out infinite; transform-box: fill-box; }
+.tk-z2 { animation: tk-z 3s ease-out infinite; animation-delay: 1s; transform-box: fill-box; }
+.tk-z3 { animation: tk-z 3s ease-out infinite; animation-delay: 2s; transform-box: fill-box; }
+@keyframes tk-z {
+  0% { opacity: 0; transform: translate(0,8px) scale(0.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(8px,-24px) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class^="tk-"] { animation: none !important; }
+}

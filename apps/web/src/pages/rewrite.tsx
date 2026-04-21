@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { CopyMarkdownButton } from "@/components/copy-markdown-button";
+import { TekkiThinking } from "@/components/mascot/Tekki";
 import { Kicker } from "@/components/ui/kicker";
 import { Display } from "@/components/ui/display";
 import { TapeTag } from "@/components/ui/tape-tag";
@@ -390,33 +391,26 @@ export function RewritePage() {
 
       {/* Loading state */}
       {isSubmitting && (
-        <PaperCard style={{ padding: "32px 24px", marginBottom: 16 }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                border: "2px solid var(--color-rule)",
-                borderTopColor: "var(--color-plum)",
-                animation: "spin 0.8s linear infinite",
-              }}
-            />
+        <PaperCard
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 20,
+            padding: 28,
+            marginBottom: 16,
+          }}
+        >
+          <TekkiThinking size={96} />
+          <div>
+            <Kicker color="var(--color-plum)">thinking…</Kicker>
             <p
               style={{
                 fontSize: 14,
                 color: "var(--color-ink-2)",
-                margin: 0,
+                margin: "4px 0 0",
               }}
             >
-              Analyzing and rewriting your text...
+              文脈を読み解いて、自然な表現を考えています。
             </p>
           </div>
         </PaperCard>

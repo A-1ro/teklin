@@ -8,6 +8,7 @@ import { Pill } from "@/components/ui/pill";
 import { TapeTag } from "@/components/ui/tape-tag";
 import { PaperCard } from "@/components/ui/paper-card";
 import { TkButton } from "@/components/ui/tk-button";
+import { TekkiWave } from "@/components/mascot/Tekki";
 import type { TodayLessonResponse } from "@teklin/shared";
 
 const PLACEMENT_PROMPT_DISMISS_KEY = "dashboard:placement-prompt-dismissed";
@@ -175,8 +176,18 @@ export function DashboardPage() {
         {/* Today's lesson card */}
         <PaperCard
           accent="var(--color-teal)"
-          style={{ padding: "28px 32px" }}
+          style={{ padding: "28px 32px", position: "relative" }}
         >
+          <div
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 10,
+              pointerEvents: "none",
+            }}
+          >
+            <TekkiWave size={148} />
+          </div>
           {lessonLoading ? (
             <div
               style={{
@@ -531,6 +542,7 @@ function TodayLessonContent({
           color: "var(--color-ink-2)",
           margin: "14px 0 24px",
           lineHeight: 1.65,
+          maxWidth: 360,
         }}
       >
         {truncated}

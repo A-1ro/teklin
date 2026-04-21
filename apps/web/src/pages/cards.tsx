@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { TekkiSleepy } from "@/components/mascot/Tekki";
 import { Kicker } from "@/components/ui/kicker";
 import { Display } from "@/components/ui/display";
 import { TapeTag } from "@/components/ui/tape-tag";
@@ -346,6 +347,30 @@ export function CardsPage() {
       </PaperCard>
 
       {/* Category cards grid */}
+      {stats.total === 0 ? (
+        <PaperCard
+          style={{
+            padding: "40px 32px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <TekkiSleepy size={120} />
+          <Kicker color="var(--color-ink-3)">empty</Kicker>
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--color-ink-2)",
+              margin: 0,
+              textAlign: "center",
+            }}
+          >
+            このカテゴリにはまだカードがありません。
+          </p>
+        </PaperCard>
+      ) : (
       <div>
         <div style={{ marginBottom: 12 }}>
           <Kicker color="var(--color-ink-3)">categories</Kicker>
@@ -471,6 +496,7 @@ export function CardsPage() {
           })}
         </div>
       </div>
+      )}
     </div>
   );
 }

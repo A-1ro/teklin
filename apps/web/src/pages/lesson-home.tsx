@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { FlameIcon } from "@/components/icons/flame-icon";
+import { TekkiCheer } from "@/components/mascot/Tekki";
 import type { TodayLessonResponse, Level } from "@teklin/shared";
 
 const LEVEL_META: Record<Level, { label: string; color: string }> = {
@@ -119,7 +120,15 @@ export function LessonHomePage() {
         </div>
 
         {lesson ? (
-          <div className="rounded-[14px] border border-rule bg-paper-2 p-6">
+          <div className="relative rounded-[14px] border border-rule bg-paper-2 p-6">
+            {isCompleted && (
+              <div
+                className="pointer-events-none absolute"
+                style={{ top: -12, right: 24 }}
+              >
+                <TekkiCheer size={110} />
+              </div>
+            )}
             <div className="mb-4 flex flex-wrap items-center gap-2">
               {levelMeta && (
                 <span

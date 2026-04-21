@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Wordmark } from "@/components/ui/wordmark";
+import { TekkiIdle } from "@/components/mascot/Tekki";
 import { useAuth } from "@/components/auth/auth-provider";
 import { apiFetch } from "@/lib/api";
 import type { TodayLessonResponse } from "@teklin/shared";
@@ -67,8 +68,11 @@ export function ProductLayout() {
             height: "100%",
           }}
         >
-          {/* Wordmark */}
+          {/* Wordmark + Tekki */}
           <Wordmark size={18} />
+          <span style={{ marginLeft: -4, display: "inline-flex" }}>
+            <TekkiIdle size={32} />
+          </span>
 
           {/* Nav tabs */}
           <nav
