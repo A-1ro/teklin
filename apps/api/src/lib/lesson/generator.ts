@@ -157,6 +157,33 @@ const LESSON_RESPONSE_SCHEMA = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Shuffle utility (Fisher-Yates)
+// ---------------------------------------------------------------------------
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleWarmupChoices(
+  lesson: LessonContentInternal
+): LessonContentInternal {
+  return {
+    ...lesson,
+    warmup: {
+      questions: lesson.warmup.questions.map((q) => ({
+        ...q,
+        choices: shuffleArray(q.choices),
+      })),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Validation (lightweight sanity check after schema-enforced output)
 // ---------------------------------------------------------------------------
 
@@ -373,31 +400,38 @@ export async function generateLesson(
         )?.slice(0, 300)
       );
       return {
-        content: buildFallbackLesson(options.level, options.domain, context),
+        content: shuffleWarmupChoices(
+          buildFallbackLesson(options.level, options.domain, context)
+        ),
         context,
       };
     }
 
     const lesson = data;
 
-    // Fill in defaults for optional exercise fields
+    // Fill in defaults & derive reorder words from correctAnswer
     lesson.practice.exercises = lesson.practice.exercises.map((e, i) => ({
       id: e.id ?? `p${i + 1}`,
       type: e.type ?? "free_text",
       instruction: e.instruction ?? "",
       sentence: e.sentence,
-      words: e.words,
+      words:
+        e.type === "reorder" && e.correctAnswer
+          ? shuffleArray(e.correctAnswer.split(/\s+/))
+          : e.words,
       prompt: e.prompt,
       correctAnswer: e.correctAnswer,
       acceptableAnswers: e.acceptableAnswers,
     }));
 
     console.log("[generateLesson] Successfully generated lesson from LLM");
-    return { content: lesson, context };
+    return { content: shuffleWarmupChoices(lesson), context };
   } catch (err) {
     console.error("[generateLesson] Failed to generate lesson:", err);
     return {
-      content: buildFallbackLesson(options.level, options.domain, context),
+      content: shuffleWarmupChoices(
+        buildFallbackLesson(options.level, options.domain, context)
+      ),
       context,
     };
   }

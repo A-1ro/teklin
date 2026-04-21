@@ -144,7 +144,7 @@ export const templates = {
       '    "exercises": [',
       "      (Mix of fill_in_blank, reorder, free_text — 3 exercises total)",
       "      (fill_in_blank: {id, type, instruction: '<Japanese instruction>', sentence with ___ blank, correctAnswer, acceptableAnswers})",
-      "      (reorder: {id, type, instruction: '<Japanese instruction>', words as shuffled array, correctAnswer as space-joined string})",
+      "      (reorder: {id, type, instruction: '<Japanese instruction>', correctAnswer as a complete English sentence. Do NOT include a words field — it will be auto-generated})",
       "      (free_text: {id, type, instruction: '<Japanese instruction>', prompt: '<Japanese scenario prompt>'})",
       "    ]",
       "  },",
