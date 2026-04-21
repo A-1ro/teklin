@@ -38,27 +38,22 @@ export function Features() {
   return (
     <section
       id="features"
+      className="px-4 py-16 md:px-7 md:py-24"
       style={{
-        padding: "96px 28px",
         background: "var(--color-paper-2)",
       }}
     >
       <div style={{ maxWidth: 1120, margin: "0 auto" }}>
         {/* Header row */}
         <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            gap: 40,
-            marginBottom: 48,
-          }}
+          className="mb-8 flex flex-col gap-4 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-10"
         >
           <div>
             <Kicker>§ 01 — features</Kicker>
             <Display
               as="h2"
               size={40}
+              className="!text-[30px] md:!text-[40px]"
               style={{ marginTop: 10 }}
             >
               エンジニアの毎日に、
@@ -80,13 +75,7 @@ export function Features() {
         </div>
 
         {/* Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 20,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5">
           {cards.map((card) => (
             <PaperCard
               key={card.id}

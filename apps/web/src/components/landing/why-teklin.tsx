@@ -26,8 +26,8 @@ export function WhyTeklin() {
   return (
     <section
       id="why"
+      className="px-4 py-16 md:px-7 md:py-24"
       style={{
-        padding: "96px 28px",
         background: "var(--color-paper)",
       }}
     >
@@ -35,31 +35,36 @@ export function WhyTeklin() {
         {/* Header */}
         <div style={{ marginBottom: 48 }}>
           <Kicker>§ 02 — why teklin</Kicker>
-          <Display as="h2" size={40} style={{ marginTop: 10 }}>
+          <Display
+            as="h2"
+            size={40}
+            className="!text-[30px] md:!text-[40px]"
+            style={{ marginTop: 10 }}
+          >
             既存ツールとの、違い。
           </Display>
         </div>
 
         {/* Three-column container */}
         <div
+          className="grid grid-cols-1 md:grid-cols-3"
           style={{
             border: "1px solid var(--color-rule)",
             borderRadius: 14,
             overflow: "hidden",
             background: "#fff",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
           }}
         >
           {columns.map((col, idx) => (
             <div
               key={col.num}
+              className={
+                idx < columns.length - 1
+                  ? "border-b border-dashed border-rule md:border-b-0 md:border-r"
+                  : ""
+              }
               style={{
                 padding: "32px 28px",
-                borderRight:
-                  idx < columns.length - 1
-                    ? "1px dashed var(--color-rule)"
-                    : undefined,
               }}
             >
               <Kicker color={col.kickerColor}>{col.num}</Kicker>

@@ -6,6 +6,7 @@ export function PaperCard({
   ruled = false,
   accent,
   style,
+  className,
   onClick,
   hoverable,
 }: {
@@ -13,6 +14,7 @@ export function PaperCard({
   ruled?: boolean;
   accent?: string;
   style?: CSSProperties;
+  className?: string;
   onClick?: () => void;
   hoverable?: boolean;
 }) {
@@ -20,6 +22,7 @@ export function PaperCard({
 
   return (
     <div
+      className={className}
       onClick={onClick}
       onMouseEnter={() => hoverable && setHover(true)}
       onMouseLeave={() => setHover(false)}

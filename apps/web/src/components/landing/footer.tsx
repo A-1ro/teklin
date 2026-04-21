@@ -3,21 +3,17 @@ import { Wordmark } from "@/components/ui/wordmark";
 export function Footer() {
   return (
     <footer
+      className="px-4 py-6 md:px-7 md:py-8"
       style={{
-        padding: "32px 28px",
         borderTop: "1px solid var(--color-rule)",
         background: "var(--color-paper)",
       }}
     >
       <div
+        className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between"
         style={{
           maxWidth: 1120,
           margin: "0 auto",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 24,
         }}
       >
         <Wordmark size={18} />

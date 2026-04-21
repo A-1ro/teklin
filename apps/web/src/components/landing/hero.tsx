@@ -9,18 +9,12 @@ export function Hero() {
   const navigate = useNavigate();
 
   return (
-    <section
-      style={{
-        padding: "88px 28px 72px",
-      }}
-    >
+    <section className="px-4 pt-16 pb-12 md:px-7 md:pt-[88px] md:pb-[72px]">
       <div
+        className="grid grid-cols-1 gap-10 md:grid-cols-[1.55fr_1fr] md:gap-12"
         style={{
           maxWidth: 1200,
           margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1.55fr 1fr",
-          gap: 48,
           alignItems: "center",
         }}
       >
@@ -40,7 +34,7 @@ export function Hero() {
             </Kicker>
           </div>
 
-          <Display size={64}>
+          <Display size={64} className="!text-[40px] md:!text-[64px]">
             コードを書くように、
             <br />
             <span
@@ -52,12 +46,11 @@ export function Hero() {
           </Display>
 
           <p
+            className="mt-5 max-w-[640px] md:mt-6"
             style={{
               fontSize: 18,
               lineHeight: 1.65,
               color: "var(--color-ink-2)",
-              maxWidth: 640,
-              margin: "24px 0 0",
             }}
           >
             PR、コミット、Slack、Issue。技術の現場で要る英語だけを、1日5分。
@@ -66,12 +59,7 @@ export function Hero() {
           </p>
 
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginTop: 32,
-            }}
+            className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center md:mt-8"
           >
             <TkButton
               size="lg"
@@ -149,8 +137,8 @@ export function Hero() {
 
           {/* Body */}
           <div
+            className="p-4 md:p-5"
             style={{
-              padding: "20px 20px 22px",
               fontFamily: "var(--font-mono)",
               fontSize: 13,
               lineHeight: 1.7,
@@ -203,20 +191,17 @@ export function Hero() {
 
           {/* Bottom bar */}
           <div
+            className="flex flex-wrap items-center gap-2 px-4 py-2.5 md:gap-8 md:px-4 md:py-2.5"
             style={{
-              padding: "10px 16px",
               borderTop: "1px dashed var(--color-rule)",
               background: "var(--color-paper)",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
             }}
           >
             <TapeTag>tone: professional</TapeTag>
             <TapeTag color="ghost">ctx: PR</TapeTag>
             <span
+              className="ml-auto"
               style={{
-                marginLeft: "auto",
                 fontFamily: "var(--font-mono)",
                 fontSize: 11,
                 color: "var(--color-ink-3)",

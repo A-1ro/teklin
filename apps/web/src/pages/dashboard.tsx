@@ -134,12 +134,7 @@ export function DashboardPage() {
     <div>
       {/* Top row */}
       <div
-        style={{
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          marginBottom: 32,
-        }}
+        className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between md:mb-8"
       >
         <div>
           <Kicker color="var(--color-ink-3)">
@@ -147,6 +142,7 @@ export function DashboardPage() {
           </Kicker>
           <Display
             size={36}
+            className="!text-[26px] md:!text-[36px]"
             style={{ marginTop: 10 }}
           >
             今日も
@@ -165,20 +161,17 @@ export function DashboardPage() {
 
       {/* Hero grid */}
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr",
-          gap: 20,
-          alignItems: "stretch",
-          marginBottom: 28,
-        }}
+        className="mb-5 grid grid-cols-1 gap-4 md:mb-7 md:grid-cols-[2fr_1fr] md:gap-5"
+        style={{ alignItems: "stretch" }}
       >
         {/* Today's lesson card */}
         <PaperCard
           accent="var(--color-teal)"
-          style={{ padding: "28px 32px", position: "relative" }}
+          className="p-5 md:px-8 md:py-7"
+          style={{ position: "relative" }}
         >
           <div
+            className="hidden sm:block"
             style={{
               position: "absolute",
               top: 8,
@@ -272,12 +265,7 @@ export function DashboardPage() {
 
       {/* Second row */}
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 20,
-          marginBottom: 28,
-        }}
+        className="mb-5 grid grid-cols-1 gap-4 md:mb-7 md:grid-cols-2 md:gap-5"
       >
         {/* Weekly progress */}
         <PaperCard style={{ padding: "24px 26px" }}>
@@ -342,15 +330,10 @@ export function DashboardPage() {
       {shouldShowPlacementPrompt && (
         <PaperCard
           accent="var(--color-mustard)"
-          style={{ padding: "20px 24px", marginBottom: 28 }}
+          className="mb-5 p-4 md:mb-7 md:px-6 md:py-5"
         >
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 16,
-            }}
+            className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
           >
             <div>
               <div
@@ -406,13 +389,7 @@ export function DashboardPage() {
       )}
 
       {/* Quick action grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 16,
-        }}
-      >
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
         <PaperCard
           hoverable
           onClick={() => navigate("/rewrite")}

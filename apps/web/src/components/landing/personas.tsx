@@ -28,8 +28,8 @@ export function Personas() {
   return (
     <section
       id="personas"
+      className="px-4 py-16 md:px-7 md:py-24"
       style={{
-        padding: "96px 28px",
         background: "var(--color-paper-2)",
       }}
     >
@@ -37,19 +37,18 @@ export function Personas() {
         {/* Header */}
         <div style={{ marginBottom: 48 }}>
           <Kicker>§ 03 — personas</Kicker>
-          <Display as="h2" size={40} style={{ marginTop: 10 }}>
+          <Display
+            as="h2"
+            size={40}
+            className="!text-[30px] md:!text-[40px]"
+            style={{ marginTop: 10 }}
+          >
             こんなエンジニアに。
           </Display>
         </div>
 
         {/* Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 20,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-5">
           {personas.map((persona) => (
             <PaperCard
               key={persona.id}

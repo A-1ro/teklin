@@ -5,14 +5,17 @@ export function Display({
   children,
   size = 44,
   style,
+  className,
 }: {
   as?: ElementType;
   children: ReactNode;
   size?: number;
   style?: CSSProperties;
+  className?: string;
 }) {
   return (
     <Tag
+      className={className}
       style={{
         fontFamily: "var(--font-display)",
         fontSize: size,

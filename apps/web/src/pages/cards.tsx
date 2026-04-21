@@ -234,7 +234,7 @@ export function CardsPage() {
         >
           <Kicker color="var(--color-ink-3)">overall stats</Kicker>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+        <div className="grid grid-cols-3">
           <div
             style={{
               padding: "16px 18px",
@@ -375,13 +375,7 @@ export function CardsPage() {
         <div style={{ marginBottom: 12 }}>
           <Kicker color="var(--color-ink-3)">categories</Kicker>
         </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 16,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
           {CATEGORY_ORDER.map((category) => {
             const meta = CATEGORY_META[category];
             const catStats = stats.byCategory[category];

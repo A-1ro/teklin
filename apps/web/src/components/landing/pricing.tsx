@@ -24,8 +24,8 @@ export function Pricing() {
   return (
     <section
       id="pricing"
+      className="px-4 py-16 md:px-7 md:py-24"
       style={{
-        padding: "96px 28px",
         background: "var(--color-paper)",
       }}
     >
@@ -33,19 +33,18 @@ export function Pricing() {
         {/* Header */}
         <div style={{ marginBottom: 48 }}>
           <Kicker>§ 04 — pricing</Kicker>
-          <Display as="h2" size={40} style={{ marginTop: 10 }}>
+          <Display
+            as="h2"
+            size={40}
+            className="!text-[30px] md:!text-[40px]"
+            style={{ marginTop: 10 }}
+          >
             シンプルな、2プラン。
           </Display>
         </div>
 
         {/* Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 20,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5">
           {/* Free plan */}
           <PaperCard style={{ background: "#fff", padding: "28px 28px 26px" }}>
             <div style={{ marginBottom: 12 }}>
