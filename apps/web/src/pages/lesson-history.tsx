@@ -33,15 +33,15 @@ const FEEDBACK_LABELS: Record<DifficultyFeedback, string> = {
 };
 
 const FEEDBACK_COLORS: Record<DifficultyFeedback, string> = {
-  too_easy: "text-emerald-400",
-  just_right: "text-blue-400",
-  too_hard: "text-orange-400",
+  too_easy: "text-teal",
+  just_right: "text-teal",
+  too_hard: "text-coral",
 };
 
 function scoreColor(score: number): string {
-  if (score >= 80) return "text-emerald-400";
-  if (score >= 50) return "text-amber-400";
-  return "text-red-400";
+  if (score >= 80) return "text-teal";
+  if (score >= 50) return "text-mustard-fg";
+  return "text-coral";
 }
 
 export function LessonHistoryPage() {
@@ -61,14 +61,14 @@ export function LessonHistoryPage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
           <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
             role="status"
             aria-label="Loading history"
           />
-          <p className="text-sm text-gray-400">Loading...</p>
+          <p className="text-sm text-ink-2">Loading...</p>
         </div>
       </main>
     );
@@ -78,12 +78,12 @@ export function LessonHistoryPage() {
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">{error}</p>
+          <p className="mb-4 text-ink-2">{error}</p>
           <Link
             to="/dashboard"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+            className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
           >
             Back to Dashboard
           </Link>
@@ -93,40 +93,40 @@ export function LessonHistoryPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         <header className="mb-8 flex items-center gap-3">
           <Link
             to="/dashboard"
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+            className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
             aria-label="Back to Dashboard"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-xl font-bold text-gray-100">Lesson History</h1>
+          <h1 className="text-xl font-bold text-ink">Lesson History</h1>
         </header>
 
         {!data || data.items.length === 0 ? (
-          <div className="rounded-2xl border border-gray-800 bg-gray-900 p-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-800">
-              <BookOpen className="h-7 w-7 text-gray-500" />
+          <div className="rounded-[14px] border border-rule bg-paper-2 p-8 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rule">
+              <BookOpen className="h-7 w-7 text-ink-3" />
             </div>
-            <p className="mb-1 text-sm font-medium text-gray-300">
+            <p className="mb-1 text-sm font-medium text-ink">
               No completed lessons yet
             </p>
-            <p className="mb-6 text-xs text-gray-500">
+            <p className="mb-6 text-xs text-ink-3">
               Complete your first lesson and it will appear here.
             </p>
             <Link
               to="/lesson"
-              className="inline-block rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+              className="inline-block rounded-lg bg-teal px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
             >
               Start Today&apos;s Lesson
             </Link>
           </div>
         ) : (
           <>
-            <p className="mb-4 text-xs text-gray-500">
+            <p className="mb-4 text-xs text-ink-3">
               {data.total} lesson{data.total !== 1 ? "s" : ""} completed
             </p>
             <div className="space-y-3">
@@ -156,27 +156,27 @@ function HistoryCard({ item }: { item: LessonHistoryItem }) {
   return (
     <Link
       to={`/lesson/${item.lessonId}`}
-      className="group block rounded-xl border border-gray-800 bg-gray-900 p-4 transition-all hover:border-gray-700 hover:bg-gray-800/80"
+      className="group block rounded-[14px] border border-rule bg-paper-2 p-4 transition-all hover:border-ink-3 hover:bg-rule/40"
     >
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center rounded-full border border-gray-700 bg-gray-800 px-2.5 py-0.5 text-xs font-medium text-gray-400">
+          <span className="inline-flex items-center rounded-full border border-rule bg-paper px-2.5 py-0.5 text-xs font-medium text-ink-2">
             {DOMAIN_LABELS[item.domain]}
           </span>
           {item.context && (
-            <span className="inline-flex items-center rounded-full border border-gray-700 bg-gray-800 px-2.5 py-0.5 text-xs font-medium text-gray-400">
+            <span className="inline-flex items-center rounded-full border border-rule bg-paper px-2.5 py-0.5 text-xs font-medium text-ink-2">
               {CONTEXT_LABELS[item.context]}
             </span>
           )}
-          <span className="text-xs text-gray-500">{item.level}</span>
+          <span className="text-xs text-ink-3">{item.level}</span>
         </div>
-        <span className="flex items-center gap-1 text-xs text-gray-500">
+        <span className="flex items-center gap-1 text-xs text-ink-3">
           <Clock className="h-3 w-3" />
           {formattedDate} {formattedTime}
         </span>
       </div>
 
-      <p className="mb-2 text-sm font-medium text-gray-200">
+      <p className="mb-2 text-sm font-medium text-ink">
         {item.focusPhrase || "Lesson"}
       </p>
 

@@ -22,7 +22,7 @@ export function CopyMarkdownButton({ text }: CopyMarkdownButtonProps) {
     <button
       type="button"
       onClick={handleCopy}
-      className="rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:border-gray-600 hover:text-gray-100"
+      className="rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
     >
       {status === "copied"
         ? "Copied markdown"

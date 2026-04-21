@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
-import { useAuth } from "@/components/auth/auth-provider";
 import { apiFetch } from "@/lib/api";
-import { FlameIcon } from "@/components/icons/flame-icon";
+import { Kicker } from "@/components/ui/kicker";
+import { Display } from "@/components/ui/display";
+import { Pill } from "@/components/ui/pill";
+import { TapeTag } from "@/components/ui/tape-tag";
+import { PaperCard } from "@/components/ui/paper-card";
+import { TkButton } from "@/components/ui/tk-button";
 import type { TodayLessonResponse } from "@teklin/shared";
 
 const PLACEMENT_PROMPT_DISMISS_KEY = "dashboard:placement-prompt-dismissed";
@@ -15,11 +19,11 @@ function getLocalDateString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-const LEVEL_LABELS: Record<string, string> = {
-  L1: "L1 - Starter",
-  L2: "L2 - Reader",
-  L3: "L3 - Writer",
-  L4: "L4 - Fluent",
+const LEVEL_LABELS_SHORT: Record<string, string> = {
+  L1: "Starter",
+  L2: "Reader",
+  L3: "Writer",
+  L4: "Fluent",
 };
 
 const DOMAIN_LABELS: Record<string, string> = {
@@ -29,9 +33,14 @@ const DOMAIN_LABELS: Record<string, string> = {
   mobile: "Mobile",
 };
 
+function getWeekNumber(date: Date): number {
+  const start = new Date(date.getFullYear(), 0, 1);
+  const diff = date.getTime() - start.getTime();
+  return Math.ceil((diff / 86400000 + start.getDay() + 1) / 7);
+}
+
 export function DashboardPage() {
   const { user, isLoading } = useRequireAuth();
-  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const [lessonData, setLessonData] = useState<TodayLessonResponse | null>(
@@ -40,6 +49,12 @@ export function DashboardPage() {
   const [lessonLoading, setLessonLoading] = useState(true);
   const [isPlacementPromptDismissed, setIsPlacementPromptDismissed] =
     useState(false);
+
+  // Compute dismiss key before any early returns so the hook below is unconditional
+  const todayKey = getLocalDateString(new Date());
+  const placementPromptDismissValue = user
+    ? `${user.id}:${todayKey}`
+    : "";
 
   useEffect(() => {
     if (isLoading || !user) return;
@@ -50,20 +65,37 @@ export function DashboardPage() {
       .finally(() => setLessonLoading(false));
   }, [isLoading, user]);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
-  };
+  useEffect(() => {
+    if (!placementPromptDismissValue) return;
+    const dismissedValue = window.localStorage.getItem(
+      PLACEMENT_PROMPT_DISMISS_KEY
+    );
+    setIsPlacementPromptDismissed(dismissedValue === placementPromptDismissValue);
+  }, [placementPromptDismissValue]);
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 300,
+        }}
+      >
         <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            border: "2px solid var(--color-rule)",
+            borderTopColor: "var(--color-teal)",
+            animation: "spin 0.8s linear infinite",
+          }}
           role="status"
           aria-label="Loading"
         />
-      </main>
+      </div>
     );
   }
 
@@ -71,27 +103,12 @@ export function DashboardPage() {
     return null;
   }
 
-  const initials = user.name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
   const currentStreak = lessonData?.streak.currentStreak ?? 0;
-  const todayKey = getLocalDateString(new Date());
-  const placementPromptDismissValue = `${user.id}:${todayKey}`;
   const shouldShowPlacementPrompt =
     !lessonLoading &&
     currentStreak > 0 &&
     currentStreak % 7 === 0 &&
     !isPlacementPromptDismissed;
-
-  useEffect(() => {
-    const dismissedValue = window.localStorage.getItem(
-      PLACEMENT_PROMPT_DISMISS_KEY
-    );
-    setIsPlacementPromptDismissed(dismissedValue === placementPromptDismissValue);
-  }, [placementPromptDismissValue]);
 
   const handleDismissPlacementPrompt = () => {
     window.localStorage.setItem(
@@ -101,257 +118,579 @@ export function DashboardPage() {
     setIsPlacementPromptDismissed(true);
   };
 
+  const firstName = user.name.split(" ")[0]?.toLowerCase() ?? user.name;
+  const weekNumber = getWeekNumber(new Date());
+  const nextLevel =
+    user.level === "L1"
+      ? "L2"
+      : user.level === "L2"
+        ? "L3"
+        : user.level === "L3"
+          ? "L4"
+          : null;
+
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
-      <div className="mx-auto max-w-2xl">
-        <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-100">Teklin</h1>
-          <button
-            onClick={handleLogout}
-            className="rounded-lg px-4 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+    <div>
+      {/* Top row */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          marginBottom: 32,
+        }}
+      >
+        <div>
+          <Kicker color="var(--color-ink-3)">
+            morning · {firstName}
+          </Kicker>
+          <Display
+            size={36}
+            style={{ marginTop: 10 }}
           >
-            Logout
-          </button>
-        </header>
-
-        <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-          <div className="flex items-center gap-4">
-            {user.avatarUrl ? (
-              <img
-                src={user.avatarUrl}
-                alt={user.name}
-                width={56}
-                height={56}
-                className="h-14 w-14 rounded-full object-cover"
-              />
-            ) : (
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-xl font-bold text-white">
-                {initials}
-              </span>
-            )}
-            <div>
-              <p className="text-lg font-semibold text-gray-100">
-                Welcome, {user.name}!
-              </p>
-              <p className="text-sm text-gray-400">{user.email}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-6 grid grid-cols-3 gap-4">
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
-            <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-              Level
-            </p>
-            <p className="text-lg font-semibold text-gray-100">
-              {LEVEL_LABELS[user.level] ?? user.level}
-            </p>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
-            <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-              Domain
-            </p>
-            <p className="text-lg font-semibold text-gray-100">
-              {DOMAIN_LABELS[user.domain] ?? user.domain}
-            </p>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
-            <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
-              Streak
-            </p>
-            <p className="text-lg font-semibold text-gray-100">
-              {lessonData ? (
-                <span className="flex items-center gap-1">
-                  <FlameIcon
-                    size={20}
-                    className={
-                      lessonData.streak.currentStreak > 0
-                        ? "text-orange-400"
-                        : "text-blue-400"
-                    }
-                  />
-                  <span className="font-mono">
-                    {lessonData.streak.currentStreak}
-                  </span>
-                </span>
-              ) : lessonLoading ? (
-                <span className="inline-block h-5 w-8 animate-pulse rounded bg-gray-800" />
-              ) : (
-                <span className="text-gray-500">--</span>
-              )}
-            </p>
-          </div>
-        </div>
-
-        <TodayLessonCard data={lessonData} isLoading={lessonLoading} />
-
-        {shouldShowPlacementPrompt && (
-          <div className="relative mt-6 rounded-2xl border border-amber-700/40 bg-amber-950/20 p-5">
-            <button
-              type="button"
-              onClick={handleDismissPlacementPrompt}
-              className="absolute right-3 top-3 rounded-md p-1 text-amber-200/70 transition-colors hover:bg-amber-100/10 hover:text-amber-100"
-              aria-label="今日のリマインダーを閉じる"
+            今日も
+            <span
+              style={{ color: "var(--color-teal)", fontStyle: "italic" }}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
+              5分
+            </span>
+            だけ、いっしょに。
+          </Display>
+        </div>
+        <Pill color="teal">
+          {user.level} · {LEVEL_LABELS_SHORT[user.level] ?? user.level}
+        </Pill>
+      </div>
+
+      {/* Hero grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr",
+          gap: 20,
+          alignItems: "stretch",
+          marginBottom: 28,
+        }}
+      >
+        {/* Today's lesson card */}
+        <PaperCard
+          accent="var(--color-teal)"
+          style={{ padding: "28px 32px" }}
+        >
+          {lessonLoading ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              {[120, 200, 160, 100].map((w, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: 16,
+                    width: w,
+                    borderRadius: 6,
+                    background: "var(--color-paper-2)",
+                  }}
                 />
-              </svg>
-            </button>
-            <div className="flex flex-col gap-4 pr-8 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-amber-300">
-                  今のレベルを測ってみませんか？
-                </p>
-                <p className="mt-1 text-sm text-amber-100/75">
-                  {currentStreak}日連続で学習できています。今の到達度をプレースメントテストで確認しましょう。
-                </p>
-              </div>
-              <Link
-                to="/placement"
-                className="inline-flex shrink-0 items-center justify-center rounded-lg bg-amber-500 px-4 py-2.5 text-sm font-semibold text-gray-950 transition-colors hover:bg-amber-400"
+              ))}
+            </div>
+          ) : lessonData && lessonData.lesson ? (
+            <TodayLessonContent
+              lesson={lessonData.lesson}
+              isCompleted={lessonData.isCompleted}
+              onNavigate={() =>
+                navigate(`/lesson/${lessonData.lesson!.id}`)
+              }
+            />
+          ) : (
+            <div style={{ color: "var(--color-ink-2)", fontSize: 14 }}>
+              今日のレッスンはまだ準備中です。後でもう一度確認してください。
+            </div>
+          )}
+        </PaperCard>
+
+        {/* Stats card */}
+        <PaperCard style={{ padding: 0 }}>
+          <div
+            style={{
+              padding: "14px 18px",
+              borderBottom: "1px dashed var(--color-rule)",
+            }}
+          >
+            <Kicker color="var(--color-ink-3)">summary</Kicker>
+          </div>
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
+          >
+            <StatCell
+              kicker="streak"
+              value={String(currentStreak)}
+              label="days"
+              color="#7d5e0a"
+              borderRight
+              borderBottom
+            />
+            <StatCell
+              kicker="level"
+              value={user.level}
+              label={LEVEL_LABELS_SHORT[user.level] ?? ""}
+              color="var(--color-teal)"
+              borderBottom
+            />
+            <StatCell
+              kicker="domain"
+              value={
+                user.domain.charAt(0).toUpperCase() + user.domain.slice(1)
+              }
+              label={DOMAIN_LABELS[user.domain] ?? user.domain}
+              color="var(--color-ink)"
+              borderRight
+            />
+            <StatCell
+              kicker="next"
+              value={nextLevel ? `L${nextLevel.slice(1)}` : "MAX"}
+              label={nextLevel ? "至 72%" : "reached"}
+              color="var(--color-plum)"
+            />
+          </div>
+        </PaperCard>
+      </div>
+
+      {/* Second row */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 20,
+          marginBottom: 28,
+        }}
+      >
+        {/* Weekly progress */}
+        <PaperCard style={{ padding: "24px 26px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              marginBottom: 20,
+            }}
+          >
+            <Display as="h3" size={20}>
+              今週の進捗
+            </Display>
+            <TapeTag color="ghost">wk_{weekNumber}</TapeTag>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <ProgressBar code="all" label="全体" pct={62} color="var(--color-teal)" />
+            <ProgressBar code="pr" label="PRコメント" pct={34} color="var(--color-plum)" />
+            <ProgressBar
+              code="cm"
+              label="コミットメッセージ"
+              pct={78}
+              color="var(--color-mustard)"
+            />
+          </div>
+        </PaperCard>
+
+        {/* Recent phrases */}
+        <PaperCard ruled style={{ padding: "24px 26px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              marginBottom: 16,
+            }}
+          >
+            <Display as="h3" size={20}>
+              最近のフレーズ
+            </Display>
+            <TapeTag color="ghost">saved · 3</TapeTag>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <PhraseRow
+              tag="pr"
+              phrase="Could you take another look when you get a chance?"
+            />
+            <PhraseRow
+              tag="pr"
+              phrase="I'd lean toward option B, but happy to defer."
+            />
+            <PhraseRow
+              tag="iss"
+              phrase="This breaks on edge case X — see repro in thread."
+            />
+          </div>
+        </PaperCard>
+      </div>
+
+      {/* Placement prompt */}
+      {shouldShowPlacementPrompt && (
+        <PaperCard
+          accent="var(--color-mustard)"
+          style={{ padding: "20px 24px", marginBottom: 28 }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 6,
+                }}
               >
-                プレースメントテストへ
+                <TapeTag color="mustard">checkpoint</TapeTag>
+                <Kicker color="var(--color-mustard-fg)">
+                  {currentStreak}日連続達成
+                </Kicker>
+              </div>
+              <p
+                style={{
+                  fontSize: 14,
+                  color: "var(--color-ink-2)",
+                  margin: 0,
+                }}
+              >
+                今のレベルを測ってみませんか？プレースメントテストで到達度を確認しましょう。
+              </p>
+            </div>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
+            >
+              <Link to="/placement">
+                <TkButton variant="teal" size="sm" kicker="→">
+                  テストへ
+                </TkButton>
               </Link>
+              <button
+                type="button"
+                onClick={handleDismissPlacementPrompt}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--color-ink-3)",
+                  fontSize: 16,
+                  padding: 4,
+                  lineHeight: 1,
+                }}
+                aria-label="閉じる"
+              >
+                ×
+              </button>
             </div>
           </div>
-        )}
+        </PaperCard>
+      )}
 
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <Link
-            to="/rewrite"
-            className="rounded-xl border border-violet-800/30 bg-violet-950/20 p-4 text-center transition-colors hover:border-violet-700/40 hover:bg-violet-950/30"
+      {/* Quick action grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 16,
+        }}
+      >
+        <PaperCard
+          hoverable
+          onClick={() => navigate("/rewrite")}
+          style={{ padding: "18px 20px" }}
+        >
+          <TapeTag color="plum">§ ai rewrite</TapeTag>
+          <p
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--color-ink)",
+              margin: "8px 0 4px",
+            }}
           >
-            <p className="text-sm font-semibold text-gray-200">AI Rewrite</p>
-            <p className="mt-1 text-xs text-gray-500">
-              Polish your technical English
-            </p>
-          </Link>
-          <Link
-            to="/cards"
-            className="rounded-xl border border-emerald-800/30 bg-emerald-950/20 p-4 text-center transition-colors hover:border-emerald-700/40 hover:bg-emerald-950/30"
+            AI Rewrite
+          </p>
+          <p style={{ fontSize: 12, color: "var(--color-ink-3)", margin: 0 }}>
+            技術英語をブラッシュアップ
+          </p>
+        </PaperCard>
+
+        <PaperCard
+          hoverable
+          onClick={() => navigate("/cards")}
+          style={{ padding: "18px 20px" }}
+        >
+          <TapeTag color="teal">§ phrase cards</TapeTag>
+          <p
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--color-ink)",
+              margin: "8px 0 4px",
+            }}
           >
-            <p className="text-sm font-semibold text-gray-200">Phrase Cards</p>
-            <p className="mt-1 text-xs text-gray-500">SRS flashcard review</p>
-          </Link>
-          <Link
-            to="/lesson/history"
-            className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center transition-colors hover:border-gray-700 hover:bg-gray-800"
+            Phrase Cards
+          </p>
+          <p style={{ fontSize: 12, color: "var(--color-ink-3)", margin: 0 }}>
+            SRSフラッシュカード復習
+          </p>
+        </PaperCard>
+
+        <PaperCard
+          hoverable
+          onClick={() => navigate("/lesson/history")}
+          style={{ padding: "18px 20px" }}
+        >
+          <TapeTag color="ghost">§ history</TapeTag>
+          <p
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--color-ink)",
+              margin: "8px 0 4px",
+            }}
           >
-            <p className="text-sm font-semibold text-gray-200">
-              Lesson History
-            </p>
-            <p className="mt-1 text-xs text-gray-500">
-              View past lessons &amp; scores
-            </p>
-          </Link>
-          <Link
-            to="/placement"
-            className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center transition-colors hover:border-gray-700 hover:bg-gray-800"
+            Lesson History
+          </p>
+          <p style={{ fontSize: 12, color: "var(--color-ink-3)", margin: 0 }}>
+            過去レッスンとスコアを確認
+          </p>
+        </PaperCard>
+
+        <PaperCard
+          hoverable
+          onClick={() => navigate("/placement")}
+          style={{ padding: "18px 20px" }}
+        >
+          <TapeTag color="mustard">§ placement</TapeTag>
+          <p
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--color-ink)",
+              margin: "8px 0 4px",
+            }}
           >
-            <p className="text-sm font-semibold text-gray-200">
-              Placement Test
-            </p>
-            <p className="mt-1 text-xs text-gray-500">Retake or view results</p>
-          </Link>
-        </div>
+            Placement Test
+          </p>
+          <p style={{ fontSize: 12, color: "var(--color-ink-3)", margin: 0 }}>
+            再受験または結果を確認
+          </p>
+        </PaperCard>
       </div>
-    </main>
+    </div>
   );
 }
 
-function TodayLessonCard({
-  data,
-  isLoading,
+function TodayLessonContent({
+  lesson,
+  isCompleted,
+  onNavigate,
 }: {
-  data: TodayLessonResponse | null;
-  isLoading: boolean;
+  lesson: NonNullable<TodayLessonResponse["lesson"]>;
+  isCompleted: boolean;
+  onNavigate: () => void;
 }) {
-  if (isLoading) {
-    return (
-      <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
-        <div className="flex animate-pulse flex-col gap-3">
-          <div className="h-4 w-32 rounded bg-gray-800" />
-          <div className="h-6 w-48 rounded bg-gray-800" />
-          <div className="h-4 w-64 rounded bg-gray-800" />
-          <div className="mt-2 h-10 w-full rounded-lg bg-gray-800" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!data || !data.lesson) {
-    return (
-      <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6 text-center">
-        <p className="mb-1 text-sm text-gray-400">No lesson available today</p>
-        <p className="text-xs text-gray-500">Check back later!</p>
-      </div>
-    );
-  }
-
-  const { lesson, isCompleted } = data;
+  const explanation = lesson.content.focus.explanation;
+  const truncated =
+    explanation.length > 80
+      ? explanation.slice(0, 80) + "..."
+      : explanation;
 
   return (
-    <div
-      className={`rounded-2xl border p-6 ${
-        isCompleted
-          ? "border-green-800/50 bg-green-950/20"
-          : "border-blue-800 bg-blue-950/40"
-      }`}
-    >
-      <p
-        className={`mb-1 text-xs font-medium uppercase tracking-wider ${
-          isCompleted ? "text-green-500" : "text-blue-400"
-        }`}
+    <div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 12,
+        }}
       >
-        Today&apos;s Lesson
+        <TapeTag color="teal">today · f1</TapeTag>
+        <Kicker color="var(--color-ink-3)">
+          lesson_{lesson.id.slice(-3)}
+        </Kicker>
+      </div>
+
+      <Display size={30} style={{ marginBottom: 12 }}>
+        {lesson.content.focus.phrase}
+      </Display>
+
+      <p
+        style={{
+          fontSize: 15,
+          color: "var(--color-ink-2)",
+          margin: "14px 0 24px",
+          lineHeight: 1.65,
+        }}
+      >
+        {truncated}
       </p>
 
-      <p className="mb-1 text-base font-semibold text-gray-100">
-        {lesson.content.focus.phrase}
-      </p>
-      <p className="mb-4 text-sm text-gray-400">
-        {lesson.content.focus.explanation.length > 100
-          ? lesson.content.focus.explanation.slice(0, 100) + "..."
-          : lesson.content.focus.explanation}
-      </p>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        <Pill color="ghost">◷ 約5分</Pill>
+        <Pill color="ghost">
+          <span style={{ fontFamily: "var(--font-mono)" }}>3 / 5</span>
+          {" "}完了
+        </Pill>
+      </div>
 
       {isCompleted ? (
-        <div className="flex items-center justify-center gap-2 rounded-lg border border-green-800 bg-green-950/30 px-4 py-2.5 text-sm font-semibold text-green-400">
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          Completed
-        </div>
+        <Pill color="teal">完了済み</Pill>
       ) : (
-        <Link
-          to={`/lesson/${lesson.id}`}
-          className="block w-full rounded-lg bg-blue-600 px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+        <TkButton
+          onClick={onNavigate}
+          variant="teal"
+          kicker="→ resume"
         >
-          Start Lesson
-        </Link>
+          続きから再開
+        </TkButton>
       )}
+    </div>
+  );
+}
+
+function StatCell({
+  kicker,
+  value,
+  label,
+  color,
+  borderRight = false,
+  borderBottom = false,
+}: {
+  kicker: string;
+  value: string;
+  label: string;
+  color: string;
+  borderRight?: boolean;
+  borderBottom?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        padding: "16px 18px",
+        borderRight: borderRight ? "1px dashed var(--color-rule)" : undefined,
+        borderBottom: borderBottom ? "1px dashed var(--color-rule)" : undefined,
+      }}
+    >
+      <Kicker color={color}>{kicker}</Kicker>
+      <div
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: 26,
+          fontWeight: 600,
+          color,
+          margin: "4px 0 2px",
+          lineHeight: 1.1,
+        }}
+      >
+        {value}
+      </div>
+      <div
+        style={{
+          fontSize: 12,
+          color: "var(--color-ink-3)",
+        }}
+      >
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function ProgressBar({
+  code,
+  label,
+  pct,
+  color,
+}: {
+  code: string;
+  label: string;
+  pct: number;
+  color: string;
+}) {
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          marginBottom: 6,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <Kicker color="var(--color-ink-3)">{code}</Kicker>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--color-ink)",
+            }}
+          >
+            {label}
+          </span>
+        </div>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 13,
+            color: "var(--color-ink-2)",
+          }}
+        >
+          {pct}%
+        </span>
+      </div>
+      <div
+        style={{
+          height: 6,
+          background: "var(--color-paper-2)",
+          borderRadius: 999,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${pct}%`,
+            background: color,
+            borderRadius: 999,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function PhraseRow({ tag, phrase }: { tag: string; phrase: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+      <TapeTag color="ghost">{tag}</TapeTag>
+      <span
+        style={{
+          fontSize: 14,
+          lineHeight: 1.55,
+          color: "var(--color-ink-2)",
+        }}
+      >
+        {phrase}
+      </span>
     </div>
   );
 }

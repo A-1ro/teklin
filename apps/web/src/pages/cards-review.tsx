@@ -22,10 +22,10 @@ const CATEGORY_LABELS: Record<CardCategory, string> = {
 };
 
 const LEVEL_META: Record<Level, { label: string; color: string }> = {
-  L1: { label: "Starter", color: "bg-green-500/20 text-green-400" },
-  L2: { label: "Reader", color: "bg-blue-500/20 text-blue-400" },
-  L3: { label: "Writer", color: "bg-purple-500/20 text-purple-400" },
-  L4: { label: "Fluent", color: "bg-amber-500/20 text-amber-400" },
+  L1: { label: "Starter", color: "bg-teal-50 text-teal" },
+  L2: { label: "Reader", color: "bg-teal-50 text-teal" },
+  L3: { label: "Writer", color: "bg-plum-50 text-plum" },
+  L4: { label: "Fluent", color: "bg-mustard-50 text-mustard-fg" },
 };
 
 const DOMAIN_LABELS: Record<Domain, string> = {
@@ -47,32 +47,32 @@ const RATING_BUTTONS: {
     label: "もう一回",
     estimate: "< 1日",
     color:
-      "border-rose-800/50 bg-rose-950/30 text-rose-400 hover:bg-rose-950/50",
-    activeColor: "bg-rose-600 text-white",
+      "border-coral/50 bg-coral-50 text-coral-fg hover:bg-coral-50/80",
+    activeColor: "bg-coral text-paper",
   },
   {
     rating: "hard",
     label: "難しい",
     estimate: "3日",
     color:
-      "border-amber-800/50 bg-amber-950/30 text-amber-400 hover:bg-amber-950/50",
-    activeColor: "bg-amber-600 text-white",
+      "border-mustard/50 bg-mustard-50 text-mustard-fg hover:bg-mustard-50/80",
+    activeColor: "bg-mustard text-paper",
   },
   {
     rating: "good",
     label: "普通",
     estimate: "7日",
     color:
-      "border-blue-800/50 bg-blue-950/30 text-blue-400 hover:bg-blue-950/50",
-    activeColor: "bg-blue-600 text-white",
+      "border-rule bg-paper-2 text-ink-2 hover:bg-rule",
+    activeColor: "bg-ink text-paper",
   },
   {
     rating: "easy",
     label: "簡単",
     estimate: "14日",
     color:
-      "border-emerald-800/50 bg-emerald-950/30 text-emerald-400 hover:bg-emerald-950/50",
-    activeColor: "bg-emerald-600 text-white",
+      "border-teal/50 bg-teal-50 text-teal hover:bg-teal-50/80",
+    activeColor: "bg-teal text-paper",
   },
 ];
 
@@ -181,14 +181,14 @@ export function ReviewPage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
           <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-emerald-500"
+            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
             role="status"
             aria-label="Loading review cards"
           />
-          <p className="text-sm text-gray-400">カードを読み込み中...</p>
+          <p className="text-sm text-ink-2">カードを読み込み中...</p>
         </div>
       </main>
     );
@@ -200,12 +200,12 @@ export function ReviewPage() {
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">{error}</p>
+          <p className="mb-4 text-ink-2">{error}</p>
           <Link
             to="/cards"
-            className="inline-block rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+            className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
           >
             カード一覧に戻る
           </Link>
@@ -219,42 +219,42 @@ export function ReviewPage() {
     const totalReviewed = Object.values(answers).reduce((a, b) => a + b, 0);
 
     return (
-      <main className="min-h-screen bg-gray-950 px-4 py-8">
+      <main className="min-h-screen bg-paper px-4 py-8">
         <div className="mx-auto max-w-md">
           <header className="mb-8 flex items-center gap-3">
             <Link
               to="/cards"
-              className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+              className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
               aria-label="カード一覧に戻る"
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-xl font-bold text-gray-100">復習完了</h1>
+            <h1 className="text-xl font-bold text-ink">復習完了</h1>
           </header>
 
-          <div className="rounded-2xl border border-gray-800 bg-gray-900 p-8 text-center">
+          <div className="rounded-[14px] border border-rule bg-paper-2 p-8 text-center">
             {totalReviewed === 0 ? (
               <>
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
-                  <Check className="h-8 w-8 text-emerald-400" />
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50">
+                  <Check className="h-8 w-8 text-teal" />
                 </div>
-                <h2 className="mb-2 text-xl font-bold text-gray-100">
+                <h2 className="mb-2 text-xl font-bold text-ink">
                   今日の復習はすべて完了！
                 </h2>
-                <p className="mb-6 text-sm text-gray-400">
+                <p className="mb-6 text-sm text-ink-2">
                   復習待ちのカードはありません。素晴らしいですね！
                 </p>
               </>
             ) : (
               <>
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
-                  <Check className="h-8 w-8 text-emerald-400" />
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50">
+                  <Check className="h-8 w-8 text-teal" />
                 </div>
-                <h2 className="mb-2 text-xl font-bold text-gray-100">
+                <h2 className="mb-2 text-xl font-bold text-ink">
                   お疲れ様でした！
                 </h2>
-                <p className="mb-6 text-sm text-gray-400">
-                  <span className="font-mono font-semibold text-emerald-400">
+                <p className="mb-6 text-sm text-ink-2">
+                  <span className="font-mono font-semibold text-teal">
                     {totalReviewed}
                   </span>{" "}
                   枚のカードを復習しました
@@ -268,14 +268,14 @@ export function ReviewPage() {
                     return (
                       <div
                         key={rating}
-                        className="flex items-center justify-between rounded-lg border border-gray-800 px-4 py-2"
+                        className="flex items-center justify-between rounded-lg border border-rule px-4 py-2"
                       >
                         <span
                           className={`rounded-md border px-2 py-0.5 text-xs font-medium ${color}`}
                         >
                           {label}
                         </span>
-                        <span className="font-mono text-sm text-gray-300">
+                        <span className="font-mono text-sm text-ink">
                           {count} 枚
                         </span>
                       </div>
@@ -287,7 +287,7 @@ export function ReviewPage() {
 
             <Link
               to="/cards"
-              className="inline-block w-full rounded-lg bg-gray-800 px-6 py-3 text-sm font-semibold text-gray-200 transition-colors hover:bg-gray-700"
+              className="inline-block w-full rounded-lg bg-paper border border-rule px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-paper-2"
             >
               カード一覧に戻る
             </Link>
@@ -304,31 +304,32 @@ export function ReviewPage() {
   const levelMeta = LEVEL_META[card.level];
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-md">
         {/* Header */}
         <header className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               to="/cards"
-              className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+              className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
               aria-label="カード一覧に戻る"
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-lg font-bold text-gray-100">復習</h1>
+            <h1 className="text-lg font-bold text-ink">復習</h1>
           </div>
-          <span className="font-mono text-sm text-gray-400">
+          <span className="font-mono text-sm text-ink-2">
             {progress} / {cards.length}
           </span>
         </header>
 
         {/* Progress bar */}
-        <div className="mb-6 h-1 overflow-hidden rounded-full bg-gray-800">
+        <div className="mb-6 h-1 overflow-hidden rounded-full bg-paper-2">
           <div
-            className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+            className="h-full rounded-full bg-teal"
             style={{
               width: `${(currentIndex / cards.length) * 100}%`,
+              transition: "width 250ms ease",
             }}
           />
         </div>
@@ -354,7 +355,7 @@ export function ReviewPage() {
           >
             {/* Card Front */}
             <div
-              className="flex min-h-[360px] flex-col rounded-2xl border border-gray-800 bg-gray-900 p-6 sm:min-h-[400px]"
+              className="flex min-h-[360px] flex-col rounded-[14px] border border-rule bg-paper-2 p-6 sm:min-h-[400px]"
               style={{
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
@@ -362,7 +363,7 @@ export function ReviewPage() {
             >
               {/* Badges */}
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <span className="inline-block rounded-full bg-gray-800 px-3 py-1 text-xs font-semibold text-gray-300">
+                <span className="inline-block rounded-full bg-rule px-3 py-1 text-xs font-semibold text-ink-2">
                   {CATEGORY_LABELS[card.category]}
                 </span>
                 <span
@@ -374,13 +375,13 @@ export function ReviewPage() {
 
               {/* Japanese translation */}
               <div className="flex flex-1 items-center justify-center py-6">
-                <p className="text-center text-xl font-semibold leading-relaxed text-gray-100">
+                <p className="text-center text-xl font-semibold leading-relaxed text-ink">
                   {card.translation}
                 </p>
               </div>
 
               {/* Hint */}
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center justify-center gap-2 text-sm text-ink-3">
                 <RotateCcw className="h-4 w-4" />
                 <span>タップしてめくる</span>
               </div>
@@ -388,7 +389,7 @@ export function ReviewPage() {
 
             {/* Card Back */}
             <div
-              className="absolute inset-0 flex min-h-[360px] flex-col rounded-2xl border border-emerald-800/30 bg-gray-900 p-6 sm:min-h-[400px]"
+              className="absolute inset-0 flex min-h-[360px] flex-col rounded-[14px] border border-teal/30 bg-teal-50 p-6 sm:min-h-[400px]"
               style={{
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
@@ -397,24 +398,24 @@ export function ReviewPage() {
             >
               {/* Domain badge */}
               <div className="mb-4 flex items-center gap-2">
-                <span className="inline-block rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
+                <span className="inline-block rounded-full bg-teal/10 px-3 py-1 text-xs font-semibold text-teal">
                   {DOMAIN_LABELS[card.domain]}
                 </span>
               </div>
 
               {/* English phrase */}
               <div className="flex items-center justify-center py-4">
-                <p className="text-center font-mono text-lg font-semibold leading-relaxed text-gray-100">
+                <p className="text-center font-mono text-lg font-semibold leading-relaxed text-ink">
                   {card.phrase}
                 </p>
               </div>
 
               {/* Context */}
-              <div className="mt-4 flex-1 rounded-lg bg-gray-800/50 p-4">
-                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
+              <div className="mt-4 flex-1 rounded-lg bg-paper/60 p-4">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
                   使用例
                 </p>
-                <p className="text-sm leading-relaxed text-gray-300">
+                <p className="text-sm leading-relaxed text-ink">
                   {card.context}
                 </p>
               </div>
@@ -435,7 +436,7 @@ export function ReviewPage() {
               key={rating}
               onClick={() => handleRate(rating)}
               disabled={!isFlipped || isSubmitting}
-              className={`flex flex-col items-center gap-1 rounded-xl border p-3 transition-all duration-200 disabled:opacity-50 ${color}`}
+              className={`flex flex-col items-center gap-1 rounded-[14px] border p-3 transition-all duration-200 disabled:opacity-50 ${color}`}
               aria-label={`${label} (${estimate}後に復習)`}
             >
               <span className="text-xs font-semibold">{label}</span>

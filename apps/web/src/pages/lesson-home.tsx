@@ -6,10 +6,10 @@ import { FlameIcon } from "@/components/icons/flame-icon";
 import type { TodayLessonResponse, Level } from "@teklin/shared";
 
 const LEVEL_META: Record<Level, { label: string; color: string }> = {
-  L1: { label: "Starter", color: "bg-green-500/20 text-green-400" },
-  L2: { label: "Reader", color: "bg-blue-500/20 text-blue-400" },
-  L3: { label: "Writer", color: "bg-purple-500/20 text-purple-400" },
-  L4: { label: "Fluent", color: "bg-amber-500/20 text-amber-400" },
+  L1: { label: "Starter", color: "bg-teal-50 text-teal" },
+  L2: { label: "Reader", color: "bg-teal-50 text-teal" },
+  L3: { label: "Writer", color: "bg-plum-50 text-plum" },
+  L4: { label: "Fluent", color: "bg-mustard-50 text-mustard-fg" },
 };
 
 const LESSON_TYPE_LABELS: Record<string, string> = {
@@ -38,14 +38,14 @@ export function LessonHomePage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
           <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
             role="status"
             aria-label="Loading lesson"
           />
-          <p className="text-sm text-gray-400">Loading...</p>
+          <p className="text-sm text-ink-2">Loading...</p>
         </div>
       </main>
     );
@@ -57,14 +57,14 @@ export function LessonHomePage() {
 
   if (error || !data) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">
+          <p className="mb-4 text-ink-2">
             {error || "No lesson available."}
           </p>
           <Link
             to="/dashboard"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+            className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
           >
             Back to Dashboard
           </Link>
@@ -77,41 +77,41 @@ export function LessonHomePage() {
   const levelMeta = lesson ? LEVEL_META[lesson.level] : null;
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-100">Teklin</h1>
+          <h1 className="text-xl font-bold text-ink">Teklin</h1>
           <Link
             to="/dashboard"
-            className="rounded-lg px-4 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+            className="rounded-lg px-4 py-2 text-sm text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
           >
             Dashboard
           </Link>
         </header>
 
-        <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
+        <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FlameIcon
                 size={32}
                 className={
                   streak.currentStreak > 0
-                    ? "text-orange-400"
-                    : "text-blue-400"
+                    ? "text-coral"
+                    : "text-ink-3"
                 }
               />
               <div>
-                <p className="font-mono text-2xl font-bold text-gray-100">
+                <p className="font-mono text-2xl font-bold text-ink">
                   {streak.currentStreak}
                 </p>
-                <p className="text-sm text-gray-400">day streak</p>
+                <p className="text-sm text-ink-2">day streak</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+              <p className="text-xs font-medium uppercase tracking-wider text-ink-3">
                 Best
               </p>
-              <p className="font-mono text-lg font-semibold text-gray-300">
+              <p className="font-mono text-lg font-semibold text-ink-2">
                 {streak.longestStreak}
               </p>
             </div>
@@ -119,7 +119,7 @@ export function LessonHomePage() {
         </div>
 
         {lesson ? (
-          <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
+          <div className="rounded-[14px] border border-rule bg-paper-2 p-6">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               {levelMeta && (
                 <span
@@ -128,24 +128,24 @@ export function LessonHomePage() {
                   {lesson.level} {levelMeta.label}
                 </span>
               )}
-              <span className="inline-block rounded-full bg-gray-800 px-3 py-1 text-xs font-semibold text-gray-300">
+              <span className="inline-block rounded-full bg-rule px-3 py-1 text-xs font-semibold text-ink-2">
                 {LESSON_TYPE_LABELS[lesson.type] ?? lesson.type}
               </span>
             </div>
 
-            <h2 className="mb-2 text-xl font-bold text-gray-100">
+            <h2 className="mb-2 text-xl font-bold text-ink">
               Today&apos;s Lesson
             </h2>
-            <p className="mb-2 text-base text-gray-300">
+            <p className="mb-2 text-base text-ink">
               {lesson.content.focus.phrase}
             </p>
-            <p className="mb-6 text-sm text-gray-400">
+            <p className="mb-6 text-sm text-ink-2">
               {lesson.content.focus.explanation.length > 120
                 ? lesson.content.focus.explanation.slice(0, 120) + "..."
                 : lesson.content.focus.explanation}
             </p>
 
-            <div className="mb-6 flex items-center gap-6 text-sm text-gray-400">
+            <div className="mb-6 flex items-center gap-6 text-sm text-ink-2">
               <span className="flex items-center gap-1.5">
                 <svg
                   className="h-4 w-4"
@@ -183,8 +183,8 @@ export function LessonHomePage() {
             </div>
 
             {isCompleted ? (
-              <div className="rounded-lg border border-green-800 bg-green-950/30 px-6 py-4 text-center">
-                <p className="flex items-center justify-center gap-2 text-sm font-semibold text-green-400">
+              <div className="rounded-lg border border-teal bg-teal-50 px-6 py-4 text-center">
+                <p className="flex items-center justify-center gap-2 text-sm font-semibold text-teal">
                   <svg
                     className="h-5 w-5"
                     fill="none"
@@ -201,13 +201,13 @@ export function LessonHomePage() {
                   </svg>
                   完了済み
                 </p>
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-ink-2">
                   お疲れさまでした！明日また新しいレッスンが届きます。
                 </p>
                 <button
                   type="button"
                   onClick={() => navigate(`/lesson/${lesson.id}?review=true`)}
-                  className="mt-3 text-xs text-gray-500 underline underline-offset-2 hover:text-gray-300"
+                  className="mt-3 text-xs text-ink-3 underline underline-offset-2 hover:text-ink-2"
                 >
                   もう一度見る
                 </button>
@@ -215,16 +215,16 @@ export function LessonHomePage() {
             ) : (
               <button
                 onClick={() => navigate(`/lesson/${lesson.id}`)}
-                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+                className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
               >
                 Start Lesson
               </button>
             )}
           </div>
         ) : (
-          <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6 text-center">
-            <p className="mb-2 text-gray-300">No lesson available today.</p>
-            <p className="text-sm text-gray-500">
+          <div className="rounded-[14px] border border-rule bg-paper-2 p-6 text-center">
+            <p className="mb-2 text-ink">No lesson available today.</p>
+            <p className="text-sm text-ink-3">
               Check back later or contact support.
             </p>
           </div>

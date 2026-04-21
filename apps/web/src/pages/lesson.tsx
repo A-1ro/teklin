@@ -31,10 +31,10 @@ type StepId = "warmup" | "focus" | "practice" | "wrapup" | "complete";
 // ---------------------------------------------------------------------------
 
 const LEVEL_META: Record<Level, { label: string; color: string }> = {
-  L1: { label: "Starter", color: "bg-green-500/20 text-green-400" },
-  L2: { label: "Reader", color: "bg-blue-500/20 text-blue-400" },
-  L3: { label: "Writer", color: "bg-purple-500/20 text-purple-400" },
-  L4: { label: "Fluent", color: "bg-amber-500/20 text-amber-400" },
+  L1: { label: "Starter", color: "bg-teal-50 text-teal" },
+  L2: { label: "Reader", color: "bg-teal-50 text-teal" },
+  L3: { label: "Writer", color: "bg-plum-50 text-plum" },
+  L4: { label: "Fluent", color: "bg-mustard-50 text-mustard-fg" },
 };
 
 const STEPS: StepId[] = ["warmup", "focus", "practice", "wrapup"];
@@ -123,14 +123,14 @@ export function LessonPage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
           <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
             role="status"
             aria-label="レッスンを読み込み中"
           />
-          <p className="text-sm text-gray-400">レッスンを読み込み中...</p>
+          <p className="text-sm text-ink-2">レッスンを読み込み中...</p>
         </div>
       </main>
     );
@@ -142,12 +142,12 @@ export function LessonPage() {
 
   if (error || !lesson) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">{error || "レッスンが見つかりませんでした。"}</p>
+          <p className="mb-4 text-ink-2">{error || "レッスンが見つかりませんでした。"}</p>
           <Link
             to="/lesson"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+            className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
           >
             レッスン一覧に戻る
           </Link>
@@ -238,13 +238,14 @@ function LessonShell({
   };
 
   return (
-    <main className="min-h-screen bg-gray-950">
+    <main className="min-h-screen bg-paper">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-gray-800 bg-gray-950/95 backdrop-blur">
+      <header className="sticky top-0 z-10 border-b border-rule bg-paper/95 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <Link
             to="/lesson"
-            className="flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-gray-200"
+            className="flex items-center gap-1.5 text-sm text-ink-2 transition-colors hover:text-ink"
+            style={{ fontSize: 13, fontWeight: 500 }}
           >
             <svg
               className="h-4 w-4"
@@ -260,12 +261,12 @@ function LessonShell({
                 d="M15.75 19.5L8.25 12l7.5-7.5"
               />
             </svg>
-            終了
+            ホームへ
           </Link>
 
           <div className="flex items-center gap-2">
             {isReview && (
-              <span className="rounded-full bg-gray-700 px-2.5 py-0.5 text-xs font-semibold text-gray-300">
+              <span className="rounded-full bg-paper-2 px-2.5 py-0.5 text-xs font-semibold text-ink-2">
                 復習
               </span>
             )}
@@ -274,17 +275,20 @@ function LessonShell({
             >
               {lesson.level} {levelMeta.label}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-ink-3">
               {STEP_LABELS[currentStep]}
             </span>
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="h-0.5 bg-gray-800">
+        {/* Progress bar — 4px, bg paper-2, fill teal, transition width 250ms */}
+        <div className="h-1 bg-paper-2">
           <div
-            className="h-full bg-blue-500 transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="h-full bg-teal"
+            style={{
+              width: `${progress}%`,
+              transition: "width 250ms ease",
+            }}
             role="progressbar"
             aria-valuenow={progress}
             aria-valuemin={0}
@@ -301,10 +305,10 @@ function LessonShell({
               key={step}
               className={`h-2 rounded-full transition-all duration-300 ${
                 i < stepIndex
-                  ? "w-6 bg-blue-500"
+                  ? "w-6 bg-teal"
                   : i === stepIndex
-                    ? "w-6 bg-blue-400"
-                    : "w-2 bg-gray-700"
+                    ? "w-6 bg-teal"
+                    : "w-2 bg-rule"
               }`}
             />
           ))}
@@ -325,7 +329,7 @@ function WarmupStep({
   lessonId,
   questions,
   onComplete,
-  readOnly = false,
+  readOnly: _readOnly = false,
 }: {
   lessonId: string;
   questions: WarmupQuestion[];
@@ -379,27 +383,27 @@ function WarmupStep({
 
   if (!question) {
     return (
-      <div className="text-center text-gray-400">ウォームアップ問題がありません。</div>
+      <div className="text-center text-ink-2">ウォームアップ問題がありません。</div>
     );
   }
 
   return (
     <div>
       <div className="mb-6">
-        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
           ウォームアップ · {currentIdx + 1} / {questions.length}
         </p>
-        <h2 className="text-lg font-semibold text-gray-100">
+        <h2 className="text-lg font-semibold text-ink">
           このフレーズの意味はどれ？
         </h2>
       </div>
 
       {/* Phrase card */}
-      <div className="mb-6 rounded-xl border border-gray-700 bg-gray-900 p-5">
-        <p className="mb-1 text-lg font-semibold text-blue-300">
+      <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-5">
+        <p className="mb-1 text-lg font-semibold text-teal">
           {question.phrase}
         </p>
-        <p className="text-sm text-gray-400">{question.context}</p>
+        <p className="text-sm text-ink-2">{question.context}</p>
       </div>
 
       {/* Choices */}
@@ -410,22 +414,22 @@ function WarmupStep({
           const showCorrect = result !== null && isCorrect;
           const showWrong = result !== null && isSelected && !result.correct;
 
-          let borderClass = "border-gray-700 hover:border-gray-600";
-          let bgClass = "bg-gray-900 hover:bg-gray-800";
-          let textClass = "text-gray-200";
+          let borderClass = "border-rule hover:border-ink-3";
+          let bgClass = "bg-paper hover:bg-paper-2";
+          let textClass = "text-ink";
 
           if (showCorrect) {
-            borderClass = "border-green-600";
-            bgClass = "bg-green-950/30";
-            textClass = "text-green-300";
+            borderClass = "border-teal";
+            bgClass = "bg-teal-50";
+            textClass = "text-teal";
           } else if (showWrong) {
-            borderClass = "border-red-600";
-            bgClass = "bg-red-950/30";
-            textClass = "text-red-300";
+            borderClass = "border-coral";
+            bgClass = "bg-coral-50";
+            textClass = "text-coral-fg";
           } else if (isSelected) {
-            borderClass = "border-blue-600";
-            bgClass = "bg-blue-950/30";
-            textClass = "text-blue-300";
+            borderClass = "border-teal";
+            bgClass = "bg-teal-50";
+            textClass = "text-teal";
           }
 
           return (
@@ -433,7 +437,7 @@ function WarmupStep({
               key={choice.id}
               onClick={() => handleSelect(choice.id)}
               disabled={selected !== null}
-              className={`w-full rounded-xl border px-5 py-4 text-left text-sm font-medium transition-colors ${borderClass} ${bgClass} ${textClass} disabled:cursor-default`}
+              className={`w-full rounded-[14px] border px-5 py-4 text-left text-sm font-medium transition-colors ${borderClass} ${bgClass} ${textClass} disabled:cursor-default`}
             >
               {choice.text}
             </button>
@@ -446,22 +450,22 @@ function WarmupStep({
         <div
           className={`mb-6 rounded-lg px-5 py-4 ${
             result.correct
-              ? "border border-green-800 bg-green-950/30"
-              : "border border-red-800 bg-red-950/30"
+              ? "border border-teal bg-teal-50"
+              : "border border-coral bg-coral-50"
           }`}
         >
           <p
-            className={`mb-1 text-sm font-semibold ${result.correct ? "text-green-400" : "text-red-400"}`}
+            className={`mb-1 text-sm font-semibold ${result.correct ? "text-teal" : "text-coral-fg"}`}
           >
             {result.correct ? "正解！" : "惜しい！"}
           </p>
           {result.feedback && (
-            <p className="text-sm text-gray-400">{result.feedback}</p>
+            <p className="text-sm text-ink-2">{result.feedback}</p>
           )}
           {!result.correct && result.correctAnswer && (
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-ink-2">
               正解：{" "}
-              <span className="font-medium text-gray-200">
+              <span className="font-medium text-ink">
                 {
                   question.choices.find((c) => c.id === result.correctAnswer)
                     ?.text
@@ -475,7 +479,7 @@ function WarmupStep({
       {result && (
         <button
           onClick={handleNext}
-          className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+          className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
         >
           {currentIdx < questions.length - 1 ? "次の問題" : "次へ"}
         </button>
@@ -508,18 +512,18 @@ function FocusStep({
   return (
     <div>
       <div className="mb-6">
-        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
           フォーカス
         </p>
-        <h2 className="text-lg font-semibold text-gray-100">
+        <h2 className="text-lg font-semibold text-ink">
           今日のキーフレーズ
         </h2>
       </div>
 
       {/* Phrase highlight */}
-      <div className="mb-6 rounded-2xl border border-blue-800/40 bg-blue-950/20 p-6">
-        <p className="mb-3 text-2xl font-bold text-blue-300">{focus.phrase}</p>
-        <p className="text-sm leading-relaxed text-gray-300">
+      <div className="mb-6 rounded-[14px] border border-teal/30 bg-teal-50 p-6">
+        <p className="mb-3 text-2xl font-bold text-teal">{focus.phrase}</p>
+        <p className="text-sm leading-relaxed text-ink">
           {focus.explanation}
         </p>
       </div>
@@ -527,20 +531,20 @@ function FocusStep({
       {/* Examples carousel */}
       {focus.examples.length > 0 && (
         <div className="mb-6">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-ink-3">
             例文
           </p>
-          <div className="rounded-xl border border-gray-700 bg-gray-900 p-5">
+          <div className="rounded-[14px] border border-rule bg-paper-2 p-5">
             <div className="mb-2 flex items-center gap-2">
-              <span className="rounded-full bg-gray-800 px-2.5 py-0.5 text-xs font-medium text-gray-400">
+              <span className="rounded-full bg-rule px-2.5 py-0.5 text-xs font-medium text-ink-2">
                 {CONTEXT_LABELS[focus.examples[exampleIdx].context] ??
                   focus.examples[exampleIdx].context}
               </span>
             </div>
-            <p className="mb-2 text-sm font-medium text-gray-100">
+            <p className="mb-2 text-sm font-medium text-ink">
               {focus.examples[exampleIdx].english}
             </p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-ink-2">
               {focus.examples[exampleIdx].japanese}
             </p>
           </div>
@@ -550,11 +554,11 @@ function FocusStep({
               <button
                 onClick={() => setExampleIdx((i) => Math.max(0, i - 1))}
                 disabled={exampleIdx === 0}
-                className="rounded-lg px-3 py-1.5 text-xs text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 disabled:opacity-30"
+                className="rounded-lg px-3 py-1.5 text-xs text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink disabled:opacity-30"
               >
                 前へ
               </button>
-              <span className="text-xs text-gray-600">
+              <span className="text-xs text-ink-3">
                 {exampleIdx + 1} / {focus.examples.length}
               </span>
               <button
@@ -564,7 +568,7 @@ function FocusStep({
                   )
                 }
                 disabled={exampleIdx === focus.examples.length - 1}
-                className="rounded-lg px-3 py-1.5 text-xs text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200 disabled:opacity-30"
+                className="rounded-lg px-3 py-1.5 text-xs text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink disabled:opacity-30"
               >
                 次へ
               </button>
@@ -575,14 +579,14 @@ function FocusStep({
 
       {/* Tips */}
       {focus.tips.length > 0 && (
-        <div className="mb-6 rounded-xl border border-amber-800/30 bg-amber-950/10 p-5">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-amber-600">
+        <div className="mb-6 rounded-[14px] border border-mustard/30 bg-mustard-50 p-5">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-mustard-fg">
             ヒント
           </p>
           <ul className="flex flex-col gap-2">
             {focus.tips.map((tip, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                <span className="mt-0.5 text-amber-500" aria-hidden="true">
+              <li key={i} className="flex items-start gap-2 text-sm text-ink">
+                <span className="mt-0.5 text-mustard-fg" aria-hidden="true">
                   •
                 </span>
                 {tip}
@@ -594,7 +598,7 @@ function FocusStep({
 
       <button
         onClick={onComplete}
-        className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+        className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
       >
         わかった！練習しよう
       </button>
@@ -610,7 +614,7 @@ function PracticeStep({
   lessonId,
   exercises,
   onComplete,
-  readOnly = false,
+  readOnly: _readOnly = false,
 }: {
   lessonId: string;
   exercises: Exercise[];
@@ -641,7 +645,7 @@ function PracticeStep({
 
   if (!exercise) {
     return (
-      <div className="text-center text-gray-400">練習問題がありません。</div>
+      <div className="text-center text-ink-2">練習問題がありません。</div>
     );
   }
 
@@ -650,10 +654,10 @@ function PracticeStep({
   return (
     <div>
       <div className="mb-6">
-        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
           練習 · {currentIdx + 1} / {exercises.length}
         </p>
-        <h2 className="text-lg font-semibold text-gray-100">
+        <h2 className="text-lg font-semibold text-ink">
           {exercise.instruction}
         </h2>
       </div>
@@ -664,7 +668,7 @@ function PracticeStep({
           exercise={exercise}
           result={currentResult}
           onAnswer={handleAnswer}
-          readOnly={readOnly}
+          readOnly={_readOnly}
         />
       )}
 
@@ -674,7 +678,7 @@ function PracticeStep({
           exercise={exercise}
           result={currentResult}
           onAnswer={handleAnswer}
-          readOnly={readOnly}
+          readOnly={_readOnly}
         />
       )}
 
@@ -684,14 +688,14 @@ function PracticeStep({
           exercise={exercise}
           result={currentResult}
           onAnswer={handleAnswer}
-          readOnly={readOnly}
+          readOnly={_readOnly}
         />
       )}
 
-      {(currentResult || readOnly) && (
+      {(currentResult || _readOnly) && (
         <button
           onClick={handleNext}
-          className="mt-6 w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+          className="mt-6 w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
         >
           {currentIdx < exercises.length - 1
             ? "次の問題"
@@ -711,7 +715,7 @@ function FillInBlank({
   exercise,
   result,
   onAnswer,
-  readOnly = false,
+  readOnly: _readOnly = false,
 }: {
   lessonId: string;
   exercise: Exercise;
@@ -761,10 +765,10 @@ function FillInBlank({
   return (
     <div>
       {/* Sentence with blank */}
-      <div className="mb-6 rounded-xl border border-gray-700 bg-gray-900 p-5">
-        <p className="text-base text-gray-200">
+      <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-5">
+        <p className="text-base text-ink">
           {parts[0]}
-          <span className="mx-1 inline-block min-w-[80px] border-b-2 border-blue-500 px-1 text-center text-blue-300">
+          <span className="mx-1 inline-block min-w-[80px] border-b-2 border-teal px-1 text-center text-teal">
             {value || "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0"}
           </span>
           {parts[1]}
@@ -783,13 +787,13 @@ function FillInBlank({
           }}
           disabled={result !== null}
           placeholder="答えを入力..."
-          className="flex-1 rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
+          className="flex-1 rounded-lg border border-rule bg-paper px-4 py-3 text-sm text-ink placeholder-ink-3 outline-none transition-colors focus:border-teal disabled:opacity-60"
         />
         <button
           type="button"
           onClick={handleSubmit}
           disabled={!value.trim() || isSubmitting || result !== null}
-          className="rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-teal px-5 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "..." : "確認"}
         </button>
@@ -800,25 +804,25 @@ function FillInBlank({
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct
-              ? "border border-green-800 bg-green-950/30"
-              : "border border-red-800 bg-red-950/30"
+              ? "border border-teal bg-teal-50"
+              : "border border-coral bg-coral-50"
           }`}
         >
           <p
-            className={`mb-1 text-sm font-semibold ${result.correct ? "text-green-400" : "text-red-400"}`}
+            className={`mb-1 text-sm font-semibold ${result.correct ? "text-teal" : "text-coral-fg"}`}
           >
             {result.correct ? "正解！" : "惜しい！"}
           </p>
           {!result.correct && result.correctAnswer && (
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-ink-2">
               正解：{" "}
-              <span className="font-medium text-gray-200">
+              <span className="font-medium text-ink">
                 {result.correctAnswer}
               </span>
             </p>
           )}
           {result.feedback && (
-            <p className="mt-1 text-sm text-gray-400">{result.feedback}</p>
+            <p className="mt-1 text-sm text-ink-2">{result.feedback}</p>
           )}
         </div>
       )}
@@ -835,7 +839,7 @@ function ReorderExercise({
   exercise,
   result,
   onAnswer,
-  readOnly = false,
+  readOnly: _readOnly = false,
 }: {
   lessonId: string;
   exercise: Exercise;
@@ -901,9 +905,9 @@ function ReorderExercise({
   return (
     <div>
       {/* Chosen area */}
-      <div className="mb-4 min-h-[60px] rounded-xl border border-dashed border-gray-600 bg-gray-900 p-4">
+      <div className="mb-4 min-h-[60px] rounded-[14px] border border-dashed border-rule bg-paper-2 p-4">
         {chosen.length === 0 ? (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-ink-3">
             下の単語をタップして文を作ろう
           </p>
         ) : (
@@ -913,7 +917,7 @@ function ReorderExercise({
                 key={`chosen-${i}`}
                 onClick={() => removeWord(word, i)}
                 disabled={result !== null}
-                className="rounded-lg border border-blue-700 bg-blue-950/40 px-3 py-1.5 text-sm font-medium text-blue-200 transition-colors hover:bg-blue-950/60 disabled:cursor-default"
+                className="rounded-lg border border-teal bg-teal-50 px-3 py-1.5 text-sm font-medium text-teal transition-colors hover:bg-teal-50/80 disabled:cursor-default"
               >
                 {word}
               </button>
@@ -929,7 +933,7 @@ function ReorderExercise({
             key={`bank-${i}`}
             onClick={() => addWord(word, i)}
             disabled={result !== null}
-            className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-200 transition-colors hover:border-gray-600 hover:bg-gray-700 disabled:cursor-default"
+            className="rounded-lg border border-rule bg-paper-2 px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink-3 hover:bg-rule disabled:cursor-default"
           >
             {word}
           </button>
@@ -941,7 +945,7 @@ function ReorderExercise({
         <button
           onClick={handleSubmit}
           disabled={chosen.length === 0 || isSubmitting}
-          className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "確認中..." : "確認"}
         </button>
@@ -952,25 +956,25 @@ function ReorderExercise({
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct
-              ? "border border-green-800 bg-green-950/30"
-              : "border border-red-800 bg-red-950/30"
+              ? "border border-teal bg-teal-50"
+              : "border border-coral bg-coral-50"
           }`}
         >
           <p
-            className={`mb-1 text-sm font-semibold ${result.correct ? "text-green-400" : "text-red-400"}`}
+            className={`mb-1 text-sm font-semibold ${result.correct ? "text-teal" : "text-coral-fg"}`}
           >
             {result.correct ? "正解！" : "惜しい！"}
           </p>
           {!result.correct && result.correctAnswer && (
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-ink-2">
               正しい順序：{" "}
-              <span className="font-medium text-gray-200">
+              <span className="font-medium text-ink">
                 {result.correctAnswer}
               </span>
             </p>
           )}
           {result.feedback && (
-            <p className="mt-1 text-sm text-gray-400">{result.feedback}</p>
+            <p className="mt-1 text-sm text-ink-2">{result.feedback}</p>
           )}
         </div>
       )}
@@ -987,7 +991,7 @@ function FreeTextExercise({
   exercise,
   result,
   onAnswer,
-  readOnly = false,
+  readOnly: _readOnly = false,
 }: {
   lessonId: string;
   exercise: Exercise;
@@ -1030,8 +1034,8 @@ function FreeTextExercise({
     <div>
       {/* Prompt */}
       {exercise.prompt && (
-        <div className="mb-5 rounded-xl border border-gray-700 bg-gray-900 p-5">
-          <p className="text-sm text-gray-300">{exercise.prompt}</p>
+        <div className="mb-5 rounded-[14px] border border-rule bg-paper-2 p-5">
+          <p className="text-sm text-ink">{exercise.prompt}</p>
         </div>
       )}
 
@@ -1043,7 +1047,7 @@ function FreeTextExercise({
           disabled={result !== null}
           placeholder="ここに答えを書こう..."
           rows={4}
-          className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-blue-500 disabled:opacity-60"
+          className="w-full rounded-lg border border-rule bg-paper px-4 py-3 text-sm text-ink placeholder-ink-3 outline-none transition-colors focus:border-teal disabled:opacity-60"
         />
       </div>
 
@@ -1051,7 +1055,7 @@ function FreeTextExercise({
         <button
           onClick={handleSubmit}
           disabled={!value.trim() || isSubmitting}
-          className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "送信中..." : "送信"}
         </button>
@@ -1062,24 +1066,24 @@ function FreeTextExercise({
         <div
           className={`rounded-lg px-5 py-4 ${
             result.correct
-              ? "border border-green-800 bg-green-950/30"
-              : "border border-amber-800 bg-amber-950/20"
+              ? "border border-teal bg-teal-50"
+              : "border border-mustard/40 bg-mustard-50"
           }`}
         >
           <p
-            className={`mb-1 text-sm font-semibold ${result.correct ? "text-green-400" : "text-amber-400"}`}
+            className={`mb-1 text-sm font-semibold ${result.correct ? "text-teal" : "text-mustard-fg"}`}
           >
             {result.correct ? "よくできました！" : "AIフィードバック"}
           </p>
           {result.feedback && (
-            <p className="text-sm text-gray-300">{result.feedback}</p>
+            <p className="text-sm text-ink">{result.feedback}</p>
           )}
           {result.correctAnswer && (
-            <div className="mt-3 rounded-lg border border-gray-700 bg-gray-900 p-3">
-              <p className="mb-1 text-xs font-medium text-gray-500">
+            <div className="mt-3 rounded-lg border border-rule bg-paper p-3">
+              <p className="mb-1 text-xs font-medium text-ink-3">
                 模範解答
               </p>
-              <p className="text-sm text-gray-200">{result.correctAnswer}</p>
+              <p className="text-sm text-ink">{result.correctAnswer}</p>
             </div>
           )}
         </div>
@@ -1102,17 +1106,17 @@ function WrapupStep({
   return (
     <div>
       <div className="mb-6">
-        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
           まとめ
         </p>
-        <h2 className="text-lg font-semibold text-gray-100">
+        <h2 className="text-lg font-semibold text-ink">
           今日もよくできました！
         </h2>
       </div>
 
       {/* Summary */}
-      <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-        <p className="text-sm leading-relaxed text-gray-300">
+      <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
+        <p className="text-sm leading-relaxed text-ink">
           {wrapup.summary}
         </p>
       </div>
@@ -1120,19 +1124,19 @@ function WrapupStep({
       {/* Key points */}
       {wrapup.keyPoints.length > 0 && (
         <div className="mb-6">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-ink-3">
             重要ポイント
           </p>
           <ul className="flex flex-col gap-3">
             {wrapup.keyPoints.map((point, i) => (
               <li
                 key={i}
-                className="flex items-start gap-3 rounded-xl border border-gray-800 bg-gray-900 p-4"
+                className="flex items-start gap-3 rounded-[14px] border border-rule bg-paper-2 p-4"
               >
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal text-xs font-bold text-paper">
                   {i + 1}
                 </span>
-                <p className="text-sm text-gray-300">{point}</p>
+                <p className="text-sm text-ink">{point}</p>
               </li>
             ))}
           </ul>
@@ -1141,17 +1145,17 @@ function WrapupStep({
 
       {/* Next preview */}
       {wrapup.nextPreview && (
-        <div className="mb-6 rounded-xl border border-gray-800 bg-gray-900/50 p-5">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-600">
+        <div className="mb-6 rounded-[14px] border border-rule bg-paper-2/50 p-5">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
             次回のレッスン
           </p>
-          <p className="text-sm text-gray-400">{wrapup.nextPreview}</p>
+          <p className="text-sm text-ink-2">{wrapup.nextPreview}</p>
         </div>
       )}
 
       <button
         onClick={onComplete}
-        className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+        className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
       >
         レッスンを完了
       </button>
@@ -1171,47 +1175,47 @@ function CompleteScreen({
   onNavigate: (path: string) => void;
 }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4 py-8">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8">
       <div className="w-full max-w-md text-center">
         {/* Trophy icon */}
         <div className="mb-6 flex justify-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full border border-amber-700/40 bg-amber-950/30">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full border border-mustard/40 bg-mustard-50">
             <span className="text-4xl" role="img" aria-label="Trophy">
               {"\uD83C\uDFC6"}
             </span>
           </div>
         </div>
 
-        <h1 className="mb-2 text-2xl font-bold text-gray-100">
+        <h1 className="mb-2 text-2xl font-bold text-ink">
           レッスン完了！
         </h1>
-        <p className="mb-8 text-sm text-gray-400">
+        <p className="mb-8 text-sm text-ink-2">
           今日のレッスンが終わりました。引き続き頑張りましょう！
         </p>
 
         {/* Score + streak */}
         {completionData && (
-          <div className="mb-8 rounded-2xl border border-gray-800 bg-gray-900 p-6">
+          <div className="mb-8 rounded-[14px] border border-rule bg-paper-2 p-6">
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl border border-gray-800 bg-gray-950 p-4">
-                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
+              <div className="rounded-[14px] border border-rule bg-paper p-4">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
                   スコア
                 </p>
-                <p className="font-mono text-3xl font-bold text-gray-100">
+                <p className="font-mono text-3xl font-bold text-ink">
                   {completionData.score}
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-800 bg-gray-950 p-4">
-                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-500">
+              <div className="rounded-[14px] border border-rule bg-paper p-4">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
                   連続記録
                 </p>
-                <p className="flex items-center justify-center gap-1 font-mono text-3xl font-bold text-gray-100">
+                <p className="flex items-center justify-center gap-1 font-mono text-3xl font-bold text-ink">
                   <FlameIcon
                     size={30}
                     className={
                       completionData.streak.currentStreak > 0
-                        ? "text-orange-400"
-                        : "text-blue-400"
+                        ? "text-coral"
+                        : "text-ink-3"
                     }
                   />
                   {completionData.streak.currentStreak}
@@ -1220,8 +1224,8 @@ function CompleteScreen({
             </div>
 
             {completionData.streak.isNewRecord && (
-              <div className="mt-4 rounded-lg border border-amber-800/40 bg-amber-950/20 px-4 py-3">
-                <p className="text-sm font-semibold text-amber-400">
+              <div className="mt-4 rounded-lg border border-mustard/40 bg-mustard-50 px-4 py-3">
+                <p className="text-sm font-semibold text-mustard-fg">
                   {"\uD83C\uDF89"} 新記録達成：{completionData.streak.longestStreak}日連続！
                 </p>
               </div>
@@ -1233,13 +1237,13 @@ function CompleteScreen({
         <div className="flex flex-col gap-3">
           <button
             onClick={() => onNavigate("/dashboard")}
-            className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+            className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
           >
             ダッシュボードに戻る
           </button>
           <button
             onClick={() => onNavigate("/cards/review")}
-            className="w-full rounded-lg border border-gray-700 bg-gray-900 px-6 py-3 text-sm font-semibold text-gray-200 transition-colors hover:border-gray-600 hover:bg-gray-800"
+            className="w-full rounded-lg border border-rule bg-paper px-6 py-3 text-sm font-semibold text-ink transition-colors hover:border-ink-3 hover:bg-paper-2"
           >
             フレーズカードを復習する
           </button>

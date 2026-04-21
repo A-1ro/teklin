@@ -13,7 +13,7 @@ function renderInline(text: string): ReactNode[] {
       return (
         <code
           key={index}
-          className="rounded bg-gray-800 px-1.5 py-0.5 font-mono text-[0.95em] text-violet-300"
+          className="rounded bg-rule px-1.5 py-0.5 font-mono text-[0.95em] text-plum"
         >
           {part.slice(1, -1)}
         </code>
@@ -22,7 +22,7 @@ function renderInline(text: string): ReactNode[] {
 
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
-        <strong key={index} className="font-semibold text-gray-100">
+        <strong key={index} className="font-semibold text-ink">
           {part.slice(2, -2)}
         </strong>
       );
@@ -76,7 +76,7 @@ export function MarkdownText({ text, className }: MarkdownTextProps) {
       nodes.push(
         <div
           key={`h-${nodes.length}`}
-          className="font-semibold text-gray-100"
+          className="font-semibold text-ink"
         >
           {renderInline(headingMatch[2])}
         </div>

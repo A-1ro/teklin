@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 32" width="140" height="32" aria-label="Teklin">
+  <rect x="2" y="4" width="28" height="22" rx="6" fill="#0E7C7B"/>
+  <text x="16" y="19" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', SFMono-Regular, Menlo, monospace" font-weight="700" font-size="12" fill="#FAF7F1" letter-spacing="-0.02em">&gt;_</text>
+  <path d="M10 26 L12 30 L15 26 Z" fill="#0E7C7B"/>
+  <text x="42" y="22" font-family="ui-serif, 'Iowan Old Style', Georgia, serif" font-size="20" font-weight="600" letter-spacing="-0.01em" fill="#3B3A36">Teklin<tspan fill="#0E7C7B">.</tspan></text>
+</svg>

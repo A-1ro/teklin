@@ -9,7 +9,14 @@ import { WhyTeklin } from "@/components/landing/why-teklin";
 
 export function LandingPage() {
   return (
-    <>
+    <div
+      style={{
+        background: "var(--color-paper)",
+        color: "var(--color-ink)",
+        minHeight: "100%",
+        fontFamily: "var(--font-body)",
+      }}
+    >
       <NavBar />
       <main id="main">
         <Hero />
@@ -20,6 +27,6 @@ export function LandingPage() {
       </main>
       <Footer />
       <AuthRedirect />
-    </>
+    </div>
   );
 }

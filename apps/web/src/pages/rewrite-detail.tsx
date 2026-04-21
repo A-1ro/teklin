@@ -25,29 +25,29 @@ const TONE_STYLES: Record<
   { bg: string; text: string; border: string }
 > = {
   friendly: {
-    bg: "bg-green-900/50",
-    text: "text-green-400",
-    border: "border-green-800",
+    bg: "bg-teal-50",
+    text: "text-teal",
+    border: "border-teal/30",
   },
   professional: {
-    bg: "bg-blue-900/50",
-    text: "text-blue-400",
-    border: "border-blue-800",
+    bg: "bg-plum-50",
+    text: "text-plum",
+    border: "border-plum/30",
   },
   too_casual: {
-    bg: "bg-yellow-900/50",
-    text: "text-yellow-400",
-    border: "border-yellow-800",
+    bg: "bg-mustard-50",
+    text: "text-mustard-fg",
+    border: "border-mustard/30",
   },
   too_formal: {
-    bg: "bg-orange-900/50",
-    text: "text-orange-400",
-    border: "border-orange-800",
+    bg: "bg-coral-50",
+    text: "text-coral-fg",
+    border: "border-coral/30",
   },
   neutral: {
-    bg: "bg-gray-800",
-    text: "text-gray-400",
-    border: "border-gray-700",
+    bg: "bg-paper-2",
+    text: "text-ink-2",
+    border: "border-rule",
   },
 };
 
@@ -123,14 +123,14 @@ export function RewriteDetailPage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
           <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-violet-500"
+            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-plum"
             role="status"
             aria-label="Loading details"
           />
-          <p className="text-sm text-gray-400">Loading...</p>
+          <p className="text-sm text-ink-2">Loading...</p>
         </div>
       </main>
     );
@@ -142,12 +142,12 @@ export function RewriteDetailPage() {
 
   if (error || !detail) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">{error || "Rewrite not found."}</p>
+          <p className="mb-4 text-ink-2">{error || "Rewrite not found."}</p>
           <Link
             to="/rewrite/history"
-            className="inline-block rounded-lg bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-500"
+            className="inline-block rounded-lg bg-plum px-6 py-3 text-sm font-semibold text-paper transition-colors hover:opacity-90"
           >
             Back to History
           </Link>
@@ -259,21 +259,21 @@ export function RewriteDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <header className="mb-8 flex items-center gap-3">
           <Link
             to="/rewrite/history"
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+            className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
             aria-label="Back to history"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-gray-100">Rewrite Detail</h1>
+            <h1 className="text-xl font-bold text-ink">Rewrite Detail</h1>
             <div className="mt-1 flex items-center gap-3">
-              <span className="inline-flex items-center rounded-full border border-gray-700 bg-gray-800 px-2.5 py-0.5 text-xs font-medium text-gray-400">
+              <span className="inline-flex items-center rounded-full border border-rule bg-paper-2 px-2.5 py-0.5 text-xs font-medium text-ink-2">
                 {CONTEXT_LABELS[detail.context]}
               </span>
               {explanation.tone && (
@@ -283,7 +283,7 @@ export function RewriteDetailPage() {
                   {TONE_LABELS[explanation.tone]}
                 </span>
               )}
-              <span className="flex items-center gap-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-xs text-ink-3">
                 <Clock className="h-3 w-3" />
                 {formattedDate} {formattedTime}
               </span>
@@ -294,58 +294,58 @@ export function RewriteDetailPage() {
         {/* Side-by-side / stacked comparison */}
         <div className="mb-6 grid gap-4 md:grid-cols-2">
           {/* Original */}
-          <div className="rounded-2xl border border-gray-800 bg-gray-900 p-5">
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <div className="rounded-[14px] border border-rule bg-paper-2 p-5">
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-3">
               Original
             </h2>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">
               {detail.originalText}
             </p>
           </div>
 
           {/* Rewritten */}
-          <div className="rounded-2xl border border-violet-800/30 bg-violet-950/20 p-5">
+          <div className="rounded-[14px] border border-plum/30 bg-plum-50 p-5">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-plum">
                 Rewritten
               </h2>
               <CopyMarkdownButton text={detail.rewrittenText} />
             </div>
             <MarkdownText
               text={detail.rewrittenText}
-              className="space-y-3 text-sm text-gray-100"
+              className="space-y-3 text-sm text-ink"
             />
           </div>
         </div>
 
         {/* Changes */}
         {explanation.changes.length > 0 && (
-          <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-            <h2 className="mb-4 text-sm font-semibold text-gray-300">
+          <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
+            <h2 className="mb-4 text-sm font-semibold text-ink">
               Changes ({explanation.changes.length})
             </h2>
             <div className="space-y-3">
               {explanation.changes.map((change, index) => (
                 <div
                   key={index}
-                  className="rounded-xl border border-gray-800 p-4"
+                  className="rounded-[14px] border border-rule bg-paper p-4"
                 >
                   <div className="mb-2">
-                    <span className="text-sm text-red-400 line-through">
+                    <span className="text-sm text-coral line-through">
                       {change.original}
                     </span>
-                    <span className="mx-2 text-gray-600">&rarr;</span>
-                    <span className="text-sm font-medium text-green-400">
+                    <span className="mx-2 text-ink-3">&rarr;</span>
+                    <span className="text-sm font-medium text-teal">
                       {change.corrected}
                     </span>
                   </div>
-                  <p className="text-xs leading-relaxed text-gray-500">
+                  <p className="text-xs leading-relaxed text-ink-3">
                     {change.reason}
                   </p>
                   <div className="mt-3">
                     {saveCard?.changeIndex === index ? (
                       saveCard.saved ? (
-                        <p className="text-xs font-medium text-green-400">
+                        <p className="text-xs font-medium text-teal">
                           {saveCard.isExistingCard ? "Phrase Card updated" : "Saved to Phrase Cards"}
                         </p>
                       ) : (
@@ -370,7 +370,7 @@ export function RewriteDetailPage() {
                       <button
                         type="button"
                         onClick={() => openSaveCard(index)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:border-gray-600 hover:text-gray-200"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-3 py-1.5 text-xs font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
                       >
                         <Save className="h-3 w-3" />
                         {findLinkedCard(index) ? "Edit Phrase Card" : "Save to Phrase Card"}
@@ -385,15 +385,15 @@ export function RewriteDetailPage() {
 
         {/* Tips */}
         {explanation.tips.length > 0 && (
-          <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-            <h2 className="mb-3 text-sm font-semibold text-gray-300">Tips</h2>
+          <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
+            <h2 className="mb-3 text-sm font-semibold text-ink">Tips</h2>
             <ul className="space-y-2">
               {explanation.tips.map((tip, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-2 text-sm text-gray-400"
+                  className="flex items-start gap-2 text-sm text-ink-2"
                 >
-                  <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
+                  <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-plum" />
                   {tip}
                 </li>
               ))}
@@ -421,49 +421,49 @@ function SaveCardForm({
   onCancel: () => void;
 }) {
   return (
-    <div className="space-y-3 rounded-lg border border-gray-700 bg-gray-800/50 p-3">
+    <div className="space-y-3 rounded-lg border border-rule bg-paper-2 p-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-gray-400">
+        <p className="text-xs font-medium text-ink-2">
           {saveCard.cardId ? "Edit Phrase Card" : "Save to Phrase Card"}
         </p>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-700 hover:text-gray-300"
+          className="rounded p-1 text-ink-3 transition-colors hover:bg-rule hover:text-ink-2"
           aria-label="Cancel"
         >
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-gray-500">Phrase (English)</label>
+        <label className="mb-1 block text-xs text-ink-3">Phrase (English)</label>
         <input
           type="text"
           value={saveCard.phrase}
           onChange={(e) => onPhraseChange(e.target.value)}
           disabled={saveCard.isSaving}
-          className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
+          className="w-full rounded-lg border border-rule bg-paper px-3 py-2 text-sm text-ink focus:border-plum focus:outline-none"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs text-gray-500">Translation / Note</label>
+        <label className="mb-1 block text-xs text-ink-3">Translation / Note</label>
         <input
           type="text"
           value={saveCard.translation}
           onChange={(e) => onTranslationChange(e.target.value)}
           disabled={saveCard.isSaving}
-          className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-gray-100 focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
+          className="w-full rounded-lg border border-rule bg-paper px-3 py-2 text-sm text-ink focus:border-plum focus:outline-none"
         />
       </div>
       {saveCard.error && (
-        <p className="text-xs text-red-400">{saveCard.error}</p>
+        <p className="text-xs text-coral">{saveCard.error}</p>
       )}
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={onSave}
           disabled={saveCard.isSaving}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-plum px-3 py-2 text-xs font-semibold text-paper transition-colors hover:opacity-90 disabled:opacity-50"
         >
           {saveCard.isSaving ? (
             <>
@@ -481,7 +481,7 @@ function SaveCardForm({
           type="button"
           onClick={onCancel}
           disabled={saveCard.isSaving}
-          className="rounded-lg border border-gray-700 px-3 py-2 text-xs font-medium text-gray-400 transition-colors hover:border-gray-600 hover:text-gray-300"
+          className="rounded-lg border border-rule px-3 py-2 text-xs font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
         >
           Cancel
         </button>

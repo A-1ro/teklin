@@ -47,14 +47,13 @@ export function PlacementGate() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user, location.pathname]);
 
   if (authLoading || hasPlacementResult === null) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+          className="h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
           role="status"
           aria-label="Loading placement status"
         />

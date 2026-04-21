@@ -16,6 +16,7 @@ import { RewriteHistoryPage } from "@/pages/rewrite-history";
 import { RewriteDetailPage } from "@/pages/rewrite-detail";
 import { LessonHistoryPage } from "@/pages/lesson-history";
 import { PlacementGate } from "@/components/auth/placement-gate";
+import { ProductLayout } from "@/components/layout/product-layout";
 
 export function App() {
   return (
@@ -24,17 +25,20 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route element={<PlacementGate />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/lesson" element={<LessonHomePage />} />
+        <Route element={<ProductLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/lesson" element={<LessonHomePage />} />
+          <Route path="/cards" element={<CardsPage />} />
+          <Route path="/rewrite" element={<RewritePage />} />
+        </Route>
+        {/* These pages have their own layouts (back buttons etc.) */}
         <Route path="/lesson/history" element={<LessonHistoryPage />} />
         <Route path="/lesson/:id" element={<LessonPage />} />
-        <Route path="/cards" element={<CardsPage />} />
         <Route path="/cards/review" element={<ReviewPage />} />
         <Route path="/cards/deck/:category" element={<DeckCategoryPage />} />
         <Route path="/placement" element={<PlacementPage />} />
         <Route path="/placement/test" element={<PlacementTestPage />} />
         <Route path="/placement/result" element={<PlacementResultPage />} />
-        <Route path="/rewrite" element={<RewritePage />} />
         <Route path="/rewrite/history" element={<RewriteHistoryPage />} />
         <Route path="/rewrite/history/:id" element={<RewriteDetailPage />} />
       </Route>

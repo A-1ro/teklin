@@ -105,16 +105,16 @@ function AxisIcon({ axis }: { axis: string }) {
   }
 }
 
-function scoreColor(score: number): string {
-  if (score >= 70) return "bg-green-500";
-  if (score >= 40) return "bg-amber-500";
-  return "bg-red-500";
+function scoreBarColor(score: number): string {
+  if (score >= 70) return "bg-teal";
+  if (score >= 40) return "bg-mustard";
+  return "bg-coral";
 }
 
 function scoreBadgeColor(score: number): string {
-  if (score >= 70) return "text-green-400";
-  if (score >= 40) return "text-amber-400";
-  return "text-red-400";
+  if (score >= 70) return "text-teal";
+  if (score >= 40) return "text-mustard-fg";
+  return "text-coral";
 }
 
 export function PlacementResultPage() {
@@ -134,9 +134,9 @@ export function PlacementResultPage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+          className="h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
           role="status"
           aria-label="Loading results"
         />
@@ -150,12 +150,12 @@ export function PlacementResultPage() {
 
   if (error || !result) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">{error || "No results found."}</p>
+          <p className="mb-4 text-ink-2">{error || "No results found."}</p>
           <Link
             to="/placement"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+            className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
           >
             Take the Test
           </Link>
@@ -173,36 +173,36 @@ export function PlacementResultPage() {
   ).sort((a, b) => b[1] - a[1]);
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-100">Teklin</h1>
+          <h1 className="text-xl font-bold text-ink">Teklin</h1>
           <Link
             to="/dashboard"
-            className="rounded-lg px-4 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+            className="rounded-lg px-4 py-2 text-sm text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
           >
             Dashboard
           </Link>
         </header>
 
         {/* Level card */}
-        <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-8 text-center">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">
+        <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-8 text-center">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-3">
             Your Level
           </p>
-          <p className="mb-1 font-mono text-4xl font-bold text-gray-100">
+          <p className="mb-1 font-mono text-4xl font-bold text-ink">
             {result.level}
           </p>
-          <p className="text-lg text-gray-300">{levelLabel.en}</p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="text-lg text-ink-2">{levelLabel.en}</p>
+          <p className="mt-1 text-sm text-ink-3">
             {result.totalQuestions} questions completed
           </p>
         </div>
 
         {/* Score bars */}
-        <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
+        <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-ink-2">
             Skill Scores
           </h2>
           <div className="space-y-4">
@@ -211,7 +211,7 @@ export function PlacementResultPage() {
               return (
                 <div key={axis}>
                   <div className="mb-1.5 flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-sm text-gray-300">
+                    <span className="flex items-center gap-2 text-sm text-ink">
                       <AxisIcon axis={axis} />
                       {label.en}
                     </span>
@@ -221,9 +221,9 @@ export function PlacementResultPage() {
                       {score}
                     </span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-gray-800">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-rule">
                     <div
-                      className={`h-full rounded-full transition-all duration-700 ease-out ${scoreColor(score)}`}
+                      className={`h-full rounded-full transition-all duration-700 ease-out ${scoreBarColor(score)}`}
                       style={{ width: `${Math.min(score, 100)}%` }}
                     />
                   </div>
@@ -235,8 +235,8 @@ export function PlacementResultPage() {
 
         {/* Weaknesses */}
         {result.weaknesses.length > 0 && (
-          <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
+          <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-ink-2">
               Areas to Improve
             </h2>
             <div className="space-y-3">
@@ -246,16 +246,16 @@ export function PlacementResultPage() {
                 return (
                   <div
                     key={axis}
-                    className="flex items-start gap-3 rounded-xl border border-gray-800 bg-gray-950 px-4 py-3"
+                    className="flex items-start gap-3 rounded-[14px] border border-rule bg-paper px-4 py-3"
                   >
-                    <span className="mt-0.5 flex-shrink-0 text-amber-400">
+                    <span className="mt-0.5 flex-shrink-0 text-mustard-fg">
                       <AxisIcon axis={axis} />
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-gray-200">
+                      <p className="text-sm font-semibold text-ink">
                         {label.en}
                       </p>
-                      <p className="text-sm text-gray-400">{advice}</p>
+                      <p className="text-sm text-ink-2">{advice}</p>
                     </div>
                   </div>
                 );
@@ -266,8 +266,8 @@ export function PlacementResultPage() {
 
         {/* Answer review */}
         {result.answers && result.answers.length > 0 && (
-          <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
+          <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-ink-2">
               Answer Review
             </h2>
             <div className="space-y-4">
@@ -288,18 +288,18 @@ export function PlacementResultPage() {
                 return (
                   <div
                     key={review.questionId}
-                    className="rounded-xl border border-gray-800 bg-gray-950 p-4"
+                    className="rounded-[14px] border border-rule bg-paper p-4"
                   >
                     {/* Header: axis + result indicator */}
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-gray-500">
+                      <span className="text-xs font-semibold text-ink-3">
                         {axisMeta.en}
                       </span>
                       {isSkip ? (
-                        <span className="text-xs text-gray-600">スキップ</span>
+                        <span className="text-xs text-ink-3">スキップ</span>
                       ) : review.type === "multiple_choice" ? (
                         <span
-                          className={`text-xs font-bold ${isCorrect ? "text-green-400" : "text-red-400"}`}
+                          className={`text-xs font-bold ${isCorrect ? "text-teal" : "text-coral"}`}
                         >
                           {isCorrect ? "正解" : "不正解"}
                         </span>
@@ -313,16 +313,16 @@ export function PlacementResultPage() {
                     </div>
 
                     {/* Question prompt */}
-                    <p className="mb-3 text-sm text-gray-300">{review.prompt}</p>
+                    <p className="mb-3 text-sm text-ink">{review.prompt}</p>
 
                     {/* MC: your answer + correct answer */}
                     {review.type === "multiple_choice" && !isSkip && (
                       <div className="space-y-1 text-xs">
                         <div className="flex gap-2">
-                          <span className="w-16 flex-shrink-0 text-gray-500">あなた:</span>
+                          <span className="w-16 flex-shrink-0 text-ink-3">あなた:</span>
                           <span
                             className={
-                              isCorrect ? "text-green-400" : "text-red-400"
+                              isCorrect ? "text-teal" : "text-coral"
                             }
                           >
                             {userChoice?.text ?? review.userAnswer}
@@ -330,8 +330,8 @@ export function PlacementResultPage() {
                         </div>
                         {!isCorrect && correctChoice && (
                           <div className="flex gap-2">
-                            <span className="w-16 flex-shrink-0 text-gray-500">正解:</span>
-                            <span className="text-green-400">
+                            <span className="w-16 flex-shrink-0 text-ink-3">正解:</span>
+                            <span className="text-teal">
                               {correctChoice.text}
                             </span>
                           </div>
@@ -343,14 +343,14 @@ export function PlacementResultPage() {
                     {review.type === "free_text" && !isSkip && (
                       <div className="space-y-2 text-xs">
                         <div>
-                          <span className="text-gray-500">あなた: </span>
-                          <span className="font-mono text-gray-300">
+                          <span className="text-ink-3">あなた: </span>
+                          <span className="font-mono text-ink">
                             {review.userAnswer}
                           </span>
                         </div>
                         {review.advice && (
-                          <div className="rounded-lg bg-gray-900 px-3 py-2 text-gray-400">
-                            💡 {review.advice}
+                          <div className="rounded-lg bg-paper-2 px-3 py-2 text-ink-2">
+                            {review.advice}
                           </div>
                         )}
                       </div>
@@ -358,7 +358,7 @@ export function PlacementResultPage() {
 
                     {/* Skip */}
                     {isSkip && (
-                      <p className="text-xs text-gray-600">回答なし</p>
+                      <p className="text-xs text-ink-3">回答なし</p>
                     )}
                   </div>
                 );
@@ -371,13 +371,13 @@ export function PlacementResultPage() {
         <div className="space-y-3">
           <Link
             to="/dashboard"
-            className="block w-full rounded-lg bg-blue-600 px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+            className="block w-full rounded-lg bg-teal px-6 py-3 text-center text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
           >
             Start Learning
           </Link>
           <Link
             to="/placement"
-            className="block w-full rounded-lg border border-gray-700 px-6 py-3 text-center text-sm text-gray-400 transition-colors hover:border-gray-600 hover:text-gray-300"
+            className="block w-full rounded-lg border border-rule px-6 py-3 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
           >
             Retake Test
           </Link>

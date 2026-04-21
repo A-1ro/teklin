@@ -10,13 +10,13 @@ import type {
 } from "@teklin/shared";
 
 const AXIS_META: Record<SkillAxis, { label: string; color: string }> = {
-  reading: { label: "リーディング", color: "bg-blue-500/20 text-blue-400" },
-  writing: { label: "ライティング", color: "bg-green-500/20 text-green-400" },
+  reading: { label: "リーディング", color: "bg-teal-50 text-teal" },
+  writing: { label: "ライティング", color: "bg-teal-50 text-teal" },
   vocabulary: {
     label: "ボキャブラリー",
-    color: "bg-purple-500/20 text-purple-400",
+    color: "bg-plum-50 text-plum",
   },
-  nuance: { label: "ニュアンス", color: "bg-amber-500/20 text-amber-400" },
+  nuance: { label: "ニュアンス", color: "bg-mustard-50 text-mustard-fg" },
 };
 
 export function PlacementTestPage() {
@@ -147,14 +147,14 @@ export function PlacementTestPage() {
 
   if (authLoading || isInitializing) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
           <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
             role="status"
             aria-label="テストを読み込み中"
           />
-          <p className="text-sm text-gray-400">読み込み中...</p>
+          <p className="text-sm text-ink-2">読み込み中...</p>
         </div>
       </main>
     );
@@ -168,14 +168,14 @@ export function PlacementTestPage() {
 
   if (isComplete) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
           <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
             role="status"
             aria-label="結果を保存中"
           />
-          <p className="text-sm text-gray-400">結果を計算中...</p>
+          <p className="text-sm text-ink-2">結果を計算中...</p>
         </div>
       </main>
     );
@@ -185,14 +185,14 @@ export function PlacementTestPage() {
 
   if (!question) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">
+          <p className="mb-4 text-ink-2">
             {error || "問題の読み込みに失敗しました。"}
           </p>
           <button
             onClick={() => navigate("/placement")}
-            className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+            className="rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
           >
             最初に戻る
           </button>
@@ -206,18 +206,18 @@ export function PlacementTestPage() {
   const axisMeta = AXIS_META[question.axis];
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         {/* Progress section */}
         <div className="mb-8">
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-mono text-gray-400">
+            <span className="font-mono text-ink-2">
               {progress.current}/{progress.total}
             </span>
-            <span className="font-mono text-gray-400">{progressPercent}%</span>
+            <span className="font-mono text-ink-2">{progressPercent}%</span>
           </div>
           <div
-            className="h-2 overflow-hidden rounded-full bg-gray-800"
+            className="h-1 overflow-hidden rounded-full bg-paper-2"
             role="progressbar"
             aria-valuenow={progress.current}
             aria-valuemin={0}
@@ -225,14 +225,17 @@ export function PlacementTestPage() {
             aria-label={`Question ${progress.current} of ${progress.total}`}
           >
             <div
-              className="h-full rounded-full bg-blue-600 transition-all duration-500 ease-out"
-              style={{ width: `${progressPercent}%` }}
+              className="h-full rounded-full bg-teal"
+              style={{
+                width: `${progressPercent}%`,
+                transition: "width 500ms ease-out",
+              }}
             />
           </div>
         </div>
 
         {/* Question card */}
-        <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
+        <div className="rounded-[14px] border border-rule bg-paper-2 p-6">
           {/* Axis label */}
           <span
             className={`mb-4 inline-block rounded-full px-3 py-1 text-xs font-semibold ${axisMeta.color}`}
@@ -241,14 +244,14 @@ export function PlacementTestPage() {
           </span>
 
           {/* Prompt */}
-          <p className="mb-6 text-lg leading-relaxed text-gray-100">
+          <p className="mb-6 text-lg leading-relaxed text-ink">
             {question.prompt}
           </p>
 
           {/* Context block */}
           {question.context && (
-            <div className="mb-6 rounded-lg bg-gray-800 p-4">
-              <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-gray-300">
+            <div className="mb-6 rounded-lg bg-paper p-4 border border-rule">
+              <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-ink">
                 {question.context}
               </pre>
             </div>
@@ -257,14 +260,14 @@ export function PlacementTestPage() {
           {/* Writing feedback banner */}
           {feedback?.type === "free_text" && (
             <div
-              className={`mb-6 rounded-xl border px-5 py-4 ${
+              className={`mb-6 rounded-[14px] border px-5 py-4 ${
                 feedback.rating === "Excellent!!!"
-                  ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
+                  ? "border-mustard/40 bg-mustard-50 text-mustard-fg"
                   : feedback.rating === "Good!"
-                    ? "border-green-500/40 bg-green-500/10 text-green-300"
+                    ? "border-teal/40 bg-teal-50 text-teal"
                     : feedback.rating === "OK"
-                      ? "border-blue-500/40 bg-blue-500/10 text-blue-300"
-                      : "border-red-500/40 bg-red-500/10 text-red-400"
+                      ? "border-rule bg-paper text-ink-2"
+                      : "border-coral/40 bg-coral-50 text-coral-fg"
               }`}
             >
               <p className="text-center text-2xl font-bold">{feedback.rating}</p>
@@ -287,21 +290,21 @@ export function PlacementTestPage() {
                 const isWrongSelected =
                   mcFeedback && isSelected && !mcFeedback.isCorrect;
 
-                let borderColor = "border-gray-700 bg-gray-950 hover:border-gray-600";
+                let borderColor = "border-rule bg-paper hover:border-ink-3";
                 if (mcFeedback) {
                   if (isCorrectChoice)
-                    borderColor = "border-green-500 bg-green-950/30";
+                    borderColor = "border-teal bg-teal-50";
                   else if (isWrongSelected)
-                    borderColor = "border-red-500 bg-red-950/30";
-                  else borderColor = "border-gray-700 bg-gray-950";
+                    borderColor = "border-coral bg-coral-50";
+                  else borderColor = "border-rule bg-paper";
                 } else if (isSelected) {
-                  borderColor = "border-blue-500 bg-blue-950/30";
+                  borderColor = "border-teal bg-teal-50";
                 }
 
                 return (
                   <label
                     key={choice.id}
-                    className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors ${
+                    className={`flex items-center gap-3 rounded-[14px] border px-4 py-3 transition-colors ${
                       mcFeedback ? "cursor-default" : "cursor-pointer"
                     } ${borderColor}`}
                   >
@@ -318,21 +321,21 @@ export function PlacementTestPage() {
                       className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                         mcFeedback
                           ? isCorrectChoice
-                            ? "border-green-500 bg-green-500"
+                            ? "border-teal bg-teal"
                             : isWrongSelected
-                              ? "border-red-500 bg-red-500"
-                              : "border-gray-600"
+                              ? "border-coral bg-coral"
+                              : "border-rule"
                           : isSelected
-                            ? "border-blue-500 bg-blue-500"
-                            : "border-gray-600"
+                            ? "border-teal bg-teal"
+                            : "border-rule"
                       }`}
                       aria-hidden="true"
                     >
                       {(isSelected || (mcFeedback && isCorrectChoice)) && (
-                        <span className="h-2 w-2 rounded-full bg-white" />
+                        <span className="h-2 w-2 rounded-full bg-paper" />
                       )}
                     </span>
-                    <span className="text-sm text-gray-200">{choice.text}</span>
+                    <span className="text-sm text-ink">{choice.text}</span>
                   </label>
                 );
               })}
@@ -349,7 +352,7 @@ export function PlacementTestPage() {
                 placeholder="答えを入力..."
                 disabled={isSubmitting || !!feedback}
                 rows={4}
-                className="w-full resize-none rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-gray-100 placeholder-gray-500 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
+                className="w-full resize-none rounded-lg border border-rule bg-paper px-4 py-3 text-sm text-ink placeholder-ink-3 outline-none transition-colors focus:border-teal disabled:opacity-60"
               />
             </div>
           )}
@@ -357,7 +360,7 @@ export function PlacementTestPage() {
           {/* Error */}
           {error && (
             <div
-              className="mb-4 rounded-lg border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-400"
+              className="mb-4 rounded-lg border border-coral/50 bg-coral-50 px-4 py-3 text-sm text-coral-fg"
               role="alert"
             >
               {error}
@@ -368,7 +371,7 @@ export function PlacementTestPage() {
           {feedback ? (
             <button
               onClick={dismissFeedback}
-              className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+              className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
             >
               次へ
             </button>
@@ -376,12 +379,12 @@ export function PlacementTestPage() {
             <button
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+              className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">
                   <span
-                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-paper/30 border-t-paper"
                     aria-hidden="true"
                   />
                   採点中...
@@ -400,7 +403,7 @@ export function PlacementTestPage() {
               <button
                 onClick={handleSkip}
                 disabled={isSubmitting}
-                className="text-sm text-gray-600 underline-offset-2 transition-colors hover:text-gray-400 hover:underline disabled:cursor-not-allowed"
+                className="text-sm text-ink-3 underline-offset-2 transition-colors hover:text-ink-2 hover:underline disabled:cursor-not-allowed"
               >
                 わからない
               </button>

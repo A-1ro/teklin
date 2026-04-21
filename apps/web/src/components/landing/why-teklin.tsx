@@ -1,38 +1,24 @@
-const pillars = [
-  {
-    title: "技術現場に特化",
-    description:
-      "Duolingo の観光英語ではなく、PR・コミット・Issue など、エンジニアが毎日書く文脈だけに焦点を絞る。",
-  },
-  {
-    title: "5分で続けられる",
-    description:
-      "忙しい実務の合間に毎日回せる設計。Warm-up から Wrap-up まで、通勤や休憩時間で完結。",
-  },
-  {
-    title: "適応型パーソナライズ",
-    description:
-      "L1〜L4 の4段階と4軸の弱点分析で、あなたの現在地に最適化されたレッスンのみを届ける。",
-  },
-  {
-    title: "実務ですぐ使える",
-    description:
-      "AI Rewrite は実際の PR 英文を添削。学習が即座にアウトプットに繋がる、閉じた学習ループ。",
-  },
-];
+import { Kicker } from "@/components/ui/kicker";
+import { Display } from "@/components/ui/display";
 
-const comparisons = [
+const columns = [
   {
-    name: "Duolingo",
-    issue: "観光・日常会話が中心で技術文脈が無い",
+    num: "01",
+    title: "技術英語に特化",
+    desc: "PR・コミット・ドキュメントの語彙だけ。無駄なく、まっすぐ。",
+    kickerColor: "var(--color-coral)",
   },
   {
-    name: "Speak",
-    issue: "発話重視でライティング弱。PRコメントは学べない",
+    num: "02",
+    title: "5分で完結",
+    desc: "通勤・休憩の隙間で終わる。毎日つづけられる設計。",
+    kickerColor: "var(--color-coral)",
   },
   {
-    name: "ChatGPT",
-    issue: "添削はできるが、学習履歴・進捗・カリキュラムが無い",
+    num: "03",
+    title: "「なぜ」が返る",
+    desc: "AIが表現の理由まで添える。暗記ではなく理屈で身につく。",
+    kickerColor: "var(--color-coral)",
   },
 ];
 
@@ -40,79 +26,62 @@ export function WhyTeklin() {
   return (
     <section
       id="why"
-      aria-labelledby="why-heading"
-      className="border-t border-gray-200 bg-gray-50 py-20 sm:py-28 dark:border-gray-800 dark:bg-gray-900/40"
+      style={{
+        padding: "96px 28px",
+        background: "var(--color-paper)",
+      }}
     >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-            Why Teklin
-          </p>
-          <h2
-            id="why-heading"
-            className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl dark:text-gray-50"
-          >
-            なぜ Teklin なのか？
-          </h2>
-          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-            既存の英語学習サービスでは埋まらない、エンジニアのための空白地帯。
-          </p>
+      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+        {/* Header */}
+        <div style={{ marginBottom: 48 }}>
+          <Kicker>§ 02 — why teklin</Kicker>
+          <Display as="h2" size={40} style={{ marginTop: 10 }}>
+            既存ツールとの、違い。
+          </Display>
         </div>
 
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {pillars.map((pillar, idx) => (
+        {/* Three-column container */}
+        <div
+          style={{
+            border: "1px solid var(--color-rule)",
+            borderRadius: 14,
+            overflow: "hidden",
+            background: "#fff",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+          }}
+        >
+          {columns.map((col, idx) => (
             <div
-              key={pillar.title}
-              className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-950"
+              key={col.num}
+              style={{
+                padding: "32px 28px",
+                borderRight:
+                  idx < columns.length - 1
+                    ? "1px dashed var(--color-rule)"
+                    : undefined,
+              }}
             >
-              <div
-                aria-hidden="true"
-                className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 font-mono text-sm font-bold text-white"
+              <Kicker color={col.kickerColor}>{col.num}</Kicker>
+              <Display
+                as="h3"
+                size={22}
+                style={{ marginTop: 10, marginBottom: 8 }}
               >
-                {String(idx + 1).padStart(2, "0")}
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                {pillar.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                {pillar.description}
+                {col.title}
+              </Display>
+              <p
+                style={{
+                  fontSize: 14.5,
+                  color: "var(--color-ink-2)",
+                  lineHeight: 1.65,
+                  margin: 0,
+                }}
+              >
+                {col.desc}
               </p>
             </div>
           ))}
-        </div>
-
-        {/* vs ChatGPT / others */}
-        <div className="mt-16 rounded-2xl border border-gray-200 bg-white p-8 dark:border-gray-800 dark:bg-gray-950 sm:p-10">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-50">
-            既存ツールとの違い
-          </h3>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            ChatGPT で添削できるなら Teklin は不要？ ―
-            「継続」と「進捗」が違います。
-          </p>
-          <ul className="mt-6 space-y-4">
-            {comparisons.map((item) => (
-              <li
-                key={item.name}
-                className="flex items-start gap-4 border-l-2 border-gray-200 pl-4 dark:border-gray-800"
-              >
-                <span className="min-w-[90px] text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  {item.name}
-                </span>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {item.issue}
-                </span>
-              </li>
-            ))}
-            <li className="flex items-start gap-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-950/30">
-              <span className="min-w-[90px] text-sm font-semibold text-blue-700 dark:text-blue-300">
-                Teklin
-              </span>
-              <span className="text-sm text-blue-900 dark:text-blue-200">
-                学習履歴・SRS・レベル判定・弱点分析を持ち、毎日5分の継続ループを設計。
-              </span>
-            </li>
-          </ul>
         </div>
       </div>
     </section>

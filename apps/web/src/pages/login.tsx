@@ -6,36 +6,36 @@ export function LoginPage() {
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500" />
+      <main className="flex min-h-screen items-center justify-center bg-paper">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal" />
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-paper px-4">
       <div className="w-full max-w-md">
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-100">
+          <h1 className="text-4xl font-bold tracking-tight text-ink">
             Teklin
           </h1>
-          <p className="mt-3 text-base text-gray-400">
+          <p className="mt-3 text-base text-ink-2">
             コードを書くように、英語を書けるエンジニアになる。
           </p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-ink-3">
             1日5分、AIが伴走する技術英語特化アプリ
           </p>
         </div>
 
-        <div className="rounded-2xl border border-gray-800 bg-gray-900 p-8">
-          <h2 className="mb-6 text-center text-lg font-semibold text-gray-100">
+        <div className="rounded-[14px] border border-rule bg-paper-2 p-8">
+          <h2 className="mb-6 text-center text-lg font-semibold text-ink">
             ログインして始める
           </h2>
 
           <div className="flex flex-col gap-3">
             <a
               href={getLoginUrl("github")}
-              className="flex items-center justify-center gap-3 rounded-lg bg-gray-800 px-5 py-3 text-sm font-semibold text-gray-100 transition-colors hover:bg-gray-700 active:bg-gray-600"
+              className="flex items-center justify-center gap-3 rounded-lg bg-ink px-5 py-3 text-sm font-semibold text-paper transition-colors hover:bg-ink-2 active:bg-ink"
             >
               <GitHubIcon />
               GitHubでログイン
@@ -43,25 +43,25 @@ export function LoginPage() {
 
             <a
               href={getLoginUrl("google")}
-              className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-50 active:bg-gray-100"
+              className="flex items-center justify-center gap-3 rounded-lg border border-rule bg-paper px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-paper-2 active:bg-rule"
             >
               <GoogleIcon />
               Googleでログイン
             </a>
           </div>
 
-          <p className="mt-6 text-center text-xs leading-relaxed text-gray-500">
+          <p className="mt-6 text-center text-xs leading-relaxed text-ink-3">
             ログインすることで、
             <a
               href="/terms"
-              className="underline underline-offset-2 hover:text-gray-400"
+              className="underline underline-offset-2 hover:text-ink-2"
             >
               利用規約
             </a>
             および
             <a
               href="/privacy"
-              className="underline underline-offset-2 hover:text-gray-400"
+              className="underline underline-offset-2 hover:text-ink-2"
             >
               プライバシーポリシー
             </a>
@@ -69,7 +69,7 @@ export function LoginPage() {
           </p>
         </div>
 
-        <p className="mt-6 text-center text-xs text-gray-600">
+        <p className="mt-6 text-center text-xs text-ink-3">
           TOEIC 600+ のエンジニア向け
         </p>
       </div>

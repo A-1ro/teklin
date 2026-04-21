@@ -32,7 +32,7 @@ export function UserMenu() {
     <div className="relative">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors hover:bg-paper-2"
         aria-label="ユーザーメニュー"
       >
         {user.avatarUrl ? (
@@ -44,15 +44,15 @@ export function UserMenu() {
             className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal text-sm font-semibold text-paper">
             {initials}
           </span>
         )}
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <span className="text-sm font-medium text-ink">
           {user.name}
         </span>
         <svg
-          className={`h-4 w-4 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`h-4 w-4 text-ink-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -72,25 +72,25 @@ export function UserMenu() {
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-            <div className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          <div className="absolute right-0 z-20 mt-2 w-56 rounded-[14px] border border-rule bg-paper py-1">
+            <div className="border-b border-rule px-4 py-3">
+              <p className="text-sm font-medium text-ink">
                 {user.name}
               </p>
-              <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+              <p className="truncate text-xs text-ink-3">
                 {user.email}
               </p>
             </div>
             <div className="px-4 py-2">
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ink-3">
                 レベル: {user.level} / {user.domain}
               </p>
             </div>
-            <div className="border-t border-gray-100 dark:border-gray-800">
+            <div className="border-t border-rule">
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-950"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-coral transition-colors hover:bg-coral-50 disabled:opacity-50"
               >
                 {isLoggingOut ? "ログアウト中..." : "ログアウト"}
               </button>

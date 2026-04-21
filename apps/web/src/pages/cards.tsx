@@ -1,30 +1,48 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { Kicker } from "@/components/ui/kicker";
+import { Display } from "@/components/ui/display";
+import { TapeTag } from "@/components/ui/tape-tag";
+import { PaperCard } from "@/components/ui/paper-card";
+import { TkButton } from "@/components/ui/tk-button";
 import type { CardStatsResponse, CardCategory } from "@teklin/shared";
-import {
-  Terminal,
-  GitPullRequest,
-  Code,
-  Hash,
-  AlertCircle,
-  ArrowLeft,
-  RotateCcw,
-  BookOpen,
-  CheckCircle2,
-  GraduationCap,
-} from "lucide-react";
 
 const CATEGORY_META: Record<
   CardCategory,
-  { label: string; icon: React.ComponentType<{ className?: string }> }
+  { label: string; code: string; accent: string; tagColor: "teal" | "plum" | "coral" | "mustard" | "ghost" }
 > = {
-  commit_messages: { label: "コミットメッセージ", icon: Terminal },
-  pr_comments: { label: "PRコメント", icon: GitPullRequest },
-  code_review: { label: "コードレビュー", icon: Code },
-  slack_chat: { label: "Slack / チャット", icon: Hash },
-  github_issues: { label: "GitHub Issues", icon: AlertCircle },
+  commit_messages: {
+    label: "コミットメッセージ",
+    code: "cm",
+    accent: "var(--color-mustard)",
+    tagColor: "mustard",
+  },
+  pr_comments: {
+    label: "PRコメント",
+    code: "pr",
+    accent: "var(--color-teal)",
+    tagColor: "teal",
+  },
+  code_review: {
+    label: "コードレビュー",
+    code: "cr",
+    accent: "var(--color-plum)",
+    tagColor: "plum",
+  },
+  slack_chat: {
+    label: "Slack / チャット",
+    code: "sl",
+    accent: "var(--color-coral)",
+    tagColor: "coral",
+  },
+  github_issues: {
+    label: "GitHub Issues",
+    code: "is",
+    accent: "var(--color-ink)",
+    tagColor: "ghost",
+  },
 };
 
 const CATEGORY_ORDER: CardCategory[] = [
@@ -37,6 +55,7 @@ const CATEGORY_ORDER: CardCategory[] = [
 
 export function CardsPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
+  const navigate = useNavigate();
 
   const [stats, setStats] = useState<CardStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,16 +72,27 @@ export function CardsPage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
-        <div className="text-center">
-          <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-emerald-500"
-            role="status"
-            aria-label="Loading cards"
-          />
-          <p className="text-sm text-gray-400">Loading...</p>
-        </div>
-      </main>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 300,
+        }}
+      >
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            border: "2px solid var(--color-rule)",
+            borderTopColor: "var(--color-teal)",
+            animation: "spin 0.8s linear infinite",
+          }}
+          role="status"
+          aria-label="Loading cards"
+        />
+      </div>
     );
   }
 
@@ -72,19 +102,23 @@ export function CardsPage() {
 
   if (error || !stats) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
-        <div className="text-center">
-          <p className="mb-4 text-gray-400">
-            {error || "カード情報がありません。"}
-          </p>
-          <Link
-            to="/dashboard"
-            className="inline-block rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
-          >
-            ダッシュボードに戻る
-          </Link>
-        </div>
-      </main>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 300,
+          gap: 16,
+        }}
+      >
+        <p style={{ color: "var(--color-ink-2)", fontSize: 14 }}>
+          {error ?? "カード情報がありません。"}
+        </p>
+        <TkButton variant="teal" onClick={() => navigate("/dashboard")}>
+          ダッシュボードに戻る
+        </TkButton>
+      </div>
     );
   }
 
@@ -92,187 +126,351 @@ export function CardsPage() {
     stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0;
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
-      <div className="mx-auto max-w-2xl">
-        {/* Header */}
-        <header className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/dashboard"
-              className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
-              aria-label="ダッシュボードに戻る"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <h1 className="text-xl font-bold text-gray-100">フレーズカード</h1>
-          </div>
-        </header>
+    <div>
+      {/* Header block */}
+      <div style={{ marginBottom: 24 }}>
+        <Kicker color="var(--color-teal)">§ phrase cards</Kicker>
+        <Display size={34} style={{ marginTop: 8 }}>
+          Phrase Cards.
+        </Display>
+        <p
+          style={{
+            fontSize: 14.5,
+            color: "var(--color-ink-2)",
+            margin: "8px 0 0",
+          }}
+        >
+          技術現場で即つかえるフレーズ。カテゴリ別に引き出せる。
+        </p>
+      </div>
 
-        {/* Today's Review CTA */}
-        {stats.dueToday > 0 ? (
-          <Link
-            to="/cards/review"
-            className="mb-6 block rounded-2xl border border-emerald-800/50 bg-emerald-950/30 p-6 transition-colors hover:border-emerald-700/50 hover:bg-emerald-950/40"
+      {/* Today's review CTA */}
+      {stats.dueToday > 0 ? (
+        <PaperCard
+          accent="var(--color-teal)"
+          hoverable
+          onClick={() => navigate("/cards/review")}
+          style={{ padding: "20px 24px", marginBottom: 24 }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+            }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20">
-                  <RotateCcw className="h-6 w-6 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-base font-semibold text-gray-100">
-                    今日の復習
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    <span className="font-mono font-semibold text-emerald-400">
-                      {stats.dueToday}
-                    </span>{" "}
-                    枚のカードが待っています
-                  </p>
-                </div>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 6,
+                }}
+              >
+                <TapeTag color="teal">today</TapeTag>
+                <Kicker color="var(--color-ink-3)">due for review</Kicker>
               </div>
-              <span className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500">
-                復習を始める
-              </span>
+              <p
+                style={{
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: "var(--color-ink)",
+                  margin: "0 0 4px",
+                }}
+              >
+                今日の復習
+              </p>
+              <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontWeight: 700,
+                    color: "var(--color-teal-dark)",
+                  }}
+                >
+                  {stats.dueToday}
+                </span>{" "}
+                枚のカードが待っています
+              </p>
             </div>
-          </Link>
-        ) : (
-          <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-800">
-                <CheckCircle2 className="h-6 w-6 text-gray-500" />
-              </div>
-              <div>
-                <p className="text-base font-semibold text-gray-100">
-                  今日の復習は完了
-                </p>
-                <p className="text-sm text-gray-400">
-                  お疲れ様でした！明日またチェックしてください。
-                </p>
-              </div>
+            <TkButton variant="teal" size="sm" kicker="→">
+              復習を始める
+            </TkButton>
+          </div>
+        </PaperCard>
+      ) : (
+        <PaperCard style={{ padding: "20px 24px", marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <TapeTag color="ghost">today</TapeTag>
+            <div>
+              <p
+                style={{
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: "var(--color-ink)",
+                  margin: "0 0 2px",
+                }}
+              >
+                今日の復習は完了
+              </p>
+              <p style={{ fontSize: 13, color: "var(--color-ink-2)", margin: 0 }}>
+                お疲れ様でした！明日またチェックしてください。
+              </p>
             </div>
           </div>
-        )}
+        </PaperCard>
+      )}
 
-        {/* Overall Stats */}
-        <div className="mb-6 grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5">
-              <GraduationCap className="h-4 w-4 text-emerald-400" />
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                習得済み
-              </p>
-            </div>
-            <p className="mt-1 font-mono text-xl font-bold text-emerald-400">
+      {/* Overall stats */}
+      <PaperCard style={{ padding: 0, marginBottom: 24 }}>
+        <div
+          style={{
+            padding: "14px 18px",
+            borderBottom: "1px dashed var(--color-rule)",
+          }}
+        >
+          <Kicker color="var(--color-ink-3)">overall stats</Kicker>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+          <div
+            style={{
+              padding: "16px 18px",
+              borderRight: "1px dashed var(--color-rule)",
+            }}
+          >
+            <Kicker color="var(--color-teal)">mastered</Kicker>
+            <div
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 26,
+                fontWeight: 700,
+                color: "var(--color-teal-dark)",
+                margin: "4px 0 2px",
+              }}
+            >
               {stats.mastered}
-            </p>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5">
-              <BookOpen className="h-4 w-4 text-amber-400" />
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                学習中
-              </p>
             </div>
-            <p className="mt-1 font-mono text-xl font-bold text-amber-400">
+            <div style={{ fontSize: 12, color: "var(--color-ink-3)" }}>
+              習得済み
+            </div>
+          </div>
+          <div
+            style={{
+              padding: "16px 18px",
+              borderRight: "1px dashed var(--color-rule)",
+            }}
+          >
+            <Kicker color="var(--color-mustard)">learning</Kicker>
+            <div
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 26,
+                fontWeight: 700,
+                color: "var(--color-mustard-fg)",
+                margin: "4px 0 2px",
+              }}
+            >
               {stats.learning}
-            </p>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-4 text-center">
-            <div className="flex items-center justify-center gap-1.5">
-              <div className="h-4 w-4 rounded-full border-2 border-gray-600" />
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                未学習
-              </p>
             </div>
-            <p className="mt-1 font-mono text-xl font-bold text-gray-400">
+            <div style={{ fontSize: 12, color: "var(--color-ink-3)" }}>
+              学習中
+            </div>
+          </div>
+          <div style={{ padding: "16px 18px" }}>
+            <Kicker color="var(--color-ink-3)">unseen</Kicker>
+            <div
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 26,
+                fontWeight: 700,
+                color: "var(--color-ink-2)",
+                margin: "4px 0 2px",
+              }}
+            >
               {stats.unseen}
-            </p>
+            </div>
+            <div style={{ fontSize: 12, color: "var(--color-ink-3)" }}>
+              未学習
+            </div>
           </div>
         </div>
-
-        {/* Overall Progress Bar */}
-        <div className="mb-8">
-          <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="text-gray-400">全体の進捗</span>
-            <span className="font-mono text-gray-300">{totalProgress}%</span>
+        {/* Overall progress bar */}
+        <div
+          style={{
+            padding: "14px 18px",
+            borderTop: "1px dashed var(--color-rule)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              marginBottom: 6,
+            }}
+          >
+            <span style={{ fontSize: 13, color: "var(--color-ink-2)" }}>
+              全体の進捗
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 13,
+                color: "var(--color-ink-2)",
+              }}
+            >
+              {totalProgress}%
+            </span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-gray-800">
+          <div
+            style={{
+              height: 6,
+              background: "var(--color-paper-2)",
+              borderRadius: 999,
+              overflow: "hidden",
+            }}
+          >
             <div
-              className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-              style={{ width: `${totalProgress}%` }}
+              style={{
+                height: "100%",
+                width: `${totalProgress}%`,
+                background: "var(--color-teal)",
+                borderRadius: 999,
+                transition: "width 500ms ease",
+              }}
             />
           </div>
         </div>
+      </PaperCard>
 
-        {/* Category Cards Grid */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-gray-500">
-            カテゴリ
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {CATEGORY_ORDER.map((category) => {
-              const meta = CATEGORY_META[category];
-              const catStats = stats.byCategory[category];
-              const Icon = meta.icon;
-              const catTotal = catStats?.total ?? 0;
-              const catMastered = catStats?.mastered ?? 0;
-              const catLearning = catStats?.learning ?? 0;
-              const catUnseen = catStats?.unseen ?? 0;
-              const catProgress =
-                catTotal > 0
-                  ? Math.round((catMastered / catTotal) * 100)
-                  : 0;
+      {/* Category cards grid */}
+      <div>
+        <div style={{ marginBottom: 12 }}>
+          <Kicker color="var(--color-ink-3)">categories</Kicker>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 16,
+          }}
+        >
+          {CATEGORY_ORDER.map((category) => {
+            const meta = CATEGORY_META[category];
+            const catStats = stats.byCategory[category];
+            const catTotal = catStats?.total ?? 0;
+            const catMastered = catStats?.mastered ?? 0;
+            const catLearning = catStats?.learning ?? 0;
+            const catUnseen = catStats?.unseen ?? 0;
+            const catProgress =
+              catTotal > 0
+                ? Math.round((catMastered / catTotal) * 100)
+                : 0;
 
-              return (
-                <Link
-                  key={category}
-                  to={`/cards/deck/${category}`}
-                  className="group rounded-xl border border-gray-800 bg-gray-900 p-4 transition-all duration-300 hover:border-gray-700 hover:bg-gray-800/80"
+            return (
+              <Link
+                key={category}
+                to={`/cards/deck/${category}`}
+                style={{ textDecoration: "none", display: "block" }}
+              >
+                <PaperCard
+                  accent={meta.accent}
+                  hoverable
+                  style={{ padding: "18px 20px" }}
                 >
-                  <div className="mb-3 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-800 transition-colors group-hover:bg-gray-700">
-                      <Icon className="h-5 w-5 text-gray-300" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-100">
-                        {meta.label}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {catTotal} フレーズ
-                      </p>
-                    </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <TapeTag color={meta.tagColor}>{meta.code}</TapeTag>
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: "var(--color-ink)",
+                      }}
+                    >
+                      {meta.label}
+                    </span>
                   </div>
 
-                  {/* Category progress bar */}
-                  <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-gray-800">
+                  <div
+                    style={{
+                      height: 5,
+                      background: "var(--color-paper-2)",
+                      borderRadius: 999,
+                      overflow: "hidden",
+                      marginBottom: 10,
+                    }}
+                  >
                     <div
-                      className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                      style={{ width: `${catProgress}%` }}
+                      style={{
+                        height: "100%",
+                        width: `${catProgress}%`,
+                        background: meta.accent,
+                        borderRadius: 999,
+                        transition: "width 500ms ease",
+                      }}
                     />
                   </div>
 
-                  {/* Category stats */}
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                      {catMastered}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
+                        color: "var(--color-teal-dark)",
+                      }}
+                    >
+                      ● {catMastered}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
-                      {catLearning}
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
+                        color: "var(--color-mustard-fg)",
+                      }}
+                    >
+                      ● {catLearning}
                     </span>
-                    <span className="flex items-center gap-1">
-                      <span className="inline-block h-2 w-2 rounded-full bg-gray-600" />
-                      {catUnseen}
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
+                        color: "var(--color-ink-3)",
+                      }}
+                    >
+                      ● {catUnseen}
+                    </span>
+                    <span
+                      style={{
+                        marginLeft: "auto",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
+                        color: "var(--color-ink-3)",
+                      }}
+                    >
+                      {catTotal} total
                     </span>
                   </div>
-                </Link>
-              );
-            })}
-          </div>
+                </PaperCard>
+              </Link>
+            );
+          })}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -42,18 +42,18 @@ function getSrsStatus(card: PhraseCardWithSrs): {
   if (!card.srs) {
     return {
       label: "未学習",
-      color: "bg-gray-700/50 text-gray-400",
+      color: "bg-rule text-ink-3",
     };
   }
   if (card.srs.interval >= 21) {
     return {
       label: "習得済み",
-      color: "bg-emerald-500/20 text-emerald-400",
+      color: "bg-teal-50 text-teal",
     };
   }
   return {
     label: "学習中",
-    color: "bg-amber-500/20 text-amber-400",
+    color: "bg-mustard-50 text-mustard-fg",
   };
 }
 
@@ -95,14 +95,14 @@ export function DeckCategoryPage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
           <div
-            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-emerald-500"
+            className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
             role="status"
             aria-label="Loading deck"
           />
-          <p className="text-sm text-gray-400">Loading...</p>
+          <p className="text-sm text-ink-2">Loading...</p>
         </div>
       </main>
     );
@@ -114,14 +114,14 @@ export function DeckCategoryPage() {
 
   if (error || !data) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">
+          <p className="mb-4 text-ink-2">
             {error || "カード情報がありません。"}
           </p>
           <Link
             to="/cards"
-            className="inline-block rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+            className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
           >
             カード一覧に戻る
           </Link>
@@ -146,35 +146,35 @@ export function DeckCategoryPage() {
   });
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <header className="mb-6 flex items-center gap-3">
           <Link
             to="/cards"
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+            className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
             aria-label="カード一覧に戻る"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-800">
-              <Icon className="h-5 w-5 text-gray-300" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-paper-2 border border-rule">
+              <Icon className="h-5 w-5 text-ink-2" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-100">{label}</h1>
-              <p className="text-xs text-gray-500">{data.total} フレーズ</p>
+              <h1 className="text-lg font-bold text-ink">{label}</h1>
+              <p className="text-xs text-ink-3">{data.total} フレーズ</p>
             </div>
           </div>
         </header>
 
         {/* Card list */}
         {sortedCards.length === 0 ? (
-          <div className="rounded-2xl border border-gray-800 bg-gray-900 p-8 text-center">
-            <p className="mb-2 text-gray-300">
+          <div className="rounded-[14px] border border-rule bg-paper-2 p-8 text-center">
+            <p className="mb-2 text-ink">
               このカテゴリにはまだカードがありません
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-ink-3">
               レッスンを進めるとカードが追加されます。
             </p>
           </div>
@@ -187,10 +187,10 @@ export function DeckCategoryPage() {
               return (
                 <div
                   key={card.id}
-                  className="rounded-xl border border-gray-800 bg-gray-900 p-4 transition-colors hover:border-gray-700"
+                  className="rounded-[14px] border border-rule bg-paper-2 p-4 transition-colors hover:border-ink-3"
                 >
                   <div className="mb-2 flex items-start justify-between gap-3">
-                    <p className="font-mono text-sm font-medium leading-relaxed text-gray-100">
+                    <p className="font-mono text-sm font-medium leading-relaxed text-ink">
                       {card.phrase}
                     </p>
                     <span
@@ -199,27 +199,27 @@ export function DeckCategoryPage() {
                       {status.label}
                     </span>
                   </div>
-                  <p className="mb-3 text-sm text-gray-400">
+                  <p className="mb-3 text-sm text-ink-2">
                     {card.translation}
                   </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-ink-3">
                     <span className="flex items-center gap-2">
                       <span
                         className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${
                           card.level === "L1"
-                            ? "bg-green-500/20 text-green-400"
+                            ? "bg-teal-50 text-teal"
                             : card.level === "L2"
-                              ? "bg-blue-500/20 text-blue-400"
+                              ? "bg-teal-50 text-teal"
                               : card.level === "L3"
-                                ? "bg-purple-500/20 text-purple-400"
-                                : "bg-amber-500/20 text-amber-400"
+                                ? "bg-plum-50 text-plum"
+                                : "bg-mustard-50 text-mustard-fg"
                         }`}
                       >
                         {card.level}
                       </span>
                     </span>
                     {card.srs && (
-                      <span className="text-gray-500">
+                      <span className="text-ink-3">
                         次の復習: {nextReview}
                       </span>
                     )}

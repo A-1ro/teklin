@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { CopyMarkdownButton } from "@/components/copy-markdown-button";
-import { MarkdownText } from "@/components/markdown-text";
+import { Kicker } from "@/components/ui/kicker";
+import { Display } from "@/components/ui/display";
+import { TapeTag } from "@/components/ui/tape-tag";
+import { PaperCard } from "@/components/ui/paper-card";
+import { TkButton } from "@/components/ui/tk-button";
 import type {
   RewriteContext,
   RewriteResult,
@@ -11,16 +15,6 @@ import type {
   RewriteRemainingResponse,
   RewriteTone,
 } from "@teklin/shared";
-import {
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Loader2,
-  Save,
-  Sparkles,
-  X,
-} from "lucide-react";
 
 const CONTEXT_OPTIONS: { value: RewriteContext; label: string }[] = [
   { value: "commit_message", label: "Commit Message" },
@@ -36,37 +30,6 @@ const CONTEXT_LABELS: Record<RewriteContext, string> = {
   github_issue: "GitHub Issue",
   slack: "Slack Message",
   general: "General",
-};
-
-const TONE_STYLES: Record<
-  RewriteTone,
-  { bg: string; text: string; border: string }
-> = {
-  friendly: {
-    bg: "bg-green-900/50",
-    text: "text-green-400",
-    border: "border-green-800",
-  },
-  professional: {
-    bg: "bg-blue-900/50",
-    text: "text-blue-400",
-    border: "border-blue-800",
-  },
-  too_casual: {
-    bg: "bg-yellow-900/50",
-    text: "text-yellow-400",
-    border: "border-yellow-800",
-  },
-  too_formal: {
-    bg: "bg-orange-900/50",
-    text: "text-orange-400",
-    border: "border-orange-800",
-  },
-  neutral: {
-    bg: "bg-gray-800",
-    text: "text-gray-400",
-    border: "border-gray-700",
-  },
 };
 
 const TONE_LABELS: Record<RewriteTone, string> = {
@@ -228,13 +191,27 @@ export function RewritePage() {
 
   if (authLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 300,
+        }}
+      >
         <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-violet-500"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            border: "2px solid var(--color-rule)",
+            borderTopColor: "var(--color-plum)",
+            animation: "spin 0.8s linear infinite",
+          }}
           role="status"
           aria-label="Loading"
         />
-      </main>
+      </div>
     );
   }
 
@@ -246,288 +223,504 @@ export function RewritePage() {
   const isOutOfRewrites = remaining !== null && remaining.remaining <= 0;
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
-      <div className="mx-auto max-w-2xl">
-        {/* Header */}
-        <header className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/dashboard"
-              className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
-              aria-label="Back to dashboard"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <h1 className="text-xl font-bold text-gray-100">AI Rewrite</h1>
-          </div>
+    <div>
+      {/* Header block */}
+      <div style={{ marginBottom: 24 }}>
+        <Kicker color="var(--color-plum)">§ ai rewrite</Kicker>
+        <Display size={34} style={{ marginTop: 8 }}>
+          AI Rewrite.
+        </Display>
+        <p
+          style={{
+            fontSize: 14.5,
+            color: "var(--color-ink-2)",
+            margin: "8px 0 0",
+          }}
+        >
+          日本語まじりの英語を、文脈に合わせて書き直す。理由つきで。
+        </p>
+      </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              to="/rewrite/history"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-gray-700 hover:bg-gray-800 hover:text-gray-100"
-            >
-              <Clock className="h-3.5 w-3.5" />
-              History
-            </Link>
-
-            {/* Remaining badge */}
-            {remainingLoading ? (
-              <div className="h-6 w-20 animate-pulse rounded-full bg-gray-800" />
-            ) : remaining ? (
-              <div className="flex items-center gap-1.5 rounded-full border border-gray-800 bg-gray-900 px-3 py-1">
-                <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-                <span className="font-mono text-xs font-medium text-gray-300">
-                  {remaining.remaining}
-                </span>
-                <span className="text-xs text-gray-500">
-                  / {remaining.limit} left
-                </span>
-              </div>
-            ) : null}
-          </div>
-        </header>
-
-        {/* Input Section */}
-        <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
-          <label htmlFor="rewrite-input" className="sr-only">
-            Input text to rewrite
-          </label>
-          <textarea
-            id="rewrite-input"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Write your technical English here..."
-            rows={5}
-            disabled={isSubmitting}
-            className="w-full resize-none rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm leading-relaxed text-gray-100 placeholder-gray-500 transition-colors focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600 disabled:opacity-50"
-          />
-
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {/* Context Selector */}
-            <div className="flex items-center gap-2">
-              <label
-                htmlFor="context-select"
-                className="text-xs font-medium text-gray-500"
-              >
-                Context:
-              </label>
-              <select
-                id="context-select"
-                value={context}
-                onChange={(e) => setContext(e.target.value as RewriteContext)}
-                disabled={isSubmitting}
-                className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-gray-300 transition-colors focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600 disabled:opacity-50"
-              >
-                {CONTEXT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canSubmit || isOutOfRewrites}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-500 active:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Rewriting...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  Rewrite
-                </>
-              )}
-            </button>
-          </div>
-
+      {/* Remaining info */}
+      {!remainingLoading && remaining && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 10,
+          }}
+        >
+          <TapeTag color={remaining.remaining > 0 ? "ghost" : "coral"}>
+            {remaining.remaining} / {remaining.limit} remaining
+          </TapeTag>
           {isOutOfRewrites && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-yellow-400">
-              <Clock className="h-3.5 w-3.5" />
-              Daily limit reached. Resets at{" "}
-              {remaining
-                ? new Date(remaining.resetsAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "midnight"}
-              .
-            </p>
+            <span style={{ fontSize: 12, color: "var(--color-ink-3)" }}>
+              リセット:{" "}
+              {new Date(remaining.resetsAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
           )}
+        </div>
+      )}
 
-          <p className="mt-2 text-right text-xs text-gray-600">
-            Ctrl+Enter to submit
-          </p>
+      {/* History link */}
+      <div style={{ marginBottom: 16, display: "flex", justifyContent: "flex-end" }}>
+        <Link
+          to="/rewrite/history"
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            color: "var(--color-ink-3)",
+            textDecoration: "none",
+            letterSpacing: "0.04em",
+          }}
+        >
+          § history →
+        </Link>
+      </div>
+
+      {/* Input card */}
+      <PaperCard style={{ padding: "22px 24px", marginBottom: 16 }}>
+        {/* Context row */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: 12,
+          }}
+        >
+          <Kicker color="var(--color-ink-3)">ctx</Kicker>
+          <select
+            id="context-select"
+            value={context}
+            onChange={(e) => setContext(e.target.value as RewriteContext)}
+            disabled={isSubmitting}
+            style={{
+              padding: "6px 12px",
+              border: "1.5px solid var(--color-rule)",
+              borderRadius: 999,
+              fontSize: 13,
+              background: "#fff",
+              color: "var(--color-ink)",
+              fontFamily: "inherit",
+              fontWeight: 500,
+              cursor: "pointer",
+              outline: "none",
+            }}
+          >
+            {CONTEXT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* Error State */}
-        {error && (
-          <div className="mb-6 rounded-xl border border-red-800/50 bg-red-950/30 p-4">
-            <p className="text-sm text-red-400">{error}</p>
-          </div>
-        )}
+        {/* Textarea */}
+        <label htmlFor="rewrite-input" className="sr-only">
+          書き直したいテキスト
+        </label>
+        <textarea
+          id="rewrite-input"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Write your technical English here..."
+          rows={3}
+          disabled={isSubmitting}
+          style={{
+            width: "100%",
+            padding: "14px 16px",
+            border: "1px solid var(--color-rule)",
+            borderRadius: 12,
+            fontFamily: "var(--font-mono)",
+            fontSize: 15,
+            lineHeight: 1.6,
+            resize: "vertical",
+            background: "#fff",
+            color: "var(--color-ink)",
+            boxSizing: "border-box",
+            outline: "none",
+          }}
+        />
 
-        {/* Loading State */}
-        {isSubmitting && (
-          <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-8">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
-              <p className="text-sm text-gray-400">
-                Analyzing and rewriting your text...
-              </p>
-            </div>
-          </div>
-        )}
+        {/* Bottom row */}
+        <div
+          style={{
+            marginTop: 14,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              color: "var(--color-ink-3)",
+            }}
+          >
+            {text.length} chars · ctrl+enter
+          </span>
+          <TkButton
+            variant="teal"
+            kicker={isSubmitting ? "…" : "→"}
+            disabled={!canSubmit || isOutOfRewrites}
+            onClick={handleSubmit}
+          >
+            {isSubmitting ? "書き直し中" : "Rewrite"}
+          </TkButton>
+        </div>
+      </PaperCard>
 
-        {/* Result Section */}
-        {result && !isSubmitting && (
-          <div className="space-y-4">
-            {/* Rewritten Text */}
-            <div className="rounded-2xl border border-violet-800/30 bg-violet-950/20 p-6">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-300">
-                  Rewritten
-                </h2>
-                <div className="flex items-center gap-2">
-                  <CopyMarkdownButton text={result.rewritten} />
-                  <ContextBadge context={context} />
-                  <ToneBadge tone={result.tone} />
-                </div>
+      {/* Error state */}
+      {error && (
+        <PaperCard
+          accent="var(--color-coral)"
+          style={{ padding: "14px 18px", marginBottom: 16 }}
+        >
+          <p style={{ fontSize: 14, color: "var(--color-coral-fg)", margin: 0 }}>
+            {error}
+          </p>
+        </PaperCard>
+      )}
+
+      {/* Loading state */}
+      {isSubmitting && (
+        <PaperCard style={{ padding: "32px 24px", marginBottom: 16 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                border: "2px solid var(--color-rule)",
+                borderTopColor: "var(--color-plum)",
+                animation: "spin 0.8s linear infinite",
+              }}
+            />
+            <p
+              style={{
+                fontSize: 14,
+                color: "var(--color-ink-2)",
+                margin: 0,
+              }}
+            >
+              Analyzing and rewriting your text...
+            </p>
+          </div>
+        </PaperCard>
+      )}
+
+      {/* Result section */}
+      {result && !isSubmitting && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Main result card */}
+          <PaperCard style={{ padding: "26px 28px" }}>
+            {/* Tags row */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 18,
+              }}
+            >
+              <TapeTag color="plum">
+                tone · {TONE_LABELS[result.tone].toLowerCase()}
+              </TapeTag>
+              <TapeTag color="ghost">
+                {CONTEXT_LABELS[context].toLowerCase()}
+              </TapeTag>
+              <div style={{ marginLeft: "auto" }}>
+                <CopyMarkdownButton text={result.rewritten} />
               </div>
-              <MarkdownText
-                text={result.rewritten}
-                className="space-y-3 text-sm text-gray-100"
-              />
             </div>
 
-            {/* Changes */}
-            {result.changes.length > 0 && (
-              <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
-                <h2 className="mb-4 text-sm font-semibold text-gray-300">
-                  Changes ({result.changes.length})
-                </h2>
-                <div className="space-y-2">
-                  {result.changes.map((change, index) => (
-                    <div
-                      key={index}
-                      className="rounded-xl border border-gray-800"
+            {/* Diff block */}
+            <div
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 14,
+                lineHeight: 1.75,
+                background: "var(--color-paper)",
+                border: "1px solid var(--color-rule)",
+                borderRadius: 12,
+                padding: "16px 20px",
+                marginBottom: 20,
+              }}
+            >
+              <div>
+                <span
+                  style={{
+                    color: "var(--color-ink-3)",
+                    fontWeight: 400,
+                    marginRight: 8,
+                  }}
+                >
+                  -
+                </span>
+                <span
+                  style={{
+                    color: "var(--color-coral)",
+                    textDecoration: "line-through",
+                  }}
+                >
+                  {text}
+                </span>
+              </div>
+              <div>
+                <span
+                  style={{
+                    color: "var(--color-ink-3)",
+                    fontWeight: 400,
+                    marginRight: 8,
+                  }}
+                >
+                  +
+                </span>
+                <span
+                  style={{
+                    color: "var(--color-teal-dark)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {result.rewritten}
+                </span>
+              </div>
+            </div>
+
+          </PaperCard>
+
+          {/* Changes card */}
+          {result.changes.length > 0 && (
+            <PaperCard style={{ padding: "22px 24px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 16,
+                }}
+              >
+                <TapeTag color="ghost">changes</TapeTag>
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    color: "var(--color-ink-3)",
+                  }}
+                >
+                  {result.changes.length} items
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
+              >
+                {result.changes.map((change, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      border: "1px solid var(--color-rule)",
+                      borderRadius: 10,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleChange(index)}
+                      aria-expanded={expandedChanges.has(index)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        width: "100%",
+                        padding: "10px 14px",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        gap: 12,
+                      }}
                     >
-                      <button
-                        type="button"
-                        onClick={() => toggleChange(index)}
-                        className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-gray-800/50"
-                        aria-expanded={expandedChanges.has(index)}
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            color: "var(--color-coral)",
+                            textDecoration: "line-through",
+                          }}
+                        >
+                          {change.original}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            color: "var(--color-ink-3)",
+                            margin: "0 6px",
+                          }}
+                        >
+                          →
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: "var(--color-teal-dark)",
+                          }}
+                        >
+                          {change.corrected}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 11,
+                          color: "var(--color-ink-3)",
+                          flexShrink: 0,
+                        }}
                       >
-                        <div className="mr-3 min-w-0 flex-1">
-                          <span className="text-sm text-red-400 line-through">
-                            {change.original}
-                          </span>
-                          <span className="mx-2 text-gray-600">&rarr;</span>
-                          <span className="text-sm font-medium text-green-400">
-                            {change.corrected}
-                          </span>
-                        </div>
-                        {expandedChanges.has(index) ? (
-                          <ChevronUp className="h-4 w-4 shrink-0 text-gray-500" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 shrink-0 text-gray-500" />
-                        )}
-                      </button>
-                      {expandedChanges.has(index) && (
-                        <div className="border-t border-gray-800 px-4 py-3">
-                          <p className="mb-3 text-sm leading-relaxed text-gray-400">
-                            {change.reason}
-                          </p>
-                          {/* Save to Phrase Card button */}
-                          {saveCard?.changeIndex === index ? (
-                            saveCard.saved ? (
-                              <p className="text-xs font-medium text-green-400">
-                                Saved to Phrase Cards
-                              </p>
-                            ) : (
-                              <SaveCardForm
-                                saveCard={saveCard}
-                                onPhraseChange={(phrase) =>
-                                  setSaveCard((prev) =>
-                                    prev ? { ...prev, phrase } : null
-                                  )
-                                }
-                                onTranslationChange={(translation) =>
-                                  setSaveCard((prev) =>
-                                    prev ? { ...prev, translation } : null
-                                  )
-                                }
-                                onSave={handleSaveCard}
-                                onCancel={() => setSaveCard(null)}
-                              />
-                            )
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => openSaveCard(index)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:border-gray-600 hover:text-gray-200"
+                        {expandedChanges.has(index) ? "▲" : "▼"}
+                      </span>
+                    </button>
+                    {expandedChanges.has(index) && (
+                      <div
+                        style={{
+                          borderTop: "1px solid var(--color-rule)",
+                          padding: "12px 14px",
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontSize: 13,
+                            lineHeight: 1.65,
+                            color: "var(--color-ink-2)",
+                            margin: "0 0 12px",
+                          }}
+                        >
+                          {change.reason}
+                        </p>
+                        {/* Save to phrase card */}
+                        {saveCard?.changeIndex === index ? (
+                          saveCard.saved ? (
+                            <span
+                              style={{
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 11,
+                                color: "var(--color-teal-dark)",
+                              }}
                             >
-                              <Save className="h-3 w-3" />
-                              Save to Phrase Card
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                              ✓ Saved to Phrase Cards
+                            </span>
+                          ) : (
+                            <SaveCardForm
+                              saveCard={saveCard}
+                              onPhraseChange={(phrase) =>
+                                setSaveCard((prev) =>
+                                  prev ? { ...prev, phrase } : null
+                                )
+                              }
+                              onTranslationChange={(translation) =>
+                                setSaveCard((prev) =>
+                                  prev ? { ...prev, translation } : null
+                                )
+                              }
+                              onSave={handleSaveCard}
+                              onCancel={() => setSaveCard(null)}
+                            />
+                          )
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openSaveCard(index)}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              padding: "5px 12px",
+                              border: "1px solid var(--color-rule)",
+                              borderRadius: 999,
+                              background: "none",
+                              cursor: "pointer",
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: "var(--color-ink-2)",
+                              letterSpacing: "0.04em",
+                            }}
+                          >
+                            + save to card
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
+            </PaperCard>
+          )}
 
-            {/* Tips */}
-            {result.tips.length > 0 && (
-              <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
-                <h2 className="mb-3 text-sm font-semibold text-gray-300">
-                  Tips
-                </h2>
-                <ul className="space-y-2">
-                  {result.tips.map((tip, index) => (
-                    <li
-                      key={index}
-                      className="flex items-start gap-2 text-sm text-gray-400"
+          {/* Tips card */}
+          {result.tips.length > 0 && (
+            <PaperCard style={{ padding: "22px 24px" }}>
+              <div style={{ marginBottom: 12 }}>
+                <TapeTag color="mustard">tips</TapeTag>
+              </div>
+              <ul
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  listStyle: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
+              >
+                {result.tips.map((tip, index) => (
+                  <li
+                    key={index}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 8,
+                      fontSize: 14,
+                      color: "var(--color-ink-2)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
+                        color: "var(--color-mustard)",
+                        marginTop: 3,
+                        flexShrink: 0,
+                      }}
                     >
-                      <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-          </div>
-        )}
-      </div>
-    </main>
-  );
-}
-
-function ToneBadge({ tone }: { tone: RewriteTone }) {
-  const style = TONE_STYLES[tone];
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${style.bg} ${style.text} ${style.border}`}
-    >
-      {TONE_LABELS[tone]}
-    </span>
-  );
-}
-
-function ContextBadge({ context }: { context: RewriteContext }) {
-  return (
-    <span className="inline-flex items-center rounded-full border border-gray-700 bg-gray-800 px-2.5 py-0.5 text-xs font-medium text-gray-400">
-      {CONTEXT_LABELS[context]}
-    </span>
+                      ◆
+                    </span>
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </PaperCard>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -545,22 +738,52 @@ function SaveCardForm({
   onCancel: () => void;
 }) {
   return (
-    <div className="space-y-3 rounded-lg border border-gray-700 bg-gray-800/50 p-3">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-gray-400">Save to Phrase Card</p>
+    <div
+      style={{
+        border: "1px solid var(--color-rule)",
+        borderRadius: 10,
+        padding: 12,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        background: "var(--color-paper)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Kicker color="var(--color-ink-3)">save to phrase card</Kicker>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-700 hover:text-gray-300"
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--color-ink-3)",
+            fontSize: 14,
+            padding: 2,
+            lineHeight: 1,
+          }}
           aria-label="Cancel"
         >
-          <X className="h-3.5 w-3.5" />
+          ×
         </button>
       </div>
       <div>
         <label
           htmlFor="save-phrase"
-          className="mb-1 block text-xs text-gray-500"
+          style={{
+            display: "block",
+            fontSize: 11,
+            color: "var(--color-ink-3)",
+            marginBottom: 4,
+            fontFamily: "var(--font-mono)",
+          }}
         >
           Phrase (English)
         </label>
@@ -570,13 +793,29 @@ function SaveCardForm({
           value={saveCard.phrase}
           onChange={(e) => onPhraseChange(e.target.value)}
           disabled={saveCard.isSaving}
-          className="w-full rounded-md border border-gray-600 bg-gray-800 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600 disabled:opacity-50"
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            border: "1px solid var(--color-rule)",
+            borderRadius: 8,
+            fontSize: 13,
+            background: "#fff",
+            color: "var(--color-ink)",
+            boxSizing: "border-box",
+            outline: "none",
+          }}
         />
       </div>
       <div>
         <label
           htmlFor="save-translation"
-          className="mb-1 block text-xs text-gray-500"
+          style={{
+            display: "block",
+            fontSize: 11,
+            color: "var(--color-ink-3)",
+            marginBottom: 4,
+            fontFamily: "var(--font-mono)",
+          }}
         >
           Original
         </label>
@@ -586,34 +825,38 @@ function SaveCardForm({
           value={saveCard.translation}
           onChange={(e) => onTranslationChange(e.target.value)}
           disabled={saveCard.isSaving}
-          className="w-full rounded-md border border-gray-600 bg-gray-800 px-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600 disabled:opacity-50"
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            border: "1px solid var(--color-rule)",
+            borderRadius: 8,
+            fontSize: 13,
+            background: "#fff",
+            color: "var(--color-ink)",
+            boxSizing: "border-box",
+            outline: "none",
+          }}
         />
       </div>
       {saveCard.error && (
-        <p className="text-xs text-red-400">{saveCard.error}</p>
+        <p style={{ fontSize: 12, color: "var(--color-coral)", margin: 0 }}>
+          {saveCard.error}
+        </p>
       )}
-      <button
+      <TkButton
         type="button"
         onClick={onSave}
+        variant="teal"
+        size="sm"
         disabled={
           saveCard.isSaving ||
           !saveCard.phrase.trim() ||
           !saveCard.translation.trim()
         }
-        className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+        style={{ width: "100%", justifyContent: "center" }}
       >
-        {saveCard.isSaving ? (
-          <>
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Saving...
-          </>
-        ) : (
-          <>
-            <Save className="h-3 w-3" />
-            Save
-          </>
-        )}
-      </button>
+        {saveCard.isSaving ? "Saving..." : "Save"}
+      </TkButton>
     </div>
   );
 }

@@ -12,7 +12,7 @@ const SKILL_AXES = [
     description: "技術ドキュメントやPRの読解力",
     icon: (
       <svg
-        className="h-5 w-5 text-blue-400"
+        className="h-5 w-5 text-teal"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
@@ -34,7 +34,7 @@ const SKILL_AXES = [
     description: "コミットメッセージやPRコメントの記述力",
     icon: (
       <svg
-        className="h-5 w-5 text-green-400"
+        className="h-5 w-5 text-teal"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
@@ -56,7 +56,7 @@ const SKILL_AXES = [
     description: "技術英語の語彙と表現パターン",
     icon: (
       <svg
-        className="h-5 w-5 text-purple-400"
+        className="h-5 w-5 text-plum"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
@@ -78,7 +78,7 @@ const SKILL_AXES = [
     description: "文脈に応じた適切なトーンの判断力",
     icon: (
       <svg
-        className="h-5 w-5 text-amber-400"
+        className="h-5 w-5 text-mustard-fg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
@@ -133,9 +133,9 @@ export function PlacementPage() {
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-950">
+      <main className="flex min-h-screen items-center justify-center bg-paper">
         <div
-          className="h-8 w-8 animate-spin rounded-full border-2 border-gray-600 border-t-blue-500"
+          className="h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
           role="status"
           aria-label="Loading"
         />
@@ -148,25 +148,25 @@ export function PlacementPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-950 px-4 py-8">
+    <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-100">Teklin</h1>
+          <h1 className="text-xl font-bold text-ink">Teklin</h1>
           <Link
             to="/dashboard"
-            className="rounded-lg px-4 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+            className="rounded-lg px-4 py-2 text-sm text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
           >
             Dashboard
           </Link>
         </header>
 
         {/* Main card */}
-        <div className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
-          <h2 className="mb-2 text-2xl font-bold text-gray-100">
+        <div className="rounded-[14px] border border-rule bg-paper-2 p-6">
+          <h2 className="mb-2 text-2xl font-bold text-ink">
             Placement Test
           </h2>
-          <p className="mb-6 text-gray-400">
+          <p className="mb-6 text-ink-2">
             Measure your technical English skill across 4 axes.
           </p>
 
@@ -175,21 +175,21 @@ export function PlacementPage() {
             {SKILL_AXES.map((axis) => (
               <div
                 key={axis.key}
-                className="flex items-start gap-3 rounded-xl border border-gray-800 bg-gray-950 px-4 py-3"
+                className="flex items-start gap-3 rounded-[14px] border border-rule bg-paper px-4 py-3"
               >
                 <span className="mt-0.5 flex-shrink-0">{axis.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold text-gray-100">
+                  <p className="text-sm font-semibold text-ink">
                     {axis.label}
                   </p>
-                  <p className="text-sm text-gray-400">{axis.description}</p>
+                  <p className="text-sm text-ink-2">{axis.description}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Meta info */}
-          <div className="mb-6 flex items-center gap-6 text-sm text-gray-400">
+          <div className="mb-6 flex items-center gap-6 text-sm text-ink-2">
             <span className="flex items-center gap-1.5">
               <svg
                 className="h-4 w-4"
@@ -229,7 +229,7 @@ export function PlacementPage() {
           {/* Error message */}
           {error && (
             <div
-              className="mb-4 rounded-lg border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-400"
+              className="mb-4 rounded-lg border border-coral/50 bg-coral-50 px-4 py-3 text-sm text-coral-fg"
               role="alert"
             >
               {error}
@@ -240,12 +240,12 @@ export function PlacementPage() {
           <button
             onClick={handleStart}
             disabled={isStarting}
-            className="w-full rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isStarting ? (
               <span className="flex items-center justify-center gap-2">
                 <span
-                  className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-paper/30 border-t-paper"
                   aria-hidden="true"
                 />
                 Starting...
@@ -260,7 +260,7 @@ export function PlacementPage() {
             <div className="mt-4 text-center">
               <Link
                 to="/placement/result"
-                className="text-sm text-blue-400 underline-offset-4 transition-colors hover:text-blue-300 hover:underline"
+                className="text-sm text-teal underline-offset-4 transition-colors hover:text-teal-dark hover:underline"
               >
                 View Previous Result
               </Link>

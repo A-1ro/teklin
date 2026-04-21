@@ -1,60 +1,231 @@
+import { useNavigate } from "react-router";
+import { TkButton } from "@/components/ui/tk-button";
+import { PaperCard } from "@/components/ui/paper-card";
+import { TapeTag } from "@/components/ui/tape-tag";
+import { Kicker } from "@/components/ui/kicker";
+import { Display } from "@/components/ui/display";
+
 export function Hero() {
+  const navigate = useNavigate();
+
   return (
     <section
-      aria-labelledby="hero-heading"
-      className="relative overflow-hidden"
+      style={{
+        padding: "88px 28px 72px",
+      }}
     >
-      {/* Background gradient */}
       <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-blue-50 via-white to-white dark:from-gray-900 dark:via-gray-950 dark:to-gray-950"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 -z-10 h-64 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.15),transparent_60%)]"
-      />
-
-      <div className="mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:pb-32 lg:pt-32">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/50 dark:text-blue-300">
-            <span aria-hidden="true">✨</span>
-            エンジニアのための技術英語AI
-          </p>
-
-          <h1
-            id="hero-heading"
-            className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl dark:text-gray-50"
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: "1.55fr 1fr",
+          gap: 48,
+          alignItems: "center",
+        }}
+      >
+        {/* Left column */}
+        <div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 20,
+            }}
           >
-            コードを書くように、
-            <br className="hidden sm:block" />
-            英語を書けるエンジニアになる。
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 sm:text-xl dark:text-gray-400">
-            1日5分、AIが伴走する技術英語特化アプリ。
-            <br className="hidden sm:block" />
-            PR・コミット・Slack・Issueに自信を持って臨める。
-          </p>
-
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <a
-              href="/login"
-              className="inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:w-auto"
-            >
-              無料で始める
-            </a>
-            <a
-              href="#features"
-              className="inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-8 py-3.5 text-base font-semibold text-gray-900 transition-colors hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:w-auto dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
-            >
-              機能を見る
-            </a>
+            <TapeTag color="teal">f0 · beta</TapeTag>
+            <Kicker color="var(--color-ink-2)">
+              エンジニアのための技術英語
+            </Kicker>
           </div>
 
-          <p className="mt-6 text-sm text-gray-500 dark:text-gray-500">
-            TOEIC 600+ / GitHub / Google でサインイン・クレジットカード不要
+          <Display size={64}>
+            コードを書くように、
+            <br />
+            <span
+              style={{ fontStyle: "italic", color: "var(--color-teal)" }}
+            >
+              英語を書く
+            </span>
+            。
+          </Display>
+
+          <p
+            style={{
+              fontSize: 18,
+              lineHeight: 1.65,
+              color: "var(--color-ink-2)",
+              maxWidth: 640,
+              margin: "24px 0 0",
+            }}
+          >
+            PR、コミット、Slack、Issue。技術の現場で要る英語だけを、1日5分。
+            <br />
+            AIが「なぜその表現か」まで添えて返します。
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              marginTop: 32,
+            }}
+          >
+            <TkButton
+              size="lg"
+              kicker="→ cmd"
+              onClick={() => navigate("/login")}
+            >
+              無料で始める
+            </TkButton>
+            <TkButton
+              size="lg"
+              variant="ghost"
+              onClick={() => {
+                document
+                  .getElementById("features")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              機能を見る
+            </TkButton>
+          </div>
+
+          <p
+            style={{
+              marginTop: 22,
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              color: "var(--color-ink-3)",
+            }}
+          >
+            // クレジットカード不要 · 5分で開始
           </p>
         </div>
+
+        {/* Right column */}
+        <PaperCard style={{ padding: 0 }}>
+          {/* Top bar */}
+          <div
+            style={{
+              padding: "12px 16px",
+              borderBottom: "1px dashed var(--color-rule)",
+              background: "var(--color-paper)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <div style={{ display: "flex", gap: 6 }}>
+              <div
+                style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: "50%",
+                  background: "var(--color-coral)",
+                }}
+              />
+              <div
+                style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: "50%",
+                  background: "var(--color-mustard)",
+                }}
+              />
+              <div
+                style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: "50%",
+                  background: "var(--color-teal)",
+                }}
+              />
+            </div>
+            <TapeTag color="ghost">ai_rewrite.ts</TapeTag>
+          </div>
+
+          {/* Body */}
+          <div
+            style={{
+              padding: "20px 20px 22px",
+              fontFamily: "var(--font-mono)",
+              fontSize: 13,
+              lineHeight: 1.7,
+            }}
+          >
+            <div style={{ color: "var(--color-ink-3)" }}>
+              {"// Commit message"}
+            </div>
+            <div
+              style={{
+                color: "var(--color-coral)",
+                textDecoration: "line-through",
+                textDecorationThickness: 1,
+              }}
+            >
+              - fix bug
+            </div>
+            <div
+              style={{
+                color: "var(--color-teal)",
+                fontWeight: 600,
+              }}
+            >
+              + fix: handle null pointer in auth middleware
+            </div>
+
+            <div style={{ height: 12 }} />
+
+            <div style={{ color: "var(--color-ink-3)" }}>
+              {"// PR comment"}
+            </div>
+            <div
+              style={{
+                color: "var(--color-coral)",
+                textDecoration: "line-through",
+                textDecorationThickness: 1,
+              }}
+            >
+              - looks ok but one thing
+            </div>
+            <div
+              style={{
+                color: "var(--color-teal)",
+                fontWeight: 600,
+              }}
+            >
+              + LGTM with one caveat — see thread.
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div
+            style={{
+              padding: "10px 16px",
+              borderTop: "1px dashed var(--color-rule)",
+              background: "var(--color-paper)",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <TapeTag>tone: professional</TapeTag>
+            <TapeTag color="ghost">ctx: PR</TapeTag>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                color: "var(--color-ink-3)",
+              }}
+            >
+              ~0.4s
+            </span>
+          </div>
+        </PaperCard>
       </div>
     </section>
   );
