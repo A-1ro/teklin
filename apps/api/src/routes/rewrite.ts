@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { createDb, aiRewriteHistory, phraseCards, rewriteHistoryCards, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -676,10 +676,10 @@ rewriteRoutes.get("/history/:id", async (c) => {
   const row = await db
     .select()
     .from(aiRewriteHistory)
-    .where(eq(aiRewriteHistory.id, id))
+    .where(and(eq(aiRewriteHistory.id, id), eq(aiRewriteHistory.userId, userId)))
     .get();
 
-  if (!row || row.userId !== userId) {
+  if (!row) {
     return c.json({ error: "Not found" }, 404);
   }
 
@@ -705,10 +705,10 @@ rewriteRoutes.get("/:id/cards", async (c) => {
   const historyRow = await db
     .select()
     .from(aiRewriteHistory)
-    .where(eq(aiRewriteHistory.id, historyId))
+    .where(and(eq(aiRewriteHistory.id, historyId), eq(aiRewriteHistory.userId, userId)))
     .get();
 
-  if (!historyRow || historyRow.userId !== userId) {
+  if (!historyRow) {
     return c.json({ error: "Not found" }, 404);
   }
 
@@ -750,10 +750,10 @@ rewriteRoutes.post("/:id/save-card", async (c) => {
   const historyRow = await db
     .select()
     .from(aiRewriteHistory)
-    .where(eq(aiRewriteHistory.id, historyId))
+    .where(and(eq(aiRewriteHistory.id, historyId), eq(aiRewriteHistory.userId, userId)))
     .get();
 
-  if (!historyRow || historyRow.userId !== userId) {
+  if (!historyRow) {
     return c.json({ error: "Not found" }, 404);
   }
 

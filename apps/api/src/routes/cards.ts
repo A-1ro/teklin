@@ -447,16 +447,13 @@ cardRoutes.put("/:id", async (c) => {
 
   const db = createDb(c.env.DB);
   const existing = await db
-    .select({ id: phraseCards.id, createdByUserId: phraseCards.createdByUserId })
+    .select({ id: phraseCards.id })
     .from(phraseCards)
-    .where(eq(phraseCards.id, cardId))
+    .where(and(eq(phraseCards.id, cardId), eq(phraseCards.createdByUserId, userId)))
     .get();
 
   if (!existing) {
     return c.json({ error: "Card not found" }, 404);
-  }
-  if (existing.createdByUserId !== userId) {
-    return c.json({ error: "Forbidden" }, 403);
   }
 
   await db
