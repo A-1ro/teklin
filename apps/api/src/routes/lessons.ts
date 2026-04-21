@@ -13,6 +13,7 @@ import {
 import { createLLMService } from "../lib/llm";
 import {
   generateLesson,
+  buildLearnerProfile,
   scoreMultipleChoice,
   scoreFillInBlank,
   scoreReorder,
@@ -173,27 +174,8 @@ lessonRoutes.get("/today", async (c) => {
     return c.json({ error: "User not found" }, 404);
   }
 
-  // Count completed lessons for context rotation
-  const countResult = await db
-    .select({ value: count() })
-    .from(userLessons)
-    .where(eq(userLessons.userId, userId))
-    .get();
-  const completedCount = countResult?.value ?? 0;
-
-  // Get weaknesses from latest placement result
-  const { placementResults } = await import("../db/schema");
-  const latestPlacement = await db
-    .select()
-    .from(placementResults)
-    .where(eq(placementResults.userId, userId))
-    .orderBy(desc(placementResults.createdAt))
-    .limit(1)
-    .get();
-
-  const weaknesses = latestPlacement
-    ? (JSON.parse(latestPlacement.weaknesses) as string[])
-    : [];
+  // Build learner profile (aggregates all learning data in parallel)
+  const profile = await buildLearnerProfile(db, userId);
 
   // Get nextPreview from the most recent completed lesson
   const lastUserLesson = await db
@@ -228,10 +210,12 @@ lessonRoutes.get("/today", async (c) => {
     await generateLesson(llm, {
       level: user.level as Parameters<typeof generateLesson>[1]["level"],
       domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
-      weaknesses:
-        weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
-      completedLessonCount: completedCount,
+      weaknesses: profile.placementWeaknesses as Parameters<
+        typeof generateLesson
+      >[1]["weaknesses"],
+      completedLessonCount: profile.completedLessonCount,
       previousNextPreview,
+      profile,
     });
 
   // Persist lesson to D1
@@ -245,7 +229,7 @@ lessonRoutes.get("/today", async (c) => {
     contentJson: JSON.stringify(lessonContent),
     type: "rewrite",
     context: lessonContext,
-    targetWeaknesses: JSON.stringify(weaknesses),
+    targetWeaknesses: JSON.stringify(profile.placementWeaknesses),
     createdAt: now,
   });
 

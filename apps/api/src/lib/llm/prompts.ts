@@ -101,11 +101,13 @@ export const templates = {
 
   daily_lesson: {
     id: "daily_lesson",
-    version: "1.0.0",
+    version: "2.0.0",
     system: [
       "You are an expert technical English curriculum designer for software engineers.",
       "Create personalized daily lessons that are practical, engaging, and focused on",
       "real-world engineering communication (PRs, commits, Slack, GitHub Issues).",
+      "You receive a detailed learner profile with performance data, SRS card stats,",
+      "rewrite history, and feedback trends. Use this data to deeply personalize the lesson.",
       "Always respond with valid JSON only, no markdown, no extra text.",
     ].join(" "),
     user: [
@@ -115,6 +117,10 @@ export const templates = {
       "- Context: {{context}} (commit_message/pr_comment/github_issue/slack/general)",
       "- Weaknesses to focus on: {{weaknesses}}",
       "- Previous lesson's next-topic promise: {{previousNextPreview}}",
+      "",
+      "=== LEARNER PROFILE (use this to personalize) ===",
+      "{{learnerProfile}}",
+      "=== END LEARNER PROFILE ===",
       "",
       "The lesson MUST have exactly this structure as valid JSON:",
       "{",
@@ -169,6 +175,15 @@ export const templates = {
       "- L1: very simple, L2: basic, L3: intermediate idioms, L4: advanced nuance",
       "- If 'Previous lesson's next-topic promise' is not empty, you MUST base this lesson's focus phrase and theme on that promised topic. The user expects continuity between lessons.",
       "- Return ONLY the JSON object, no markdown, no explanation outside JSON",
+      "",
+      "Personalization guidelines (based on learner profile):",
+      "- If the user has struggling SRS phrases, consider incorporating them into warmup questions or practice exercises to reinforce learning",
+      "- If feedback trend shows 'too_easy', increase difficulty: use more advanced vocabulary, longer sentences, and nuanced distractors",
+      "- If feedback trend shows 'too_hard', simplify: use shorter sentences, more common vocabulary, and clearer distractors",
+      "- Avoid repeating recent focus phrases — check the list and pick a new topic",
+      "- If the user scores low on a specific context (e.g. pr_comment), make exercises more thorough for that context",
+      "- If the user has done many rewrites in a certain context, they're actively practicing it — leverage that familiarity",
+      "- If SRS shows many overdue cards, warmup can include phrases similar to those overdue cards",
     ].join("\n"),
   } satisfies PromptTemplate,
 } as const;

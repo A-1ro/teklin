@@ -8,9 +8,10 @@ import type {
   WarmupQuestion,
   Exercise,
 } from "@teklin/shared";
+import type { LearnerProfile } from "./profile";
 
-// Context types to rotate through lessons
-const CONTEXTS: RewriteContext[] = [
+// All available context types
+const ALL_CONTEXTS: RewriteContext[] = [
   "commit_message",
   "pr_comment",
   "github_issue",
@@ -22,8 +23,10 @@ export interface GenerateOptions {
   level: Level;
   domain: Domain;
   weaknesses: SkillAxis[];
-  completedLessonCount: number; // for rotation
+  completedLessonCount: number; // for fallback rotation
   previousNextPreview?: string; // wrapup.nextPreview from previous lesson
+  /** Learner profile for personalization (null for first-time users) */
+  profile: LearnerProfile | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -355,13 +358,148 @@ export interface GenerateResult {
   context: RewriteContext;
 }
 
+// ---------------------------------------------------------------------------
+// Smart context selection — picks the best context based on learner data
+// ---------------------------------------------------------------------------
+
+function selectContext(options: GenerateOptions): RewriteContext {
+  const profile = options.profile;
+
+  // Fallback to simple rotation for new users
+  if (!profile || profile.completedLessonCount < 3) {
+    return ALL_CONTEXTS[options.completedLessonCount % ALL_CONTEXTS.length];
+  }
+
+  // Avoid contexts used in the last 2 lessons to ensure variety
+  const recentSet = new Set(profile.recentContexts.slice(0, 2));
+  const candidates = ALL_CONTEXTS.filter((c) => !recentSet.has(c));
+
+  // If all contexts were recently used, allow any
+  const pool = candidates.length > 0 ? candidates : ALL_CONTEXTS;
+
+  // Weighted selection: lower-scoring contexts get higher weight
+  const perfMap = new Map(
+    profile.contextPerformance.map((cp) => [cp.context, cp])
+  );
+
+  const weighted = pool.map((ctx) => {
+    const perf = perfMap.get(ctx);
+    if (!perf) {
+      // Never practiced — high priority
+      return { ctx, weight: 3.0 };
+    }
+    // Lower scores → higher weight (invert and scale)
+    // Score 100 → weight 1.0, Score 0 → weight 2.0
+    const scoreWeight = 1.0 + (100 - perf.avgScore) / 100;
+    // Fewer lessons in this context → slightly higher weight
+    const countWeight = perf.lessonCount < 3 ? 1.3 : 1.0;
+    return { ctx, weight: scoreWeight * countWeight };
+  });
+
+  // Pick based on weighted random selection
+  const totalWeight = weighted.reduce((sum, w) => sum + w.weight, 0);
+  let rand = Math.random() * totalWeight;
+  for (const { ctx, weight } of weighted) {
+    rand -= weight;
+    if (rand <= 0) return ctx;
+  }
+
+  return weighted[weighted.length - 1].ctx;
+}
+
+// ---------------------------------------------------------------------------
+// Serialize learner profile to a compact text block for LLM prompt
+// ---------------------------------------------------------------------------
+
+function formatProfileForPrompt(profile: LearnerProfile | null): string {
+  if (!profile || profile.completedLessonCount === 0) {
+    return "New user — no learning history yet. Create a welcoming first lesson.";
+  }
+
+  const lines: string[] = [];
+
+  // Overall stats
+  lines.push(
+    `Completed lessons: ${profile.completedLessonCount}, Overall avg score: ${profile.overallAvgScore}/100`
+  );
+
+  // Feedback trend
+  const ft = profile.feedbackTrend;
+  const totalFeedback = ft.tooEasy + ft.justRight + ft.tooHard;
+  if (totalFeedback > 0) {
+    lines.push(
+      `Difficulty feedback (last ${totalFeedback} lessons): ${ft.tooEasy} too_easy, ${ft.justRight} just_right, ${ft.tooHard} too_hard`
+    );
+    if (ft.tooHard > ft.justRight) {
+      lines.push("→ User finds lessons DIFFICULT. Simplify vocabulary and sentences.");
+    } else if (ft.tooEasy > ft.justRight) {
+      lines.push("→ User finds lessons EASY. Increase complexity and nuance.");
+    }
+  }
+
+  // Context performance
+  if (profile.contextPerformance.length > 0) {
+    lines.push("Performance by context:");
+    for (const cp of profile.contextPerformance) {
+      lines.push(
+        `  - ${cp.context}: ${cp.lessonCount} lessons, avg score ${cp.avgScore}/100`
+      );
+    }
+    if (profile.weakestContext) {
+      lines.push(`→ Weakest context: ${profile.weakestContext}`);
+    }
+  }
+
+  // Placement weaknesses
+  if (profile.placementWeaknesses.length > 0) {
+    lines.push(
+      `Placement test weaknesses: ${profile.placementWeaknesses.join(", ")}`
+    );
+  }
+
+  // SRS snapshot
+  const srs = profile.srs;
+  if (srs.totalCards > 0) {
+    lines.push(
+      `SRS cards: ${srs.totalCards} total, ${srs.masteredCards} mastered, ${srs.strugglingCards} struggling, ${srs.overdueCards} overdue`
+    );
+    if (srs.strugglingPhrases.length > 0) {
+      lines.push(
+        `Struggling phrases: ${srs.strugglingPhrases.map((p) => `"${p}"`).join(", ")}`
+      );
+      lines.push(
+        "→ Try to reinforce these phrases by using similar patterns in warmup or practice"
+      );
+    }
+  }
+
+  // Recent focus phrases to avoid
+  if (profile.recentFocusPhrases.length > 0) {
+    lines.push(
+      `Recent focus phrases (AVOID repeating): ${profile.recentFocusPhrases.map((p) => `"${p}"`).join(", ")}`
+    );
+  }
+
+  // Rewrite activity
+  if (profile.rewrites.totalRewrites > 0) {
+    const ctxEntries = Object.entries(profile.rewrites.contextCounts);
+    if (ctxEntries.length > 0) {
+      const rewriteSummary = ctxEntries
+        .map(([ctx, n]) => `${ctx}: ${n}`)
+        .join(", ");
+      lines.push(`Rewrite activity: ${rewriteSummary}`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
 /** Generate a personalized daily lesson using LLM */
 export async function generateLesson(
   llm: LLMService,
   options: GenerateOptions
 ): Promise<GenerateResult> {
-  const contextIndex = options.completedLessonCount % CONTEXTS.length;
-  const context = CONTEXTS[contextIndex];
+  const context = selectContext(options);
 
   const weaknessText =
     options.weaknesses.length > 0
@@ -376,6 +514,7 @@ export async function generateLesson(
       context,
       weaknesses: weaknessText,
       previousNextPreview: options.previousNextPreview ?? "",
+      learnerProfile: formatProfileForPrompt(options.profile),
     }
   );
 

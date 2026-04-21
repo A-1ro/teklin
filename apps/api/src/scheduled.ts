@@ -1,14 +1,8 @@
-import { eq, and, gte, lt, count, desc } from "drizzle-orm";
-import {
-  createDb,
-  users,
-  userLessons,
-  lessons,
-  placementResults,
-} from "./db";
+import { eq, and, gte, lt } from "drizzle-orm";
+import { createDb, users, userLessons, lessons } from "./db";
 import { lessonSessionKey, type LessonSessionKvValue } from "./kv";
 import { createLLMService } from "./lib/llm";
-import { generateLesson } from "./lib/lesson";
+import { generateLesson, buildLearnerProfile } from "./lib/lesson";
 import type { Bindings, LessonGenerationMessage } from "./types";
 
 const LESSON_SESSION_TTL = 86400; // 24 hours
@@ -133,26 +127,8 @@ export async function handleLessonQueue(
         continue;
       }
 
-      // Count completed lessons for context rotation
-      const countResult = await db
-        .select({ value: count() })
-        .from(userLessons)
-        .where(eq(userLessons.userId, userId))
-        .get();
-      const completedCount = countResult?.value ?? 0;
-
-      // Get weaknesses from latest placement result
-      const latestPlacement = await db
-        .select()
-        .from(placementResults)
-        .where(eq(placementResults.userId, userId))
-        .orderBy(desc(placementResults.createdAt))
-        .limit(1)
-        .get();
-
-      const weaknesses = latestPlacement
-        ? (JSON.parse(latestPlacement.weaknesses) as string[])
-        : [];
+      // Build learner profile for personalized generation
+      const profile = await buildLearnerProfile(db, userId);
 
       // Generate lesson via LLM
       const llm = createLLMService(env);
@@ -160,9 +136,11 @@ export async function handleLessonQueue(
         await generateLesson(llm, {
           level: user.level as Parameters<typeof generateLesson>[1]["level"],
           domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
-          weaknesses:
-            weaknesses as Parameters<typeof generateLesson>[1]["weaknesses"],
-          completedLessonCount: completedCount,
+          weaknesses: profile.placementWeaknesses as Parameters<
+            typeof generateLesson
+          >[1]["weaknesses"],
+          completedLessonCount: profile.completedLessonCount,
+          profile,
         });
 
       // Persist lesson to D1
@@ -176,7 +154,7 @@ export async function handleLessonQueue(
         contentJson: JSON.stringify(lessonContent),
         type: "rewrite",
         context: lessonContext,
-        targetWeaknesses: JSON.stringify(weaknesses),
+        targetWeaknesses: JSON.stringify(profile.placementWeaknesses),
         createdAt: now,
       });
 
