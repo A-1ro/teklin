@@ -9,7 +9,13 @@ import { TapeTag } from "@/components/ui/tape-tag";
 import { PaperCard } from "@/components/ui/paper-card";
 import { TkButton } from "@/components/ui/tk-button";
 import { TekkiWave } from "@/components/mascot/Tekki";
-import type { TodayLessonResponse } from "@teklin/shared";
+import type {
+  TodayLessonResponse,
+  LessonHistoryResponse,
+  ReviewCardsResponse,
+  PlacementResultResponse,
+  RewriteContext,
+} from "@teklin/shared";
 
 const PLACEMENT_PROMPT_DISMISS_KEY = "dashboard:placement-prompt-dismissed";
 
@@ -51,6 +57,14 @@ export function DashboardPage() {
   const [isPlacementPromptDismissed, setIsPlacementPromptDismissed] =
     useState(false);
 
+  // Extra dashboard data
+  const [lessonHistory, setLessonHistory] =
+    useState<LessonHistoryResponse | null>(null);
+  const [recentCards, setRecentCards] =
+    useState<ReviewCardsResponse | null>(null);
+  const [placementResult, setPlacementResult] =
+    useState<PlacementResultResponse | null>(null);
+
   // Compute dismiss key before any early returns so the hook below is unconditional
   const todayKey = getLocalDateString(new Date());
   const placementPromptDismissValue = user
@@ -64,6 +78,18 @@ export function DashboardPage() {
       .then((res) => setLessonData(res))
       .catch(() => {})
       .finally(() => setLessonLoading(false));
+
+    apiFetch<LessonHistoryResponse>("/api/lessons/history?limit=50")
+      .then((res) => setLessonHistory(res))
+      .catch(() => {});
+
+    apiFetch<ReviewCardsResponse>("/api/cards/review")
+      .then((res) => setRecentCards(res))
+      .catch(() => {});
+
+    apiFetch<PlacementResultResponse>("/api/placement/result")
+      .then((res) => setPlacementResult(res))
+      .catch(() => {});
   }, [isLoading, user]);
 
   useEffect(() => {
@@ -129,6 +155,58 @@ export function DashboardPage() {
         : user.level === "L3"
           ? "L4"
           : null;
+
+  // --- Derived data from APIs ---
+
+  // Next level progress from placement scores (average of 4 axes, 0–100)
+  const nextLevelPct = placementResult
+    ? Math.round(
+        Object.values(placementResult.scores).reduce((a, b) => a + b, 0) /
+          Object.values(placementResult.scores).length
+      )
+    : null;
+
+  // Weekly progress: filter lesson history to this week
+  const weekStart = (() => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+    return new Date(d.getFullYear(), d.getMonth(), diff, 0, 0, 0);
+  })();
+
+  const thisWeekLessons = (lessonHistory?.items ?? []).filter(
+    (item) => new Date(item.completedAt) >= weekStart
+  );
+
+  const weeklyOverallPct =
+    thisWeekLessons.length > 0
+      ? Math.round(
+          thisWeekLessons.reduce((sum, l) => sum + l.score, 0) /
+            thisWeekLessons.length
+        )
+      : 0;
+
+  const weeklyByContext = (
+    ctx: RewriteContext
+  ): number => {
+    const matched = thisWeekLessons.filter((l) => l.context === ctx);
+    if (matched.length === 0) return 0;
+    return Math.round(
+      matched.reduce((sum, l) => sum + l.score, 0) / matched.length
+    );
+  };
+
+  // Recent phrase cards (from review queue, take first 3)
+  const recentPhrases = (recentCards?.cards ?? []).slice(0, 3);
+
+  // Category code mapping for phrase tags
+  const CATEGORY_CODE: Record<string, string> = {
+    commit_messages: "cm",
+    pr_comments: "pr",
+    code_review: "cr",
+    slack_chat: "sl",
+    github_issues: "iss",
+  };
 
   return (
     <div>
@@ -255,7 +333,13 @@ export function DashboardPage() {
             <StatCell
               kicker="next"
               value={nextLevel ? `L${nextLevel.slice(1)}` : "MAX"}
-              label={nextLevel ? "至 72%" : "reached"}
+              label={
+                nextLevel
+                  ? nextLevelPct !== null
+                    ? `至 ${nextLevelPct}%`
+                    : "未測定"
+                  : "reached"
+              }
               color="var(--color-plum)"
             />
           </div>
@@ -281,16 +365,39 @@ export function DashboardPage() {
             </Display>
             <TapeTag color="ghost">wk_{weekNumber}</TapeTag>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            <ProgressBar code="all" label="全体" pct={62} color="var(--color-teal)" />
-            <ProgressBar code="pr" label="PRコメント" pct={34} color="var(--color-plum)" />
-            <ProgressBar
-              code="cm"
-              label="コミットメッセージ"
-              pct={78}
-              color="var(--color-mustard)"
-            />
-          </div>
+          {thisWeekLessons.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <ProgressBar
+                code="all"
+                label={`全体 (${thisWeekLessons.length}件)`}
+                pct={weeklyOverallPct}
+                color="var(--color-teal)"
+              />
+              <ProgressBar
+                code="pr"
+                label="PRコメント"
+                pct={weeklyByContext("pr_comment")}
+                color="var(--color-plum)"
+              />
+              <ProgressBar
+                code="cm"
+                label="コミットメッセージ"
+                pct={weeklyByContext("commit_message")}
+                color="var(--color-mustard)"
+              />
+            </div>
+          ) : (
+            <p
+              style={{
+                fontSize: 13,
+                color: "var(--color-ink-3)",
+                margin: 0,
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              // 今週はまだレッスンがあり���せん
+            </p>
+          )}
         </PaperCard>
 
         {/* Recent phrases */}
@@ -306,22 +413,34 @@ export function DashboardPage() {
             <Display as="h3" size={20}>
               最近のフレーズ
             </Display>
-            <TapeTag color="ghost">saved · 3</TapeTag>
+            <TapeTag color="ghost">
+              {recentPhrases.length > 0
+                ? `due · ${recentCards?.totalDue ?? 0}`
+                : "—"}
+            </TapeTag>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <PhraseRow
-              tag="pr"
-              phrase="Could you take another look when you get a chance?"
-            />
-            <PhraseRow
-              tag="pr"
-              phrase="I'd lean toward option B, but happy to defer."
-            />
-            <PhraseRow
-              tag="iss"
-              phrase="This breaks on edge case X — see repro in thread."
-            />
-          </div>
+          {recentPhrases.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {recentPhrases.map((card) => (
+                <PhraseRow
+                  key={card.id}
+                  tag={CATEGORY_CODE[card.category] ?? card.category}
+                  phrase={card.phrase}
+                />
+              ))}
+            </div>
+          ) : (
+            <p
+              style={{
+                fontSize: 13,
+                color: "var(--color-ink-3)",
+                margin: 0,
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              // まだフレーズカードがありません
+            </p>
+          )}
         </PaperCard>
       </div>
 
