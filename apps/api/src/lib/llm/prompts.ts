@@ -162,6 +162,7 @@ export const templates = {
       "- Focus explanation and examples MUST be in English (this is the English learning content)",
       "- Practice exercise instruction, prompt, and all wrapup text MUST be in Japanese",
       "- Practice exercises must use the focus phrase or related patterns",
+      "- IMPORTANT: All 3 practice exercises MUST consistently use the focus phrase/keyword. However, each exercise MUST present a DIFFERENT sentence with a different scenario (e.g. different bugs, features, or contexts). Same key phrase, different situations.",
       "- All content must be relevant to {{domain}} engineering work",
       "- L1: very simple, L2: basic, L3: intermediate idioms, L4: advanced nuance",
       "- Return ONLY the JSON object, no markdown, no explanation outside JSON",
