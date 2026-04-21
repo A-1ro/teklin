@@ -653,8 +653,11 @@ function TodayLessonContent({
       >
         <Pill color="ghost">◷ 約5分</Pill>
         <Pill color="ghost">
-          <span style={{ fontFamily: "var(--font-mono)" }}>3 / 5</span>
-          {" "}完了
+          <span style={{ fontFamily: "var(--font-mono)" }}>
+            {lesson.content.warmup.questions.length +
+              lesson.content.practice.exercises.length}
+          </span>
+          {" "}問
         </Pill>
       </div>
 
