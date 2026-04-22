@@ -57,8 +57,10 @@ WORKERS_AI_QUALITY_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8"
 
 # ─── Cron Triggers ───
 # UTC 20:00 = JST 05:00 — pre-generate lessons for users who completed yesterday's
+# UTC 21:00 = JST 06:00 — morning push notification (random motivational message)
+# UTC 10:00 = JST 19:00 — evening push notification (only for users who haven't learned today)
 [triggers]
-crons = ["0 20 * * *"]
+crons = ["0 20 * * *", "0 21 * * *", "0 10 * * *"]
 
 # ─── Queues (lesson pre-generation) ───
 [[queues.producers]]

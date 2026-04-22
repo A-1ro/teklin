@@ -223,6 +223,28 @@ export const aiRewriteHistory = sqliteTable("ai_rewrite_history", {
 });
 
 /**
+ * push_subscriptions
+ * Web Push API subscriptions for push notifications.
+ */
+export const pushSubscriptions = sqliteTable(
+  "push_subscriptions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    endpoint: text("endpoint").notNull(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("push_subscriptions_endpoint_idx").on(table.endpoint),
+    index("push_subscriptions_user_id_idx").on(table.userId),
+  ]
+);
+
+/**
  * streaks
  * Daily learning streak per user (one row per user).
  * last_learned_at: Unix epoch ms of the most recent learning session

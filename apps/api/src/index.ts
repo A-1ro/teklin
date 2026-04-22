@@ -6,6 +6,7 @@ import { placementRoutes } from "./routes/placement";
 import { lessonRoutes } from "./routes/lessons";
 import { cardRoutes } from "./routes/cards";
 import { rewriteRoutes } from "./routes/rewrite";
+import { notificationRoutes } from "./routes/notifications";
 import { handleScheduled, handleLessonQueue } from "./scheduled";
 import type { Bindings, LessonGenerationMessage } from "./types";
 
@@ -23,6 +24,7 @@ app.route("/api/placement", placementRoutes);
 app.route("/api/lessons", lessonRoutes);
 app.route("/api/cards", cardRoutes);
 app.route("/api/rewrite", rewriteRoutes);
+app.route("/api/notifications", notificationRoutes);
 
 // Health check
 app.get("/api/health", (c) => {
@@ -41,11 +43,11 @@ app.get("*", async (c) => {
 export default {
   fetch: app.fetch,
   scheduled: async (
-    _event: ScheduledEvent,
+    event: ScheduledEvent,
     env: Bindings,
     ctx: ExecutionContext
   ) => {
-    ctx.waitUntil(handleScheduled(env));
+    ctx.waitUntil(handleScheduled(event.cron, env));
   },
   queue: async (
     batch: MessageBatch<LessonGenerationMessage>,

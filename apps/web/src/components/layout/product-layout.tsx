@@ -1,9 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Wordmark } from "@/components/ui/wordmark";
 import { TekkiIdle } from "@/components/mascot/Tekki";
 import { useAuth } from "@/components/auth/auth-provider";
 import { apiFetch } from "@/lib/api";
+import {
+  isPushSupported,
+  isPushSubscribed,
+  subscribeToPush,
+  unsubscribeFromPush,
+} from "@/lib/notifications";
 import type { TodayLessonResponse } from "@teklin/shared";
 
 const NAV_TABS = [
@@ -257,7 +263,16 @@ function AvatarMenu({ initials }: { initials: string }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [pushSupported] = useState(() => isPushSupported());
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushToggling, setPushToggling] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (pushSupported) {
+      isPushSubscribed().then(setPushEnabled).catch(() => {});
+    }
+  }, [pushSupported]);
 
   useEffect(() => {
     if (!open) return;
@@ -269,6 +284,24 @@ function AvatarMenu({ initials }: { initials: string }) {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
+
+  const handleTogglePush = useCallback(async () => {
+    if (pushToggling) return;
+    setPushToggling(true);
+    try {
+      if (pushEnabled) {
+        await unsubscribeFromPush();
+        setPushEnabled(false);
+      } else {
+        const ok = await subscribeToPush();
+        setPushEnabled(ok);
+      }
+    } catch {
+      // Permission denied or subscription failed
+    } finally {
+      setPushToggling(false);
+    }
+  }, [pushEnabled, pushToggling]);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -352,6 +385,61 @@ function AvatarMenu({ initials }: { initials: string }) {
               >
                 {user.email}
               </div>
+            </div>
+          )}
+          {pushSupported && (
+            <div
+              style={{
+                padding: "8px 16px",
+                borderBottom: "1px dashed var(--color-rule)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "var(--color-ink-2)",
+                }}
+              >
+                通知
+              </span>
+              <button
+                type="button"
+                onClick={handleTogglePush}
+                disabled={pushToggling}
+                aria-label={pushEnabled ? "通知をオフにする" : "通知をオンにする"}
+                style={{
+                  position: "relative",
+                  width: 40,
+                  height: 22,
+                  borderRadius: 999,
+                  border: "none",
+                  cursor: pushToggling ? "default" : "pointer",
+                  background: pushEnabled
+                    ? "var(--color-teal)"
+                    : "var(--color-rule)",
+                  transition: "background 200ms",
+                  opacity: pushToggling ? 0.5 : 1,
+                  flexShrink: 0,
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 2,
+                    left: pushEnabled ? 20 : 2,
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    background: "#fff",
+                    transition: "left 200ms",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                  }}
+                />
+              </button>
             </div>
           )}
           <div style={{ padding: "6px 8px" }}>

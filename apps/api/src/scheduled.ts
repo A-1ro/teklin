@@ -1,8 +1,15 @@
 import { eq, and, gte, lt } from "drizzle-orm";
-import { createDb, users, userLessons, lessons } from "./db";
+import {
+  createDb,
+  users,
+  userLessons,
+  lessons,
+  pushSubscriptions,
+} from "./db";
 import { lessonSessionKey, type LessonSessionKvValue } from "./kv";
 import { createLLMService } from "./lib/llm";
 import { generateLesson, buildLearnerProfile } from "./lib/lesson";
+import { sendPushNotification } from "./lib/web-push";
 import type { Bindings, LessonGenerationMessage } from "./types";
 
 const LESSON_SESSION_TTL = 86400; // 24 hours
@@ -32,14 +39,39 @@ function startOfDayMs(dateStr: string): number {
 }
 
 // ---------------------------------------------------------------------------
-// Cron handler — enqueue eligible users
+// Cron dispatcher
 // ---------------------------------------------------------------------------
 
 /**
- * Cron handler (UTC 20:00 / JST 05:00): find users who completed yesterday's
- * lesson and enqueue a generation job for each.
+ * Dispatch cron events to the appropriate handler based on the cron pattern.
  */
-export async function handleScheduled(env: Bindings): Promise<void> {
+export async function handleScheduled(
+  cron: string,
+  env: Bindings
+): Promise<void> {
+  switch (cron) {
+    case "0 20 * * *":
+      // JST 05:00 — pre-generate lessons
+      await handleLessonPreGeneration(env);
+      break;
+    case "0 21 * * *":
+      // JST 06:00 — morning notification
+      await handleMorningNotification(env);
+      break;
+    case "0 10 * * *":
+      // JST 19:00 — evening reminder (only for users who haven't learned today)
+      await handleEveningNotification(env);
+      break;
+    default:
+      console.warn(`[cron] Unknown cron pattern: ${cron}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Lesson pre-generation (existing)
+// ---------------------------------------------------------------------------
+
+async function handleLessonPreGeneration(env: Bindings): Promise<void> {
   const today = todayString();
   const todayDate = new Date(`${today}T00:00:00.000Z`);
   const yesterday = new Date(todayDate.getTime() - 86400000)
@@ -87,7 +119,130 @@ export async function handleScheduled(env: Bindings): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Queue consumer — generate lesson for one user
+// Push notification helpers
+// ---------------------------------------------------------------------------
+
+const MORNING_MESSAGES = [
+  "今日のレッスンを見てみましょう👀",
+  "LET'S GOOOOOOOO🔥",
+  "5分だけレッスンしませんか？",
+];
+
+async function sendToSubscriptions(
+  env: Bindings,
+  subscriptions: (typeof pushSubscriptions.$inferSelect)[],
+  payload: string
+): Promise<void> {
+  const db = createDb(env.DB);
+
+  for (const sub of subscriptions) {
+    try {
+      const result = await sendPushNotification(
+        { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+        payload,
+        env.VAPID_PUBLIC_KEY,
+        env.VAPID_PRIVATE_KEY
+      );
+
+      if (result.shouldRemove) {
+        await db
+          .delete(pushSubscriptions)
+          .where(eq(pushSubscriptions.id, sub.id));
+        console.log(
+          `[notification] Removed expired subscription for user ${sub.userId}`
+        );
+      }
+    } catch (err) {
+      console.error(
+        `[notification] Failed to send to user ${sub.userId}:`,
+        err
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Morning notification (JST 06:00 — all subscribed users)
+// ---------------------------------------------------------------------------
+
+async function handleMorningNotification(env: Bindings): Promise<void> {
+  const db = createDb(env.DB);
+  const subs = await db.select().from(pushSubscriptions).all();
+
+  if (subs.length === 0) {
+    console.log("[notification:morning] No subscriptions, skipping");
+    return;
+  }
+
+  const message =
+    MORNING_MESSAGES[Math.floor(Math.random() * MORNING_MESSAGES.length)];
+  const payload = JSON.stringify({
+    title: "Teklin",
+    body: message,
+    url: "/dashboard",
+  });
+
+  console.log(
+    `[notification:morning] Sending to ${subs.length} subscription(s): "${message}"`
+  );
+  await sendToSubscriptions(env, subs, payload);
+}
+
+// ---------------------------------------------------------------------------
+// Evening notification (JST 19:00 — only users who haven't learned today)
+// ---------------------------------------------------------------------------
+
+async function handleEveningNotification(env: Bindings): Promise<void> {
+  const db = createDb(env.DB);
+  const subs = await db.select().from(pushSubscriptions).all();
+
+  if (subs.length === 0) {
+    console.log("[notification:evening] No subscriptions, skipping");
+    return;
+  }
+
+  const today = todayString();
+  const dayStart = startOfDayMs(today);
+  const now = Date.now();
+
+  // Find users who completed a lesson in the current Teklin day
+  const completedRows = await db
+    .select({ userId: userLessons.userId })
+    .from(userLessons)
+    .where(
+      and(
+        gte(userLessons.completedAt, dayStart),
+        lt(userLessons.completedAt, now)
+      )
+    )
+    .all();
+
+  const completedUserIds = new Set(completedRows.map((r) => r.userId));
+
+  // Send only to users who haven't completed today
+  const targetSubs = subs.filter((s) => !completedUserIds.has(s.userId));
+
+  if (targetSubs.length === 0) {
+    console.log(
+      "[notification:evening] All subscribed users completed today's lesson"
+    );
+    return;
+  }
+
+  const payload = JSON.stringify({
+    title: "Teklin",
+    body: "お仕事お疲れ様です！🍵5分だけレッスンしてみませんか？",
+    url: "/dashboard",
+  });
+
+  console.log(
+    `[notification:evening] Sending to ${targetSubs.length} user(s) who haven't learned today`
+  );
+  await sendToSubscriptions(env, targetSubs, payload);
+}
+
+// ---------------------------------------------------------------------------
+// Queue consumer — generate lesson for one user (unchanged)
 // ---------------------------------------------------------------------------
 
 /**

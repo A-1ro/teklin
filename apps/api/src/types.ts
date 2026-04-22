@@ -26,4 +26,8 @@ export type Bindings = {
   AI_GATEWAY_ID?: string;
   WORKERS_AI_LIGHTWEIGHT_MODEL?: string;
   WORKERS_AI_QUALITY_MODEL?: string;
+  /** VAPID public key (base64url-encoded uncompressed P-256 point) */
+  VAPID_PUBLIC_KEY: string;
+  /** VAPID private key (base64url-encoded P-256 scalar) */
+  VAPID_PRIVATE_KEY: string;
 };
