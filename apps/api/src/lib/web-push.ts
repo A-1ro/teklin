@@ -153,9 +153,12 @@ async function encryptPayload(
   )) as CryptoKeyPair;
 
   // Derive shared secret via ECDH
+  // Note: runtime expects "public" but @cloudflare/workers-types defines "$public".
+  // Use runtime-correct key and cast to satisfy the type checker.
+  const ecdhParams = { name: "ECDH" } as SubtleCryptoDeriveKeyAlgorithm;
+  (ecdhParams as unknown as Record<string, unknown>)["public"] = subscriberKey;
   const sharedSecret = await crypto.subtle.deriveBits(
-    // Cloudflare Workers types use `$public` instead of `public`
-    { name: "ECDH", $public: subscriberKey } as SubtleCryptoDeriveKeyAlgorithm,
+    ecdhParams,
     ephemeralKeys.privateKey,
     256
   );
