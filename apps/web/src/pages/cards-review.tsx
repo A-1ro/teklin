@@ -146,8 +146,12 @@ export function ReviewPage() {
           setIsComplete(true);
           playSound("complete");
         } else {
-          setCurrentIndex(nextIndex);
+          // Reset flip first, then update card after animation completes
+          // to prevent back content from flashing during transition
           setIsFlipped(false);
+          setTimeout(() => {
+            setCurrentIndex(nextIndex);
+          }, 350);
         }
       } catch {
         setError("回答の送信に失敗しました。");
@@ -374,6 +378,7 @@ export function ReviewPage() {
               style={{
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
+                transform: "rotateY(0deg)",
               }}
             >
               {/* Badges */}
