@@ -209,6 +209,7 @@ export function ProductLayout() {
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
           borderTop: "1px solid var(--color-rule)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
         {NAV_TABS.map((tab) => {
