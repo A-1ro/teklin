@@ -18,6 +18,36 @@ export function isPushSupported(): boolean {
   return "serviceWorker" in navigator && "PushManager" in window;
 }
 
+/** Detect iOS (iPhone / iPad) */
+export function isIOS(): boolean {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
+/** Check if running as installed PWA (standalone mode) */
+export function isStandalone(): boolean {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true)
+  );
+}
+
+/**
+ * iOS notification state:
+ * - "not-ios"     — not an iOS device, use normal push flow
+ * - "needs-install" — iOS but not added to home screen yet
+ * - "ready"       — iOS PWA, can use push normally
+ */
+export type IOSPushState = "not-ios" | "needs-install" | "ready";
+
+export function getIOSPushState(): IOSPushState {
+  if (!isIOS()) return "not-ios";
+  if (!isStandalone()) return "needs-install";
+  return "ready";
+}
+
 /** Check whether push is currently subscribed on this browser */
 export async function isPushSubscribed(): Promise<boolean> {
   if (!isPushSupported()) return false;

@@ -9,6 +9,8 @@ import {
   isPushSubscribed,
   subscribeToPush,
   unsubscribeFromPush,
+  getIOSPushState,
+  type IOSPushState,
 } from "@/lib/notifications";
 import type { TodayLessonResponse } from "@teklin/shared";
 
@@ -264,8 +266,10 @@ function AvatarMenu({ initials }: { initials: string }) {
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [pushSupported] = useState(() => isPushSupported());
+  const [iosPushState] = useState<IOSPushState>(() => getIOSPushState());
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushToggling, setPushToggling] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -387,6 +391,7 @@ function AvatarMenu({ initials }: { initials: string }) {
               </div>
             </div>
           )}
+          {/* Notification toggle — push supported (Android / desktop / iOS PWA) */}
           {pushSupported && (
             <div
               style={{
@@ -440,6 +445,89 @@ function AvatarMenu({ initials }: { initials: string }) {
                   }}
                 />
               </button>
+            </div>
+          )}
+          {/* iOS: not installed as PWA — show "Add to Home Screen" guide */}
+          {!pushSupported && iosPushState === "needs-install" && (
+            <div
+              style={{
+                borderBottom: "1px dashed var(--color-rule)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowIOSGuide((v) => !v)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  padding: "8px 16px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "var(--color-ink-2)",
+                  }}
+                >
+                  通知
+                </span>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "var(--color-ink-3)",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  {showIOSGuide ? "▲" : "設定方法 ▼"}
+                </span>
+              </button>
+              {showIOSGuide && (
+                <div
+                  style={{
+                    padding: "0 16px 12px",
+                    fontSize: 12,
+                    lineHeight: 1.65,
+                    color: "var(--color-ink-2)",
+                  }}
+                >
+                  <p style={{ margin: "0 0 8px", fontWeight: 500, color: "var(--color-ink)" }}>
+                    ホーム画面に追加してね
+                  </p>
+                  <ol
+                    style={{
+                      margin: 0,
+                      paddingLeft: 18,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}
+                  >
+                    <li>
+                      画面下の{" "}
+                      <span style={{ fontWeight: 600 }}>
+                        共有ボタン
+                      </span>
+                      {" "}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", display: "inline" }}><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+                      {" "}をタップ
+                    </li>
+                    <li>
+                      <span style={{ fontWeight: 600 }}>
+                        「ホーム画面に追加」
+                      </span>
+                      を選択
+                    </li>
+                    <li>追加後、アプリから通知をオンにできます</li>
+                  </ol>
+                </div>
+              )}
             </div>
           )}
           <div style={{ padding: "6px 8px" }}>
