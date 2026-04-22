@@ -1,11 +1,19 @@
 import { Hono } from "hono";
 import { eq, and, desc, count, not, isNull } from "drizzle-orm";
-import { createDb, lessons, userLessons, streaks, users } from "../db";
+import {
+  createDb,
+  lessons,
+  userLessons,
+  streaks,
+  users,
+  phraseCards,
+} from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
 import {
   lessonSessionKey,
   streakKey,
+  srsKey,
   type LessonSessionKvValue,
   type LessonAnswerRecord,
   type StreakKvValue,
@@ -24,6 +32,10 @@ import type {
   LessonContentInternal,
   LessonHistoryItem,
   LessonHistoryResponse,
+  LessonFocusPhrase,
+  CardCategory,
+  RewriteContext,
+  AddLessonPhraseCardResponse,
 } from "@teklin/shared";
 
 const LESSON_SESSION_TTL = 86400; // 24 hours
@@ -684,6 +696,31 @@ lessonRoutes.post("/:id/complete", async (c) => {
     });
   }
 
+  // Extract focus phrase from lesson content
+  let focusPhrase: LessonFocusPhrase | null = null;
+  try {
+    const lessonRow = await db
+      .select({ contentJson: lessons.contentJson })
+      .from(lessons)
+      .where(eq(lessons.id, lessonId))
+      .get();
+    if (lessonRow) {
+      const content = JSON.parse(
+        lessonRow.contentJson
+      ) as LessonContentInternal;
+      focusPhrase = {
+        phrase: content.focus.phrase,
+        explanation: content.focus.explanation,
+        examples: content.focus.examples.map((e) => ({
+          english: e.english,
+          japanese: e.japanese,
+        })),
+      };
+    }
+  } catch {
+    // ignore parse errors — focusPhrase stays null
+  }
+
   return c.json({
     score: avgScore,
     streak: {
@@ -692,7 +729,112 @@ lessonRoutes.post("/:id/complete", async (c) => {
       isNewRecord,
     },
     completedAt: new Date(now).toISOString(),
+    focusPhrase,
   });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/lessons/:id/add-to-cards — Add focus phrase to phrase cards
+// ---------------------------------------------------------------------------
+
+const CONTEXT_TO_CATEGORY: Record<RewriteContext, CardCategory> = {
+  commit_message: "commit_messages",
+  pr_comment: "pr_comments",
+  github_issue: "github_issues",
+  slack: "slack_chat",
+  general: "slack_chat",
+};
+
+lessonRoutes.post("/:id/add-to-cards", async (c) => {
+  const { userId } = c.get("user");
+  const lessonId = c.req.param("id");
+  const db = createDb(c.env.DB);
+
+  // Verify the user completed this lesson
+  const userLesson = await db
+    .select()
+    .from(userLessons)
+    .where(
+      and(eq(userLessons.userId, userId), eq(userLessons.lessonId, lessonId))
+    )
+    .get();
+
+  if (!userLesson || userLesson.completedAt === null) {
+    return c.json({ error: "Lesson not found or not completed" }, 404);
+  }
+
+  // Get lesson content
+  const lessonRow = await db
+    .select({
+      contentJson: lessons.contentJson,
+      context: lessons.context,
+      domain: lessons.domain,
+      level: lessons.level,
+    })
+    .from(lessons)
+    .where(eq(lessons.id, lessonId))
+    .get();
+
+  if (!lessonRow) {
+    return c.json({ error: "Lesson not found" }, 404);
+  }
+
+  let content: LessonContentInternal;
+  try {
+    content = JSON.parse(lessonRow.contentJson) as LessonContentInternal;
+  } catch {
+    return c.json({ error: "Failed to parse lesson content" }, 500);
+  }
+
+  const phrase = content.focus.phrase;
+  const translation = content.focus.explanation;
+
+  // Check if user already has a card with this exact phrase
+  const existing = await db
+    .select({ id: phraseCards.id })
+    .from(phraseCards)
+    .where(
+      and(
+        eq(phraseCards.phrase, phrase),
+        eq(phraseCards.createdByUserId, userId)
+      )
+    )
+    .get();
+
+  if (existing) {
+    return c.json({ error: "This phrase is already in your cards" }, 409);
+  }
+
+  const context =
+    (lessonRow.context as RewriteContext | null) ?? "general";
+  const category = CONTEXT_TO_CATEGORY[context];
+  const cardId = crypto.randomUUID();
+  const now = Date.now();
+
+  await db.insert(phraseCards).values({
+    id: cardId,
+    phrase,
+    translation,
+    context: content.focus.examples[0]?.english ?? phrase,
+    createdByUserId: userId,
+    domain: lessonRow.domain,
+    level: lessonRow.level,
+    category,
+    createdAt: now,
+  });
+
+  // Invalidate SRS cache so the new card appears in reviews
+  await Promise.all([
+    c.env.SRS_KV.delete(srsKey(userId, "jp_to_en")),
+    c.env.SRS_KV.delete(srsKey(userId, "en_to_jp")),
+  ]);
+
+  const response: AddLessonPhraseCardResponse = {
+    cardId,
+    phrase,
+    translation,
+  };
+  return c.json(response, 201);
 });
 
 // ---------------------------------------------------------------------------

@@ -148,6 +148,13 @@ export interface LessonAnswerResponse {
   feedback?: string;
 }
 
+/** Focus phrase info included in the lesson complete response */
+export interface LessonFocusPhrase {
+  phrase: string;
+  explanation: string;
+  examples: { english: string; japanese: string }[];
+}
+
 /** Response from POST /api/lessons/:id/complete */
 export interface LessonCompleteResponse {
   score: number;
@@ -157,6 +164,14 @@ export interface LessonCompleteResponse {
     isNewRecord: boolean;
   };
   completedAt: string;
+  focusPhrase: LessonFocusPhrase | null;
+}
+
+/** Response from POST /api/lessons/:id/add-to-cards */
+export interface AddLessonPhraseCardResponse {
+  cardId: string;
+  phrase: string;
+  translation: string;
 }
 
 /** Request body for POST /api/lessons/:id/feedback */

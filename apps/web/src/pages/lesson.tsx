@@ -11,6 +11,7 @@ import type {
   Exercise,
   LessonAnswerResponse,
   LessonCompleteResponse,
+  AddLessonPhraseCardResponse,
   Level,
 } from "@teklin/shared";
 
@@ -160,6 +161,7 @@ export function LessonPage() {
   if (currentStep === "complete") {
     return (
       <CompleteScreen
+        lessonId={lessonId}
         completionData={completionData}
         onNavigate={navigate}
       />
@@ -1173,12 +1175,18 @@ function WrapupStep({
 // ---------------------------------------------------------------------------
 
 function CompleteScreen({
+  lessonId,
   completionData,
   onNavigate,
 }: {
+  lessonId: string;
   completionData: LessonCompleteResponse | null;
   onNavigate: (path: string) => void;
 }) {
+  const [cardAdded, setCardAdded] = useState(false);
+  const [addingCard, setAddingCard] = useState(false);
+  const [addCardError, setAddCardError] = useState<string | null>(null);
+
   useEffect(() => {
     playSound("complete");
     if (completionData?.streak.isNewRecord) {
@@ -1186,6 +1194,29 @@ function CompleteScreen({
       return () => clearTimeout(t);
     }
   }, [completionData]);
+
+  const handleAddToCards = useCallback(async () => {
+    setAddingCard(true);
+    setAddCardError(null);
+    try {
+      await apiFetch<AddLessonPhraseCardResponse>(
+        `/api/lessons/${lessonId}/add-to-cards`,
+        { method: "POST" }
+      );
+      setCardAdded(true);
+      playSound("complete");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setCardAdded(true);
+      } else {
+        setAddCardError("カードの追加に失敗しました");
+      }
+    } finally {
+      setAddingCard(false);
+    }
+  }, [lessonId]);
+
+  const focusPhrase = completionData?.focusPhrase;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 py-8">
@@ -1242,6 +1273,44 @@ function CompleteScreen({
                   {"\uD83C\uDF89"} 新記録達成：{completionData.streak.longestStreak}日連続！
                 </p>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Focus phrase card addition */}
+        {focusPhrase && (
+          <div className="mb-8 rounded-[14px] border border-rule bg-paper-2 p-6 text-left">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-ink-3">
+              今日のフレーズ
+            </p>
+            <p className="mb-1 font-mono text-lg font-bold text-ink">
+              {focusPhrase.phrase}
+            </p>
+            <p className="mb-4 text-sm leading-relaxed text-ink-2">
+              {focusPhrase.explanation}
+            </p>
+
+            {cardAdded ? (
+              <div className="rounded-lg border border-teal/30 bg-teal-50 px-4 py-3 text-center">
+                <p className="text-sm font-semibold text-teal">
+                  カードに追加しました
+                </p>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={handleAddToCards}
+                  disabled={addingCard}
+                  className="w-full rounded-lg border border-plum/30 bg-plum-50 px-4 py-3 text-sm font-semibold text-plum transition-colors hover:border-plum/50 hover:bg-plum-50/80 active:bg-plum-50/60 disabled:opacity-50"
+                >
+                  {addingCard
+                    ? "追加中..."
+                    : "フレーズカードに追加する"}
+                </button>
+                {addCardError && (
+                  <p className="mt-2 text-xs text-coral">{addCardError}</p>
+                )}
+              </>
             )}
           </div>
         )}
