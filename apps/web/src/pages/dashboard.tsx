@@ -60,16 +60,15 @@ export function DashboardPage() {
   // Extra dashboard data
   const [lessonHistory, setLessonHistory] =
     useState<LessonHistoryResponse | null>(null);
-  const [recentCards, setRecentCards] =
-    useState<ReviewCardsResponse | null>(null);
+  const [recentCards, setRecentCards] = useState<ReviewCardsResponse | null>(
+    null
+  );
   const [placementResult, setPlacementResult] =
     useState<PlacementResultResponse | null>(null);
 
   // Compute dismiss key before any early returns so the hook below is unconditional
   const todayKey = getLocalDateString(new Date());
-  const placementPromptDismissValue = user
-    ? `${user.id}:${todayKey}`
-    : "";
+  const placementPromptDismissValue = user ? `${user.id}:${todayKey}` : "";
 
   useEffect(() => {
     if (isLoading || !user) return;
@@ -97,7 +96,9 @@ export function DashboardPage() {
     const dismissedValue = window.localStorage.getItem(
       PLACEMENT_PROMPT_DISMISS_KEY
     );
-    setIsPlacementPromptDismissed(dismissedValue === placementPromptDismissValue);
+    setIsPlacementPromptDismissed(
+      dismissedValue === placementPromptDismissValue
+    );
   }, [placementPromptDismissValue]);
 
   if (isLoading) {
@@ -186,9 +187,7 @@ export function DashboardPage() {
         )
       : 0;
 
-  const weeklyByContext = (
-    ctx: RewriteContext
-  ): number => {
+  const weeklyByContext = (ctx: RewriteContext): number => {
     const matched = thisWeekLessons.filter((l) => l.context === ctx);
     if (matched.length === 0) return 0;
     return Math.round(
@@ -211,22 +210,16 @@ export function DashboardPage() {
   return (
     <div>
       {/* Top row */}
-      <div
-        className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between md:mb-8"
-      >
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between md:mb-8">
         <div>
-          <Kicker color="var(--color-ink-3)">
-            morning · {firstName}
-          </Kicker>
+          <Kicker color="var(--color-ink-3)">morning · {firstName}</Kicker>
           <Display
             size={36}
             className="!text-[26px] md:!text-[36px]"
             style={{ marginTop: 10 }}
           >
             今日も
-            <span
-              style={{ color: "var(--color-teal)", fontStyle: "italic" }}
-            >
+            <span style={{ color: "var(--color-teal)", fontStyle: "italic" }}>
               5分
             </span>
             だけ、いっしょに。
@@ -282,9 +275,7 @@ export function DashboardPage() {
             <TodayLessonContent
               lesson={lessonData.lesson}
               isCompleted={lessonData.isCompleted}
-              onNavigate={() =>
-                navigate(`/lesson/${lessonData.lesson!.id}`)
-              }
+              onNavigate={() => navigate(`/lesson/${lessonData.lesson!.id}`)}
             />
           ) : (
             <div style={{ color: "var(--color-ink-2)", fontSize: 14 }}>
@@ -303,9 +294,7 @@ export function DashboardPage() {
           >
             <Kicker color="var(--color-ink-3)">summary</Kicker>
           </div>
-          <div
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}
-          >
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
             <StatCell
               kicker="streak"
               value={String(currentStreak)}
@@ -323,9 +312,7 @@ export function DashboardPage() {
             />
             <StatCell
               kicker="domain"
-              value={
-                user.domain.charAt(0).toUpperCase() + user.domain.slice(1)
-              }
+              value={user.domain.charAt(0).toUpperCase() + user.domain.slice(1)}
               label={DOMAIN_LABELS[user.domain] ?? user.domain}
               color="var(--color-ink)"
               borderRight
@@ -347,9 +334,7 @@ export function DashboardPage() {
       </div>
 
       {/* Second row */}
-      <div
-        className="mb-5 grid grid-cols-1 gap-4 md:mb-7 md:grid-cols-2 md:gap-5"
-      >
+      <div className="mb-5 grid grid-cols-1 gap-4 md:mb-7 md:grid-cols-2 md:gap-5">
         {/* Weekly progress */}
         <PaperCard style={{ padding: "24px 26px" }}>
           <div
@@ -395,7 +380,7 @@ export function DashboardPage() {
                 fontFamily: "var(--font-mono)",
               }}
             >
-              // 今週はまだレッスンがあり���せん
+              // 今週はまだレッスンがありません
             </p>
           )}
         </PaperCard>
@@ -450,9 +435,7 @@ export function DashboardPage() {
           accent="var(--color-mustard)"
           style={{ padding: "20px 24px", marginBottom: 28 }}
         >
-          <div
-            className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-          >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
               <div
                 style={{
@@ -478,7 +461,12 @@ export function DashboardPage() {
               </p>
             </div>
             <div
-              style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexShrink: 0,
+              }}
             >
               <Link to="/placement">
                 <TkButton variant="teal" size="sm" kicker="→">
@@ -607,9 +595,7 @@ function TodayLessonContent({
 }) {
   const explanation = lesson.content.focus.explanation;
   const truncated =
-    explanation.length > 80
-      ? explanation.slice(0, 80) + "..."
-      : explanation;
+    explanation.length > 80 ? explanation.slice(0, 80) + "..." : explanation;
 
   return (
     <div>
@@ -622,9 +608,7 @@ function TodayLessonContent({
         }}
       >
         <TapeTag color="teal">today · f1</TapeTag>
-        <Kicker color="var(--color-ink-3)">
-          lesson_{lesson.id.slice(-3)}
-        </Kicker>
+        <Kicker color="var(--color-ink-3)">lesson_{lesson.id.slice(-3)}</Kicker>
       </div>
 
       <Display size={30} style={{ marginBottom: 12 }}>
@@ -656,19 +640,15 @@ function TodayLessonContent({
           <span style={{ fontFamily: "var(--font-mono)" }}>
             {lesson.content.warmup.questions.length +
               lesson.content.practice.exercises.length}
-          </span>
-          {" "}問
+          </span>{" "}
+          問
         </Pill>
       </div>
 
       {isCompleted ? (
         <Pill color="teal">完了済み</Pill>
       ) : (
-        <TkButton
-          onClick={onNavigate}
-          variant="teal"
-          kicker="→ resume"
-        >
+        <TkButton onClick={onNavigate} variant="teal" kicker="→ resume">
           続きから再開
         </TkButton>
       )}
