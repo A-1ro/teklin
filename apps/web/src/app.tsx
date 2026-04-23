@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import { LandingPage } from "@/pages/landing";
 import { LoginPage } from "@/pages/login";
 import { AuthCallbackPage } from "@/pages/auth-callback";
+import { TermsPage } from "@/pages/terms";
+import { PrivacyPage } from "@/pages/privacy";
 import { DashboardPage } from "@/pages/dashboard";
 import { LessonHomePage } from "@/pages/lesson-home";
 import { LessonPage } from "@/pages/lesson";
@@ -25,6 +27,8 @@ export function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route element={<PlacementGate />}>
         <Route element={<ProductLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
