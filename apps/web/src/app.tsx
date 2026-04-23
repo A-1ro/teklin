@@ -18,6 +18,7 @@ import { RewriteHistoryPage } from "@/pages/rewrite-history";
 import { RewriteDetailPage } from "@/pages/rewrite-detail";
 import { LessonHistoryPage } from "@/pages/lesson-history";
 import { GachaPage } from "@/pages/gacha";
+import { SettingsPage } from "@/pages/settings";
 import { NotFoundPage } from "@/pages/not-found";
 import { PlacementGate } from "@/components/auth/placement-gate";
 import { ProductLayout } from "@/components/layout/product-layout";
@@ -48,6 +49,7 @@ export function App() {
         <Route path="/placement/result" element={<PlacementResultPage />} />
         <Route path="/rewrite/history" element={<RewriteHistoryPage />} />
         <Route path="/rewrite/history/:id" element={<RewriteDetailPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

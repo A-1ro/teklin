@@ -589,6 +589,34 @@ function AvatarMenu({ initials }: { initials: string }) {
           <div style={{ padding: "6px 8px" }}>
             <button
               type="button"
+              onClick={() => { navigate("/settings"); setOpen(false); }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                width: "100%",
+                padding: "8px 10px",
+                background: "none",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontSize: 13,
+                color: "var(--color-ink-2)",
+                fontFamily: "inherit",
+                fontWeight: 500,
+                transition: "background 120ms",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget.style.background) = "var(--color-paper-2, #f5f2ec)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget.style.background) = "none";
+              }}
+            >
+              設定
+            </button>
+            <button
+              type="button"
               onClick={handleLogout}
               disabled={loggingOut}
               style={{

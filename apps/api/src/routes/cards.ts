@@ -156,7 +156,7 @@ cardRoutes.get("/review", async (c) => {
   const db = createDb(c.env.DB);
 
   const user = await db
-    .select({ level: users.level })
+    .select({ level: users.level, domain: users.domain })
     .from(users)
     .where(eq(users.id, userId))
     .get();
@@ -197,6 +197,7 @@ cardRoutes.get("/review", async (c) => {
         .where(
           and(
             sql`${userSrs.cardId} IS NULL`,
+            eq(phraseCards.domain, user.domain),
             cardVisibilityCondition(userId),
             sql`${phraseCards.level} IN (${sql.join(
               allowedLevels.map((l) => sql`${l}`),
@@ -221,6 +222,7 @@ cardRoutes.get("/review", async (c) => {
             eq(userSrs.userId, userId),
             eq(userSrs.direction, direction),
             inArray(phraseCards.id, cached.dueCardIds),
+            eq(phraseCards.domain, user.domain),
             cardVisibilityCondition(userId),
             sql`${phraseCards.level} IN (${sql.join(
               allowedLevels.map((l) => sql`${l}`),
@@ -242,6 +244,7 @@ cardRoutes.get("/review", async (c) => {
           eq(userSrs.userId, userId),
           eq(userSrs.direction, direction),
           lte(userSrs.nextReview, now),
+          eq(phraseCards.domain, user.domain),
           cardVisibilityCondition(userId),
           sql`${phraseCards.level} IN (${sql.join(
             allowedLevels.map((l) => sql`${l}`),
@@ -288,9 +291,9 @@ cardRoutes.get("/deck/:category", async (c) => {
 
   const db = createDb(c.env.DB);
 
-  // Get user's level to filter cards
+  // Get user's level and domain to filter cards
   const user = await db
-    .select({ level: users.level })
+    .select({ level: users.level, domain: users.domain })
     .from(users)
     .where(eq(users.id, userId))
     .get();
@@ -330,6 +333,7 @@ cardRoutes.get("/deck/:category", async (c) => {
     .where(
       and(
         eq(phraseCards.category, category),
+        eq(phraseCards.domain, user.domain),
         cardVisibilityCondition(userId),
         sql`${phraseCards.level} IN (${sql.join(
           allowedLevels.map((l) => sql`${l}`),
@@ -540,7 +544,7 @@ cardRoutes.get("/stats", async (c) => {
   const db = createDb(c.env.DB);
 
   const user = await db
-    .select({ level: users.level })
+    .select({ level: users.level, domain: users.domain })
     .from(users)
     .where(eq(users.id, userId))
     .get();
@@ -550,6 +554,7 @@ cardRoutes.get("/stats", async (c) => {
   }
 
   const allowedLevels = getAllowedLevels(user.level);
+  const userDomain = user.domain;
 
   const byCategory: Record<CardCategory, CategoryStats> = {
     commit_messages: { total: 0, mastered: 0, learning: 0, unseen: 0 },
@@ -580,7 +585,7 @@ cardRoutes.get("/stats", async (c) => {
         eq(userSrs.direction, "jp_to_en")
       )
     )
-    .where(cardVisibilityCondition(userId))
+    .where(and(eq(phraseCards.domain, user.domain), cardVisibilityCondition(userId)))
     .groupBy(phraseCards.category);
 
   // Helper: count due + unseen cards for a given direction
@@ -594,6 +599,7 @@ cardRoutes.get("/stats", async (c) => {
           eq(userSrs.userId, userId),
           eq(userSrs.direction, dir),
           lte(userSrs.nextReview, now),
+          eq(phraseCards.domain, userDomain),
           cardVisibilityCondition(userId),
           sql`${phraseCards.level} IN (${sql.join(
             allowedLevels.map((l) => sql`${l}`),
@@ -617,6 +623,7 @@ cardRoutes.get("/stats", async (c) => {
       .where(
         and(
           sql`${userSrs.cardId} IS NULL`,
+          eq(phraseCards.domain, userDomain),
           cardVisibilityCondition(userId),
           sql`${phraseCards.level} IN (${sql.join(
             allowedLevels.map((l) => sql`${l}`),
