@@ -408,6 +408,7 @@ export type TekReason =
 /** Response from GET /api/tek */
 export interface TekBalanceResponse {
   balance: number;
+  loginBonusAvailable: boolean;
 }
 
 /** Tek earned in a single action (included in lesson/card responses) */

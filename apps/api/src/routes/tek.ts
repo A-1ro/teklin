@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { createDb, tekBalances, tekTransactions } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
-import { getTekBalance, TEK_AMOUNTS } from "../lib/tek";
+import { TEK_AMOUNTS } from "../lib/tek";
 import type {
   TekBalanceResponse,
   TekLoginBonusResponse,
@@ -32,13 +32,26 @@ function todayTekDay(): string {
 }
 
 // ---------------------------------------------------------------------------
-// GET /api/tek — Current tek balance
+// GET /api/tek — Current tek balance + whether login bonus is available today
 // ---------------------------------------------------------------------------
 tekRoutes.get("/", async (c) => {
   const { userId } = c.get("user");
   const db = createDb(c.env.DB);
-  const balance = await getTekBalance(db, userId);
-  return c.json({ balance } satisfies TekBalanceResponse);
+
+  const row = await db
+    .select({
+      balance: tekBalances.balance,
+      lastLoginBonusAt: tekBalances.lastLoginBonusAt,
+    })
+    .from(tekBalances)
+    .where(eq(tekBalances.userId, userId))
+    .get();
+
+  const today = todayTekDay();
+  return c.json({
+    balance: row?.balance ?? 0,
+    loginBonusAvailable: row?.lastLoginBonusAt !== today,
+  } satisfies TekBalanceResponse);
 });
 
 // ---------------------------------------------------------------------------
