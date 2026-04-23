@@ -3,10 +3,7 @@ import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { TekIcon } from "@/components/icons/tek-icon";
 import { GachaTekkiSvg } from "@/components/mascot/GachaTekkis";
-import {
-  TEKKI_CATALOG_ITEMS,
-  TEKKI_CATALOG_LENGTH,
-} from "@/lib/gacha-catalog";
+import { TEKKI_CATALOG_ITEMS, TEKKI_CATALOG_LENGTH } from "@/lib/gacha-catalog";
 import type {
   TekBalanceResponse,
   GachaPullResponse,
@@ -136,7 +133,7 @@ export function GachaPage() {
             marginBottom: 16,
           }}
         >
-          テッキガチャ
+          Tekkiガチャ
         </h1>
         {/* Tek balance display */}
         <div
@@ -196,8 +193,7 @@ export function GachaPage() {
               isPulling || (balance !== null && balance < 100)
                 ? "not-allowed"
                 : "pointer",
-            opacity:
-              isPulling || (balance !== null && balance < 100) ? 0.5 : 1,
+            opacity: isPulling || (balance !== null && balance < 100) ? 0.5 : 1,
             transition: "all 120ms",
             textAlign: "center",
           }}
@@ -460,9 +456,7 @@ function CollectionGrid({ collection }: { collection: GachaCollectionItem[] }) {
             style={{
               borderRadius: 14,
               border: `1.5px solid ${owned ? colors.bg : "var(--color-rule)"}`,
-              background: owned
-                ? colors.bg
-                : "var(--color-paper-2, #F3F2EE)",
+              background: owned ? colors.bg : "var(--color-paper-2, #F3F2EE)",
               padding: "12px 8px 10px",
               textAlign: "center",
               opacity: owned ? 1 : 0.45,

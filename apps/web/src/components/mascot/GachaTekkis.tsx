@@ -47,12 +47,7 @@ export function GachaTekkiSvg({ tekkiId, size = 120 }: GachaTekkiProps) {
 // ---------------------------------------------------------------------------
 function TekkiDefault({ size }: { size: number }) {
   return (
-    <svg
-      viewBox="0 0 180 180"
-      width={size}
-      height={size}
-      aria-label="テッキ"
-    >
+    <svg viewBox="0 0 180 180" width={size} height={size} aria-label="Tekki">
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#0E7C7B" />
       {/* Tail */}
@@ -98,7 +93,7 @@ function TekkiCool({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="クールテッキ"
+      aria-label="クールTekki"
     >
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#1A2B4A" />
@@ -154,7 +149,7 @@ function TekkiPink({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="ローズテッキ"
+      aria-label="ローズTekki"
     >
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#D4748A" />
@@ -201,7 +196,7 @@ function TekkiMint({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="ミントテッキ"
+      aria-label="ミントTekki"
     >
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#4AB5A3" />
@@ -256,7 +251,7 @@ function TekkiNight({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="ナイトテッキ"
+      aria-label="ナイトTekki"
     >
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#0D1B2A" />
@@ -301,7 +296,7 @@ function TekkiCoral({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="コーラルテッキ"
+      aria-label="コーラルTekki"
       style={{ overflow: "visible" }}
     >
       {/* Crown base */}
@@ -359,7 +354,7 @@ function TekkiPlum({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="プラムテッキ"
+      aria-label="プラムTekki"
     >
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#6B4E8C" />
@@ -412,7 +407,7 @@ function TekkiGold({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="ゴールドテッキ"
+      aria-label="ゴールドTekki"
     >
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#C99412" />
@@ -475,7 +470,7 @@ function TekkiWizard({ size }: { size: number }) {
       viewBox="0 0 180 200"
       width={size}
       height={size * (200 / 180)}
-      aria-label="ウィザードテッキ"
+      aria-label="ウィザードTekki"
       style={{ overflow: "visible" }}
     >
       {/* Wizard hat cone (goes above viewBox) */}
@@ -546,7 +541,7 @@ function TekkiSleepy({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="スリーピーテッキ"
+      aria-label="スリーピーTekki"
     >
       {/* Nightcap cone */}
       <path d="M70 32 L90 5 L110 32 Z" fill="#C4AAEE" />
@@ -562,12 +557,60 @@ function TekkiSleepy({ size }: { size: number }) {
       <rect x="44" y="90" width="36" height="7" rx="3.5" fill="#FAF7F1" />
       <rect x="100" y="90" width="36" height="7" rx="3.5" fill="#FAF7F1" />
       {/* Eyelashes */}
-      <rect x="52" y="98" width="4" height="6" rx="2" fill="#FAF7F1" opacity="0.5" />
-      <rect x="60" y="100" width="4" height="7" rx="2" fill="#FAF7F1" opacity="0.5" />
-      <rect x="68" y="98" width="4" height="6" rx="2" fill="#FAF7F1" opacity="0.5" />
-      <rect x="108" y="98" width="4" height="6" rx="2" fill="#FAF7F1" opacity="0.5" />
-      <rect x="116" y="100" width="4" height="7" rx="2" fill="#FAF7F1" opacity="0.5" />
-      <rect x="124" y="98" width="4" height="6" rx="2" fill="#FAF7F1" opacity="0.5" />
+      <rect
+        x="52"
+        y="98"
+        width="4"
+        height="6"
+        rx="2"
+        fill="#FAF7F1"
+        opacity="0.5"
+      />
+      <rect
+        x="60"
+        y="100"
+        width="4"
+        height="7"
+        rx="2"
+        fill="#FAF7F1"
+        opacity="0.5"
+      />
+      <rect
+        x="68"
+        y="98"
+        width="4"
+        height="6"
+        rx="2"
+        fill="#FAF7F1"
+        opacity="0.5"
+      />
+      <rect
+        x="108"
+        y="98"
+        width="4"
+        height="6"
+        rx="2"
+        fill="#FAF7F1"
+        opacity="0.5"
+      />
+      <rect
+        x="116"
+        y="100"
+        width="4"
+        height="7"
+        rx="2"
+        fill="#FAF7F1"
+        opacity="0.5"
+      />
+      <rect
+        x="124"
+        y="98"
+        width="4"
+        height="6"
+        rx="2"
+        fill="#FAF7F1"
+        opacity="0.5"
+      />
       {/* Small smile */}
       <path
         d="M80 116 Q90 124 100 116"
@@ -626,7 +669,7 @@ function TekkiCat({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="キャットテッキ"
+      aria-label="キャットTekki"
     >
       {/* Left ear outer (same color as body, drawn before body) */}
       <path d="M44 32 L52 6 L76 32 Z" fill="#D97B2A" />
@@ -666,13 +709,49 @@ function TekkiCat({ size }: { size: number }) {
         strokeLinecap="round"
       />
       {/* Left whiskers */}
-      <path d="M28 106 L76 109" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
-      <path d="M28 114 L76 113" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
-      <path d="M28 122 L76 117" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+      <path
+        d="M28 106 L76 109"
+        stroke="#FAF7F1"
+        strokeWidth="1.5"
+        opacity="0.75"
+        strokeLinecap="round"
+      />
+      <path
+        d="M28 114 L76 113"
+        stroke="#FAF7F1"
+        strokeWidth="1.5"
+        opacity="0.75"
+        strokeLinecap="round"
+      />
+      <path
+        d="M28 122 L76 117"
+        stroke="#FAF7F1"
+        strokeWidth="1.5"
+        opacity="0.75"
+        strokeLinecap="round"
+      />
       {/* Right whiskers */}
-      <path d="M104 109 L152 106" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
-      <path d="M104 113 L152 114" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
-      <path d="M104 117 L152 122" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+      <path
+        d="M104 109 L152 106"
+        stroke="#FAF7F1"
+        strokeWidth="1.5"
+        opacity="0.75"
+        strokeLinecap="round"
+      />
+      <path
+        d="M104 113 L152 114"
+        stroke="#FAF7F1"
+        strokeWidth="1.5"
+        opacity="0.75"
+        strokeLinecap="round"
+      />
+      <path
+        d="M104 117 L152 122"
+        stroke="#FAF7F1"
+        strokeWidth="1.5"
+        opacity="0.75"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -686,7 +765,7 @@ function TekkiSamurai({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="サムライテッキ"
+      aria-label="サムライTekki"
     >
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#8B1A1A" />
@@ -699,15 +778,39 @@ function TekkiSamurai({ size }: { size: number }) {
       {/* Gold finial */}
       <circle cx="90" cy="5" r="5" fill="#C99412" />
       {/* Gold trim on brim */}
-      <rect x="34" y="47" width="112" height="2" rx="1" fill="#C99412" opacity="0.7" />
+      <rect
+        x="34"
+        y="47"
+        width="112"
+        height="2"
+        rx="1"
+        fill="#C99412"
+        opacity="0.7"
+      />
       {/* Stern eyes = = */}
       <rect x="44" y="88" width="38" height="8" rx="4" fill="#FAF7F1" />
       <rect x="98" y="88" width="38" height="8" rx="4" fill="#FAF7F1" />
       {/* Stern mouth */}
       <rect x="76" y="116" width="28" height="4" rx="2" fill="#FAF7F1" />
       {/* Armor plate details */}
-      <rect x="50" y="106" width="80" height="3" rx="1.5" fill="#6A0A0A" opacity="0.5" />
-      <rect x="50" y="113" width="80" height="3" rx="1.5" fill="#6A0A0A" opacity="0.5" />
+      <rect
+        x="50"
+        y="106"
+        width="80"
+        height="3"
+        rx="1.5"
+        fill="#6A0A0A"
+        opacity="0.5"
+      />
+      <rect
+        x="50"
+        y="113"
+        width="80"
+        height="3"
+        rx="1.5"
+        fill="#6A0A0A"
+        opacity="0.5"
+      />
     </svg>
   );
 }
@@ -721,7 +824,7 @@ function TekkiIdol({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="アイドルテッキ"
+      aria-label="アイドルTekki"
     >
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#E080AA" />
@@ -793,17 +896,37 @@ function TekkiAngel({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="エンジェルテッキ"
+      aria-label="エンジェルTekki"
     >
       {/* Wings behind body */}
-      <path d="M26 70 Q4 56 6 106 Q10 132 26 120 Z" fill="#F8F5E4" opacity="0.9" />
+      <path
+        d="M26 70 Q4 56 6 106 Q10 132 26 120 Z"
+        fill="#F8F5E4"
+        opacity="0.9"
+      />
       <path d="M26 82 Q10 78 12 112 L26 106 Z" fill="#F0EDD8" opacity="0.5" />
-      <path d="M154 70 Q176 56 174 106 Q170 132 154 120 Z" fill="#F8F5E4" opacity="0.9" />
-      <path d="M154 82 Q170 78 168 112 L154 106 Z" fill="#F0EDD8" opacity="0.5" />
+      <path
+        d="M154 70 Q176 56 174 106 Q170 132 154 120 Z"
+        fill="#F8F5E4"
+        opacity="0.9"
+      />
+      <path
+        d="M154 82 Q170 78 168 112 L154 106 Z"
+        fill="#F0EDD8"
+        opacity="0.5"
+      />
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#F0EDD8" />
       {/* Body highlight */}
-      <rect x="38" y="44" width="104" height="18" rx="9" fill="#FFFFFF" opacity="0.38" />
+      <rect
+        x="38"
+        y="44"
+        width="104"
+        height="18"
+        rx="9"
+        fill="#FFFFFF"
+        opacity="0.38"
+      />
       {/* Tail */}
       <path d="M66 142 L72 166 L92 142 Z" fill="#F0EDD8" />
       {/* Halo glow */}
@@ -877,7 +1000,7 @@ function TekkiCosmos({ size }: { size: number }) {
       viewBox="0 0 180 180"
       width={size}
       height={size}
-      aria-label="コスモステッキ"
+      aria-label="コスモスTekki"
       style={{ overflow: "visible" }}
     >
       {/* Star halo ring */}
@@ -900,13 +1023,7 @@ function TekkiCosmos({ size }: { size: number }) {
       {/* Body */}
       <rect x="26" y="32" width="128" height="110" rx="28" fill="#0D1422" />
       {/* Nebula glow */}
-      <circle
-        cx="90"
-        cy="80"
-        r="48"
-        fill="#1A2A6C"
-        opacity="0.3"
-      />
+      <circle cx="90" cy="80" r="48" fill="#1A2A6C" opacity="0.3" />
       {/* Tail */}
       <path d="M66 142 L72 166 L92 142 Z" fill="#0D1422" />
       {/* Tiny star dots on body */}
