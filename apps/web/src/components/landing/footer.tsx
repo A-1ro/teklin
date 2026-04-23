@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Wordmark } from "@/components/ui/wordmark";
 
 export function Footer() {
@@ -17,15 +18,40 @@ export function Footer() {
         }}
       >
         <Wordmark size={18} />
-        <span
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            color: "var(--color-ink-3)",
-          }}
-        >
-          © 2025 teklin · tech english for engineers
-        </span>
+        <div className="flex flex-col items-center gap-2 sm:items-end">
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              color: "var(--color-ink-3)",
+            }}
+          >
+            © 2025 teklin · tech english for engineers
+          </span>
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              display: "flex",
+              gap: 12,
+            }}
+          >
+            <Link
+              to="/terms"
+              style={{ color: "var(--color-ink-3)" }}
+              className="hover:text-ink-2"
+            >
+              利用規約
+            </Link>
+            <Link
+              to="/privacy"
+              style={{ color: "var(--color-ink-3)" }}
+              className="hover:text-ink-2"
+            >
+              プライバシーポリシー
+            </Link>
+          </div>
+        </div>
       </div>
     </footer>
   );
