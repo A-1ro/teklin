@@ -484,7 +484,15 @@ function CollectionGrid({ collection }: { collection: GachaCollectionItem[] }) {
                 &times;{owned.count}
               </span>
             )}
-            <div style={{ marginBottom: 6 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: 6,
+                minHeight: 72,
+              }}
+            >
               {owned ? (
                 <GachaTekkiSvg tekkiId={item.id} size={72} />
               ) : (
@@ -492,7 +500,6 @@ function CollectionGrid({ collection }: { collection: GachaCollectionItem[] }) {
                   style={{
                     width: 72,
                     height: 72,
-                    margin: "0 auto",
                     borderRadius: 14,
                     background: "var(--color-rule)",
                     display: "flex",
@@ -673,7 +680,9 @@ function ResultOverlay({
                   おまけ
                 </span>
               )}
-              <GachaTekkiSvg tekkiId={result.tekkiId} size={72} />
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <GachaTekkiSvg tekkiId={result.tekkiId} size={72} />
+              </div>
               <div
                 style={{
                   fontSize: 10,
