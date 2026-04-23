@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import type {
@@ -176,14 +177,15 @@ export function PlacementResultPage() {
     <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
-        <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-ink">Teklin</h1>
+        <header className="mb-8 flex items-center gap-3">
           <Link
             to="/dashboard"
-            className="rounded-lg px-4 py-2 text-sm text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
+            className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
+            aria-label="Back to Dashboard"
           >
-            Dashboard
+            <ArrowLeft className="h-5 w-5" />
           </Link>
+          <h1 className="text-xl font-bold text-ink">Placement Result</h1>
         </header>
 
         {/* Level card */}

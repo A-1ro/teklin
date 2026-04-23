@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch, ApiError } from "@/lib/api";
 import type { PlacementNextResponse } from "@teklin/shared";
@@ -151,21 +152,19 @@ export function PlacementPage() {
     <main className="min-h-screen bg-paper px-4 py-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
-        <header className="mb-8 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-ink">Teklin</h1>
+        <header className="mb-8 flex items-center gap-3">
           <Link
             to="/dashboard"
-            className="rounded-lg px-4 py-2 text-sm text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
+            className="rounded-lg p-2 text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
+            aria-label="Back to Dashboard"
           >
-            Dashboard
+            <ArrowLeft className="h-5 w-5" />
           </Link>
+          <h1 className="text-xl font-bold text-ink">Placement Test</h1>
         </header>
 
         {/* Main card */}
         <div className="rounded-[14px] border border-rule bg-paper-2 p-6">
-          <h2 className="mb-2 text-2xl font-bold text-ink">
-            Placement Test
-          </h2>
           <p className="mb-6 text-ink-2">
             Measure your technical English skill across 4 axes.
           </p>
@@ -238,6 +237,7 @@ export function PlacementPage() {
 
           {/* Start button */}
           <button
+            type="button"
             onClick={handleStart}
             disabled={isStarting}
             className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-60"
