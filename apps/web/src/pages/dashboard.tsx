@@ -19,6 +19,7 @@ import type {
   TekLoginBonusResponse,
 } from "@teklin/shared";
 import { TekIcon } from "@/components/icons/tek-icon";
+import { playCharin } from "@/lib/sounds";
 
 const PLACEMENT_PROMPT_DISMISS_KEY = "dashboard:placement-prompt-dismissed";
 
@@ -228,6 +229,7 @@ export function DashboardPage() {
       if (!res.alreadyClaimed) {
         setLoginBonusAvailable(false);
         setLoginBonusJustClaimed(true);
+        playCharin();
         window.dispatchEvent(
           new CustomEvent("tek-balance-updated", {
             detail: { balance: res.balance },
