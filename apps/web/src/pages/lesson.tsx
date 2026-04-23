@@ -696,6 +696,26 @@ function PracticeStep({
         />
       )}
 
+      {exercise.type === "error_correction" && (
+        <ErrorCorrectionExercise
+          lessonId={lessonId}
+          exercise={exercise}
+          result={currentResult}
+          onAnswer={handleAnswer}
+          readOnly={_readOnly}
+        />
+      )}
+
+      {exercise.type === "paraphrase" && (
+        <ParaphraseExercise
+          lessonId={lessonId}
+          exercise={exercise}
+          result={currentResult}
+          onAnswer={handleAnswer}
+          readOnly={_readOnly}
+        />
+      )}
+
       {(currentResult || _readOnly) && (
         <button
           onClick={handleNext}
@@ -1092,6 +1112,233 @@ function FreeTextExercise({
               </p>
               <p className="text-sm text-ink">{result.correctAnswer}</p>
             </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ErrorCorrectionExercise
+// ---------------------------------------------------------------------------
+
+function ErrorCorrectionExercise({
+  lessonId,
+  exercise,
+  result,
+  onAnswer,
+  readOnly: _readOnly = false,
+}: {
+  lessonId: string;
+  exercise: Exercise;
+  result: LessonAnswerResponse | null;
+  onAnswer: (result: LessonAnswerResponse) => void;
+  readOnly?: boolean;
+}) {
+  const [value, setValue] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [exercise.id]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!value.trim() || isSubmitting || result) return;
+    setIsSubmitting(true);
+
+    try {
+      const res = await apiFetch<LessonAnswerResponse>(
+        `/api/lessons/${lessonId}/answer`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            step: "practice" as LessonStep,
+            exerciseId: exercise.id,
+            answer: value.trim(),
+          }),
+        },
+      );
+      onAnswer(res);
+      playSound(res.correct ? "correct" : "incorrect");
+    } catch (err) {
+      onAnswer({
+        correct: false,
+        score: 0,
+        feedback: parseApiErrorMessage(err),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [value, isSubmitting, result, lessonId, exercise.id, onAnswer]);
+
+  return (
+    <div>
+      {/* Error sentence to fix */}
+      <div className="mb-6 rounded-[14px] border border-coral/30 bg-coral-50 p-5">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-coral-fg">
+          この文の間違いを見つけて修正しよう
+        </p>
+        <p className="font-mono text-base text-ink">
+          {exercise.errorSentence ?? exercise.sentence ?? ""}
+        </p>
+      </div>
+
+      {/* Input */}
+      <div className="mb-4 flex gap-3">
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSubmit();
+          }}
+          disabled={result !== null}
+          placeholder="修正した文を入力..."
+          className="flex-1 rounded-lg border border-rule bg-paper px-4 py-3 text-sm text-ink placeholder-ink-3 outline-none transition-colors focus:border-teal disabled:opacity-60"
+        />
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!value.trim() || isSubmitting || result !== null}
+          className="rounded-lg bg-teal px-5 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSubmitting ? "..." : "確認"}
+        </button>
+      </div>
+
+      {/* Result */}
+      {result && (
+        <div
+          className={`rounded-lg px-5 py-4 ${
+            result.correct
+              ? "border border-teal bg-teal-50"
+              : "border border-coral bg-coral-50"
+          }`}
+        >
+          <p
+            className={`mb-1 text-sm font-semibold ${result.correct ? "text-teal" : "text-coral-fg"}`}
+          >
+            {result.correct ? "正解！" : "惜しい！"}
+          </p>
+          {!result.correct && result.correctAnswer && (
+            <p className="text-sm text-ink-2">
+              正解：{" "}
+              <span className="font-medium text-ink">
+                {result.correctAnswer}
+              </span>
+            </p>
+          )}
+          {result.feedback && (
+            <p className="mt-1 text-sm text-ink-2">{result.feedback}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ParaphraseExercise
+// ---------------------------------------------------------------------------
+
+function ParaphraseExercise({
+  lessonId,
+  exercise,
+  result,
+  onAnswer,
+  readOnly: _readOnly = false,
+}: {
+  lessonId: string;
+  exercise: Exercise;
+  result: LessonAnswerResponse | null;
+  onAnswer: (result: LessonAnswerResponse) => void;
+  readOnly?: boolean;
+}) {
+  const [value, setValue] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = useCallback(async () => {
+    if (!value.trim() || isSubmitting || result) return;
+    setIsSubmitting(true);
+
+    try {
+      const res = await apiFetch<LessonAnswerResponse>(
+        `/api/lessons/${lessonId}/answer`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            step: "practice" as LessonStep,
+            exerciseId: exercise.id,
+            answer: value.trim(),
+          }),
+        },
+      );
+      onAnswer(res);
+      playSound(res.correct ? "correct" : "incorrect");
+    } catch (err) {
+      onAnswer({
+        correct: false,
+        score: 0,
+        feedback: parseApiErrorMessage(err),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [value, isSubmitting, result, lessonId, exercise.id, onAnswer]);
+
+  return (
+    <div>
+      {/* Original sentence to paraphrase */}
+      {exercise.prompt && (
+        <div className="mb-5 rounded-[14px] border border-plum/30 bg-plum-50 p-5">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-plum">
+            この文を別の表現で言い換えよう
+          </p>
+          <p className="text-sm font-medium text-ink">{exercise.prompt}</p>
+        </div>
+      )}
+
+      {/* Textarea */}
+      <div className="mb-4">
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          disabled={result !== null}
+          placeholder="別の英語表現で書き直そう..."
+          rows={4}
+          className="w-full rounded-lg border border-rule bg-paper px-4 py-3 text-sm text-ink placeholder-ink-3 outline-none transition-colors focus:border-teal disabled:opacity-60"
+        />
+      </div>
+
+      {!result && (
+        <button
+          onClick={handleSubmit}
+          disabled={!value.trim() || isSubmitting}
+          className="w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isSubmitting ? "送信中..." : "送信"}
+        </button>
+      )}
+
+      {/* Result */}
+      {result && (
+        <div
+          className={`rounded-lg px-5 py-4 ${
+            result.correct
+              ? "border border-teal bg-teal-50"
+              : "border border-mustard/40 bg-mustard-50"
+          }`}
+        >
+          <p
+            className={`mb-1 text-sm font-semibold ${result.correct ? "text-teal" : "text-mustard-fg"}`}
+          >
+            {result.correct ? "よくできました！" : "AIフィードバック"}
+          </p>
+          {result.feedback && (
+            <p className="text-sm text-ink">{result.feedback}</p>
           )}
         </div>
       )}

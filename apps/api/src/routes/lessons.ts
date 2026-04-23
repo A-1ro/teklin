@@ -7,6 +7,7 @@ import {
   streaks,
   users,
   phraseCards,
+  exerciseScores,
 } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
@@ -26,6 +27,8 @@ import {
   scoreFillInBlank,
   scoreReorder,
   scoreFreeTextWithFeedback,
+  scoreErrorCorrection,
+  scoreParaphraseWithFeedback,
 } from "../lib/lesson";
 import type {
   LessonContent,
@@ -548,9 +551,21 @@ lessonRoutes.post("/:id/answer", async (c) => {
       if (!correct && exercise.correctAnswer) {
         correctAnswer = exercise.correctAnswer;
       }
+    } else if (exercise.type === "error_correction") {
+      score = scoreErrorCorrection(exercise, answer);
+      correct = score === 100;
+      if (!correct && exercise.correctAnswer) {
+        correctAnswer = exercise.correctAnswer;
+      }
     } else if (exercise.type === "free_text") {
       const llm = createLLMService(c.env);
       const result = await scoreFreeTextWithFeedback(exercise, answer, llm);
+      score = result.score;
+      correct = score >= 70;
+      feedback = result.feedback || undefined;
+    } else if (exercise.type === "paraphrase") {
+      const llm = createLLMService(c.env);
+      const result = await scoreParaphraseWithFeedback(exercise, answer, llm);
       score = result.score;
       correct = score >= 70;
       feedback = result.feedback || undefined;
@@ -561,19 +576,37 @@ lessonRoutes.post("/:id/answer", async (c) => {
 
   // In review mode, skip recording the answer to avoid mutating completed sessions
   if (!isReview && hasActiveSession) {
+    const now = Date.now();
     const answerRecord: LessonAnswerRecord = {
       step,
       exerciseId,
       answer,
       correct,
       score,
-      answeredAt: Date.now(),
+      answeredAt: now,
     };
     session.answers.push(answerRecord);
 
     await kv.put(sessionKvKey, JSON.stringify(session), {
       expirationTtl: LESSON_SESSION_TTL,
     });
+
+    // Record exercise-type score for adaptive lesson planning (practice only)
+    if (step === "practice") {
+      const exercise = content.practice.exercises.find(
+        (e) => e.id === exerciseId
+      );
+      if (exercise) {
+        await db.insert(exerciseScores).values({
+          id: crypto.randomUUID(),
+          userId,
+          lessonId,
+          exerciseType: exercise.type,
+          score,
+          answeredAt: now,
+        });
+      }
+    }
   }
 
   return c.json({

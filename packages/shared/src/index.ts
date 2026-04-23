@@ -38,7 +38,12 @@ export type LessonType = "vocabulary" | "rewrite" | "reading" | "listening";
 export type DifficultyFeedback = "too_easy" | "just_right" | "too_hard";
 
 /** Exercise types within a lesson */
-export type ExerciseType = "fill_in_blank" | "reorder" | "free_text";
+export type ExerciseType =
+  | "fill_in_blank"
+  | "reorder"
+  | "free_text"
+  | "error_correction"
+  | "paraphrase";
 
 // ---------------------------------------------------------------------------
 // Lesson types
@@ -72,12 +77,31 @@ export interface Exercise {
   sentence?: string;
   /** For reorder: shuffled words */
   words?: string[];
-  /** For free_text: the prompt/scenario */
+  /** For free_text / paraphrase: the prompt/scenario */
   prompt?: string;
-  /** Correct answer (for fill_in_blank and reorder) */
+  /** Correct answer (for fill_in_blank, reorder, error_correction) */
   correctAnswer?: string;
   /** Acceptable answers (for fill_in_blank, multiple valid options) */
   acceptableAnswers?: string[];
+  /** For error_correction: the sentence containing error(s) to fix */
+  errorSentence?: string;
+}
+
+/** Exercise composition plan — describes which exercises to generate */
+export interface ExercisePlan {
+  /** Ordered list of exercise types to include in the practice section */
+  types: ExerciseType[];
+  /** Human-readable rationale (included in LLM prompt for context) */
+  rationale: string;
+}
+
+/** Per-exercise-type performance summary */
+export interface ExerciseTypePerformance {
+  type: ExerciseType;
+  /** Number of answers recorded */
+  attemptCount: number;
+  /** Average score (0-100) */
+  avgScore: number;
 }
 
 /** Wrap-up summary content */

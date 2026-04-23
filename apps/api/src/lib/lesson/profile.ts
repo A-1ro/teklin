@@ -7,8 +7,14 @@ import {
   phraseCards,
   aiRewriteHistory,
   placementResults,
+  exerciseScores,
 } from "../../db/schema";
-import type { RewriteContext, SkillAxis } from "@teklin/shared";
+import type {
+  RewriteContext,
+  SkillAxis,
+  ExerciseType,
+  ExerciseTypePerformance,
+} from "@teklin/shared";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -81,6 +87,8 @@ export interface LearnerProfile {
   recentFocusPhrases: string[];
   /** Contexts already covered in the last 5 lessons */
   recentContexts: RewriteContext[];
+  /** Per-exercise-type performance (from exercise_scores table) */
+  exerciseTypePerformance: ExerciseTypePerformance[];
 }
 
 // ---------------------------------------------------------------------------
@@ -109,6 +117,7 @@ export async function buildLearnerProfile(
     overdueCount,
     rewriteRows,
     placementRow,
+    exerciseTypePerfRows,
   ] = await Promise.all([
     // 1. Context-level performance (all completed lessons)
     db
@@ -205,6 +214,18 @@ export async function buildLearnerProfile(
       .orderBy(desc(placementResults.createdAt))
       .limit(1)
       .get(),
+
+    // 8. Exercise type performance (aggregate scores by type)
+    db
+      .select({
+        exerciseType: exerciseScores.exerciseType,
+        attemptCount: count(),
+        avgScore: avg(exerciseScores.score),
+      })
+      .from(exerciseScores)
+      .where(eq(exerciseScores.userId, userId))
+      .groupBy(exerciseScores.exerciseType)
+      .all(),
   ]);
 
   // --- Derive context performance ---
@@ -306,6 +327,14 @@ export async function buildLearnerProfile(
     0
   );
 
+  // --- Exercise type performance ---
+  const exerciseTypePerformance: ExerciseTypePerformance[] =
+    exerciseTypePerfRows.map((r) => ({
+      type: r.exerciseType as ExerciseType,
+      attemptCount: r.attemptCount,
+      avgScore: Math.round(Number(r.avgScore) || 0),
+    }));
+
   return {
     contextPerformance,
     weakestContext,
@@ -318,5 +347,6 @@ export async function buildLearnerProfile(
     completedLessonCount,
     recentFocusPhrases,
     recentContexts,
+    exerciseTypePerformance,
   };
 }

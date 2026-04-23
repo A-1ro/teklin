@@ -245,6 +245,37 @@ export const pushSubscriptions = sqliteTable(
 );
 
 /**
+ * exercise_scores
+ * Per-exercise-type score records for adaptive lesson composition.
+ * exerciseType: ExerciseType = "fill_in_blank" | "reorder" | "free_text" | "error_correction" | "paraphrase"
+ */
+export const exerciseScores = sqliteTable(
+  "exercise_scores",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    lessonId: text("lesson_id")
+      .notNull()
+      .references(() => lessons.id),
+    exerciseType: text("exercise_type").notNull(),
+    score: integer("score").notNull(),
+    answeredAt: integer("answered_at").notNull(),
+  },
+  (table) => [
+    index("exercise_scores_user_type_idx").on(
+      table.userId,
+      table.exerciseType
+    ),
+    index("exercise_scores_user_answered_idx").on(
+      table.userId,
+      table.answeredAt
+    ),
+  ]
+);
+
+/**
  * streaks
  * Daily learning streak per user (one row per user).
  * last_learned_at: Unix epoch ms of the most recent learning session
