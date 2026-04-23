@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" aria-label="Tek stone">
+  <!--
+    Gem vertices (flat-top pentagon):
+      A (18, 10)  crown top-left
+      B (82, 10)  crown top-right
+      C (95, 42)  right girdle
+      D (50, 90)  culet (bottom point)
+      E ( 5, 42)  left girdle
+      G (50, 42)  girdle midpoint (interior divider)
+  -->
+
+  <!-- ── Pavilion (bottom half) ─────────────────────────────────── -->
+  <!-- Left pavilion — darkest -->
+  <path d="M5 42L50 42L50 90Z" fill="#0A6665"/>
+  <!-- Right pavilion — catches more light -->
+  <path d="M95 42L50 90L50 42Z" fill="#0D7474"/>
+
+  <!-- ── Crown (top half) ───────────────────────────────────────── -->
+  <!-- Left crown facet -->
+  <path d="M5 42L18 10L50 42Z" fill="#0E7C7B"/>
+  <!-- Right crown facet -->
+  <path d="M82 10L95 42L50 42Z" fill="#1A9494"/>
+  <!-- Crown table (top center — brightest face) -->
+  <path d="M18 10L82 10L50 42Z" fill="#22AEAC"/>
+
+  <!-- ── Shine / highlight ──────────────────────────────────────── -->
+  <!-- Small top-left sparkle on the table -->
+  <path d="M18 10L38 10L28 26Z" fill="#FAF7F1" opacity="0.30"/>
+  <!-- Tiny corner catchlight -->
+  <path d="M18 10L24 10L18 17Z" fill="#FAF7F1" opacity="0.45"/>
+
+  <!-- ── Facet edge lines ───────────────────────────────────────── -->
+  <!-- Outer outline -->
+  <path
+    d="M18 10L82 10L95 42L50 90L5 42Z"
+    fill="none"
+    stroke="#064F4E"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+  <!-- Crown dividers → girdle midpoint -->
+  <path
+    d="M18 10L50 42M82 10L50 42"
+    stroke="#064F4E"
+    stroke-width="1.25"
+    stroke-opacity="0.45"
+    stroke-linecap="round"
+  />
+  <!-- Girdle horizontal -->
+  <path
+    d="M5 42L95 42"
+    stroke="#064F4E"
+    stroke-width="1"
+    stroke-opacity="0.30"
+  />
+  <!-- Pavilion keel (center vertical) -->
+  <path
+    d="M50 42L50 90"
+    stroke="#064F4E"
+    stroke-width="1"
+    stroke-opacity="0.25"
+  />
+</svg>

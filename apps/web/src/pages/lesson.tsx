@@ -4,6 +4,7 @@ import { useRequireAuth } from "@/lib/auth";
 import { ApiError, apiFetch } from "@/lib/api";
 import { playSound } from "@/lib/sound";
 import { FlameIcon } from "@/components/icons/flame-icon";
+import { TekIcon } from "@/components/icons/tek-icon";
 import type {
   LessonContent,
   LessonStep,
@@ -113,6 +114,13 @@ export function LessonPage() {
           .then((data) => {
             setCompletionData(data);
             setCurrentStep("complete");
+            if (data.tek) {
+              window.dispatchEvent(
+                new CustomEvent("tek-balance-updated", {
+                  detail: { balance: data.tek.balance },
+                })
+              );
+            }
           })
           .catch(() => {
             // Even on error, move to complete screen
@@ -1519,6 +1527,20 @@ function CompleteScreen({
                 <p className="text-sm font-semibold text-mustard-fg">
                   {"\uD83C\uDF89"} 新記録達成：{completionData.streak.longestStreak}日連続！
                 </p>
+              </div>
+            )}
+
+            {completionData.tek && (
+              <div className="mt-4 rounded-lg border border-teal/30 bg-teal-50 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TekIcon size={18} className="text-teal" />
+                  <span className="text-sm font-semibold text-teal-dark">
+                    tek 獲得
+                  </span>
+                </div>
+                <span className="font-mono text-lg font-bold text-teal">
+                  +{completionData.tek.earned}
+                </span>
               </div>
             )}
           </div>

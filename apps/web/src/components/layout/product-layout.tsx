@@ -12,7 +12,8 @@ import {
   getIOSPushState,
   type IOSPushState,
 } from "@/lib/notifications";
-import type { TodayLessonResponse } from "@teklin/shared";
+import type { TodayLessonResponse, TekBalanceResponse } from "@teklin/shared";
+import { TekIcon } from "@/components/icons/tek-icon";
 
 const NAV_TABS = [
   { num: "01", label: "ホーム", path: "/dashboard" },
@@ -26,11 +27,24 @@ export function ProductLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [streak, setStreak] = useState<number | null>(null);
+  const [tekBalance, setTekBalance] = useState<number | null>(null);
 
   useEffect(() => {
     apiFetch<TodayLessonResponse>("/api/lessons/today")
       .then((res) => setStreak(res.streak.currentStreak))
       .catch(() => {});
+    apiFetch<TekBalanceResponse>("/api/tek")
+      .then((res) => setTekBalance(res.balance))
+      .catch(() => {});
+  }, []);
+
+  // Listen for tek balance updates dispatched by other pages (e.g. login bonus)
+  useEffect(() => {
+    function handleTekUpdate(e: CustomEvent<{ balance: number }>) {
+      setTekBalance(e.detail.balance);
+    }
+    window.addEventListener("tek-balance-updated", handleTekUpdate as EventListener);
+    return () => window.removeEventListener("tek-balance-updated", handleTekUpdate as EventListener);
   }, []);
 
   const initials = user
@@ -147,6 +161,46 @@ export function ProductLayout() {
               gap: 10,
             }}
           >
+            {/* Tek balance chip */}
+            {tekBalance !== null && (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "4px 10px",
+                  borderRadius: 999,
+                  background: "var(--color-teal-50)",
+                  border: "1px solid #bfdedd",
+                }}
+              >
+                <TekIcon
+                  size={14}
+                  style={{ color: "var(--color-teal)", flexShrink: 0 }}
+                />
+                <span
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "var(--color-teal-dark)",
+                  }}
+                >
+                  {tekBalance}
+                </span>
+                <span
+                  className="hidden sm:inline"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "var(--color-teal)",
+                  }}
+                >
+                  tek
+                </span>
+              </span>
+            )}
+
             {/* Streak chip */}
             {streak !== null && (
               <span

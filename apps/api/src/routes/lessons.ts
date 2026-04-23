@@ -20,6 +20,7 @@ import {
   type StreakKvValue,
 } from "../kv";
 import { createLLMService } from "../lib/llm";
+import { awardTek } from "../lib/tek";
 import {
   generateLesson,
   buildLearnerProfile,
@@ -754,6 +755,14 @@ lessonRoutes.post("/:id/complete", async (c) => {
     // ignore parse errors — focusPhrase stays null
   }
 
+  // Award tek for lesson completion
+  let tekBalance: number | undefined;
+  try {
+    tekBalance = await awardTek(db, userId, "lesson_complete");
+  } catch {
+    // Tek award failure must not block lesson completion
+  }
+
   return c.json({
     score: avgScore,
     streak: {
@@ -763,6 +772,9 @@ lessonRoutes.post("/:id/complete", async (c) => {
     },
     completedAt: new Date(now).toISOString(),
     focusPhrase,
+    ...(tekBalance !== undefined
+      ? { tek: { balance: tekBalance, earned: 30 } }
+      : {}),
   });
 });
 

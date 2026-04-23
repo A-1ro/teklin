@@ -7,6 +7,7 @@ import { lessonRoutes } from "./routes/lessons";
 import { cardRoutes } from "./routes/cards";
 import { rewriteRoutes } from "./routes/rewrite";
 import { notificationRoutes } from "./routes/notifications";
+import { tekRoutes } from "./routes/tek";
 import { handleScheduled, handleLessonQueue } from "./scheduled";
 import type { Bindings, LessonGenerationMessage } from "./types";
 
@@ -25,6 +26,7 @@ app.route("/api/lessons", lessonRoutes);
 app.route("/api/cards", cardRoutes);
 app.route("/api/rewrite", rewriteRoutes);
 app.route("/api/notifications", notificationRoutes);
+app.route("/api/tek", tekRoutes);
 
 // Health check
 app.get("/api/health", (c) => {

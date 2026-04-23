@@ -189,6 +189,7 @@ export interface LessonCompleteResponse {
   };
   completedAt: string;
   focusPhrase: LessonFocusPhrase | null;
+  tek?: TekEarned;
 }
 
 /** Response from POST /api/lessons/:id/add-to-cards */
@@ -278,6 +279,7 @@ export interface CardAnswerResponse {
   interval: number;
   easeFactor: number;
   repetitions: number;
+  tek?: TekEarned;
 }
 
 /** Per-category stats */
@@ -390,6 +392,31 @@ export interface RewriteRemainingResponse {
   remaining: number;
   limit: number;
   resetsAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Tek (gacha stone) types
+// ---------------------------------------------------------------------------
+
+/** Reasons for earning tek stones */
+export type TekReason = "login_bonus" | "lesson_complete" | "card_review";
+
+/** Response from GET /api/tek */
+export interface TekBalanceResponse {
+  balance: number;
+}
+
+/** Tek earned in a single action (included in lesson/card responses) */
+export interface TekEarned {
+  balance: number;
+  earned: number;
+}
+
+/** Response from POST /api/tek/login-bonus */
+export interface TekLoginBonusResponse {
+  balance: number;
+  earned: number;
+  alreadyClaimed: boolean;
 }
 
 /** LLM provider identifiers */

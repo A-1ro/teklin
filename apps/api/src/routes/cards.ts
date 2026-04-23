@@ -5,6 +5,7 @@ import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
 import { srsKey, newCardsKey, type SrsKvValue, type NewCardsKvValue } from "../kv";
 import { calculateSrs } from "../lib/srs";
+import { awardTek } from "../lib/tek";
 import type {
   CardCategory,
   CardDirection,
@@ -458,11 +459,22 @@ cardRoutes.post("/:id/answer", async (c) => {
   // Invalidate SRS KV cache for this user + direction
   await c.env.SRS_KV.delete(srsKey(userId, direction));
 
+  // Award tek for card review
+  let tekBalance: number | undefined;
+  try {
+    tekBalance = await awardTek(db, userId, "card_review");
+  } catch {
+    // Tek award failure must not block card review submission
+  }
+
   const response: CardAnswerResponse = {
     nextReview: new Date(newState.nextReview).toISOString(),
     interval: newState.interval,
     easeFactor: newState.easeFactor,
     repetitions: newState.repetitions,
+    ...(tekBalance !== undefined
+      ? { tek: { balance: tekBalance, earned: 20 } }
+      : {}),
   };
   return c.json(response);
 });

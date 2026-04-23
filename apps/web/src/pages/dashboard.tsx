@@ -15,7 +15,9 @@ import type {
   ReviewCardsResponse,
   PlacementResultResponse,
   RewriteContext,
+  TekLoginBonusResponse,
 } from "@teklin/shared";
+import { TekIcon } from "@/components/icons/tek-icon";
 
 const PLACEMENT_PROMPT_DISMISS_KEY = "dashboard:placement-prompt-dismissed";
 
@@ -65,6 +67,9 @@ export function DashboardPage() {
   );
   const [placementResult, setPlacementResult] =
     useState<PlacementResultResponse | null>(null);
+  const [loginBonus, setLoginBonus] = useState<{ earned: number } | null>(
+    null
+  );
 
   // Compute dismiss key before any early returns so the hook below is unconditional
   const todayKey = getLocalDateString(new Date());
@@ -88,6 +93,21 @@ export function DashboardPage() {
 
     apiFetch<PlacementResultResponse>("/api/placement/result")
       .then((res) => setPlacementResult(res))
+      .catch(() => {});
+
+    // Auto-claim daily login bonus
+    apiFetch<TekLoginBonusResponse>("/api/tek/login-bonus", { method: "POST" })
+      .then((res) => {
+        if (!res.alreadyClaimed) {
+          setLoginBonus({ earned: res.earned });
+          // Notify the layout header to update the tek balance chip
+          window.dispatchEvent(
+            new CustomEvent("tek-balance-updated", {
+              detail: { balance: res.balance },
+            })
+          );
+        }
+      })
       .catch(() => {});
   }, [isLoading, user]);
 
@@ -209,6 +229,56 @@ export function DashboardPage() {
 
   return (
     <div>
+      {/* Login bonus notification */}
+      {loginBonus && loginBonus.earned > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "12px 18px",
+            marginBottom: 20,
+            borderRadius: 12,
+            background: "var(--color-teal-50)",
+            border: "1px solid #bfdedd",
+          }}
+        >
+          <TekIcon size={18} style={{ color: "var(--color-teal)", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-teal-dark)" }}>
+            ログインボーナス
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--color-teal)",
+            }}
+          >
+            +{loginBonus.earned} tek
+          </span>
+          <span style={{ fontSize: 12, color: "var(--color-ink-2)", marginLeft: "auto" }}>
+            今日のログインボーナス
+          </span>
+          <button
+            type="button"
+            onClick={() => setLoginBonus(null)}
+            aria-label="閉じる"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--color-ink-3)",
+              fontSize: 16,
+              padding: "0 4px",
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Top row */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between md:mb-8">
         <div>

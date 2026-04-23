@@ -13,6 +13,7 @@ import type {
   Domain,
 } from "@teklin/shared";
 import { ArrowLeft, RotateCcw, Check } from "lucide-react";
+import { TekIcon } from "@/components/icons/tek-icon";
 import { playSound } from "@/lib/sound";
 
 const CATEGORY_LABELS: Record<CardCategory, string> = {
@@ -102,6 +103,7 @@ export function ReviewPage() {
     easy: 0,
   });
   const [isComplete, setIsComplete] = useState(false);
+  const [tekToast, setTekToast] = useState<number | null>(null);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -134,10 +136,23 @@ export function ReviewPage() {
       setIsSubmitting(true);
 
       try {
-        await apiFetch<CardAnswerResponse>(`/api/cards/${card.id}/answer`, {
-          method: "POST",
-          body: JSON.stringify({ rating, direction }),
-        });
+        const res = await apiFetch<CardAnswerResponse>(
+          `/api/cards/${card.id}/answer`,
+          {
+            method: "POST",
+            body: JSON.stringify({ rating, direction }),
+          }
+        );
+
+        if (res.tek) {
+          setTekToast(res.tek.earned);
+          window.dispatchEvent(
+            new CustomEvent("tek-balance-updated", {
+              detail: { balance: res.tek.balance },
+            })
+          );
+          setTimeout(() => setTekToast(null), 1500);
+        }
 
         setAnswers((prev) => ({ ...prev, [rating]: prev[rating] + 1 }));
 
@@ -321,6 +336,34 @@ export function ReviewPage() {
 
   return (
     <main className="min-h-screen bg-paper px-4 py-8">
+      {/* Tek earned toast */}
+      {tekToast !== null && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 96,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "10px 20px",
+            borderRadius: 999,
+            background: "var(--color-teal)",
+            color: "#fff",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+            pointerEvents: "none",
+            animation: "tek-pop 0.25s ease",
+          }}
+        >
+          <TekIcon size={14} style={{ color: "#fff" }} />
+          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 16 }}>
+            +{tekToast} tek
+          </span>
+        </div>
+      )}
+
       <div className="mx-auto max-w-md">
         {/* Header */}
         <header className="mb-6 flex items-center justify-between">

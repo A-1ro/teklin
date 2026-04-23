@@ -286,3 +286,38 @@ export const streaks = sqliteTable("streaks", {
   longestStreak: integer("longest_streak").notNull().default(0),
   lastLearnedAt: integer("last_learned_at"),
 });
+
+/**
+ * tek_balances
+ * Tek stone balance per user (one row per user).
+ * Tek is earned via login bonus (+10), lesson completion (+30), card review (+20).
+ * last_login_bonus_at: Teklin day (YYYY-MM-DD) of the last claimed daily login bonus
+ */
+export const tekBalances = sqliteTable("tek_balances", {
+  userId: text("user_id").primaryKey().references(() => users.id),
+  balance: integer("balance").notNull().default(0),
+  lastLoginBonusAt: text("last_login_bonus_at"),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+/**
+ * tek_transactions
+ * Append-only audit log for every tek award.
+ * reason: TekReason = "login_bonus" | "lesson_complete" | "card_review"
+ */
+export const tekTransactions = sqliteTable(
+  "tek_transactions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    amount: integer("amount").notNull(),
+    reason: text("reason").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    index("tek_transactions_user_created_idx").on(
+      table.userId,
+      table.createdAt
+    ),
+  ]
+);
