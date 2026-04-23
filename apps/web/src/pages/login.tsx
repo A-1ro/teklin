@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { getLoginUrl } from "@/lib/api";
 import { useRedirectIfAuth } from "@/lib/auth";
 
@@ -52,19 +53,19 @@ export function LoginPage() {
 
           <p className="mt-6 text-center text-xs leading-relaxed text-ink-3">
             ログインすることで、
-            <a
-              href="/terms"
+            <Link
+              to="/terms"
               className="underline underline-offset-2 hover:text-ink-2"
             >
               利用規約
-            </a>
+            </Link>
             および
-            <a
-              href="/privacy"
+            <Link
+              to="/privacy"
               className="underline underline-offset-2 hover:text-ink-2"
             >
               プライバシーポリシー
-            </a>
+            </Link>
             に同意したものとみなします。
           </p>
         </div>
