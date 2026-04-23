@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { getLoginUrl } from "@/lib/api";
 import { useRedirectIfAuth } from "@/lib/auth";
+import { Wordmark } from "@/components/ui/wordmark";
+import { TekkiWave } from "@/components/mascot/Tekki";
 
 export function LoginPage() {
   const { isLoading } = useRedirectIfAuth();
@@ -17,10 +19,13 @@ export function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-paper px-4">
       <div className="w-full max-w-md">
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-ink">
-            Teklin
-          </h1>
-          <p className="mt-3 text-base text-ink-2">
+          <div className="mb-4 flex justify-center">
+            <Wordmark size={22} />
+          </div>
+          <div className="mb-4 flex justify-center">
+            <TekkiWave size={80} />
+          </div>
+          <p className="text-base text-ink-2">
             コードを書くように、英語を書けるエンジニアになる。
           </p>
           <p className="mt-1 text-sm text-ink-3">
