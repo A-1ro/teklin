@@ -27,6 +27,16 @@ export function GachaTekkiSvg({ tekkiId, size = 120 }: GachaTekkiProps) {
       return <TekkiWizard size={size} />;
     case "cosmos":
       return <TekkiCosmos size={size} />;
+    case "sleepy":
+      return <TekkiSleepy size={size} />;
+    case "cat":
+      return <TekkiCat size={size} />;
+    case "samurai":
+      return <TekkiSamurai size={size} />;
+    case "idol":
+      return <TekkiIdol size={size} />;
+    case "angel":
+      return <TekkiAngel size={size} />;
     default:
       return <TekkiDefault size={size} />;
   }
@@ -523,6 +533,337 @@ function TekkiWizard({ size }: { size: number }) {
       {/* Blush */}
       <circle cx="52" cy="130" r="5" fill="#A78BCC" opacity="0.5" />
       <circle cx="128" cy="130" r="5" fill="#A78BCC" opacity="0.5" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// sleepy (N) — Lavender body with nightcap and sleeping -- eyes
+// ---------------------------------------------------------------------------
+function TekkiSleepy({ size }: { size: number }) {
+  return (
+    <svg
+      viewBox="0 0 180 180"
+      width={size}
+      height={size}
+      aria-label="スリーピーテッキ"
+    >
+      {/* Nightcap cone */}
+      <path d="M70 32 L90 5 L110 32 Z" fill="#C4AAEE" />
+      {/* Pompom */}
+      <circle cx="90" cy="5" r="7" fill="#FAF7F1" />
+      {/* Nightcap band */}
+      <rect x="66" y="28" width="48" height="8" rx="4" fill="#B094DC" />
+      {/* Body */}
+      <rect x="26" y="32" width="128" height="110" rx="28" fill="#9884CC" />
+      {/* Tail */}
+      <path d="M66 142 L72 166 L92 142 Z" fill="#9884CC" />
+      {/* Sleeping eyes -- */}
+      <rect x="44" y="90" width="36" height="7" rx="3.5" fill="#FAF7F1" />
+      <rect x="100" y="90" width="36" height="7" rx="3.5" fill="#FAF7F1" />
+      {/* Eyelashes */}
+      <rect x="52" y="98" width="4" height="6" rx="2" fill="#FAF7F1" opacity="0.5" />
+      <rect x="60" y="100" width="4" height="7" rx="2" fill="#FAF7F1" opacity="0.5" />
+      <rect x="68" y="98" width="4" height="6" rx="2" fill="#FAF7F1" opacity="0.5" />
+      <rect x="108" y="98" width="4" height="6" rx="2" fill="#FAF7F1" opacity="0.5" />
+      <rect x="116" y="100" width="4" height="7" rx="2" fill="#FAF7F1" opacity="0.5" />
+      <rect x="124" y="98" width="4" height="6" rx="2" fill="#FAF7F1" opacity="0.5" />
+      {/* Small smile */}
+      <path
+        d="M80 116 Q90 124 100 116"
+        stroke="#FAF7F1"
+        strokeWidth="3.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Zzz */}
+      <text
+        x="126"
+        y="65"
+        fontSize="16"
+        fontWeight="700"
+        fontFamily="ui-monospace,monospace"
+        fill="#FAF7F1"
+        opacity="0.8"
+      >
+        z
+      </text>
+      <text
+        x="134"
+        y="49"
+        fontSize="13"
+        fontWeight="700"
+        fontFamily="ui-monospace,monospace"
+        fill="#FAF7F1"
+        opacity="0.55"
+      >
+        z
+      </text>
+      <text
+        x="140"
+        y="37"
+        fontSize="10"
+        fontWeight="700"
+        fontFamily="ui-monospace,monospace"
+        fill="#FAF7F1"
+        opacity="0.35"
+      >
+        z
+      </text>
+      {/* Soft blush */}
+      <circle cx="46" cy="102" r="7" fill="#C4AAEE" opacity="0.55" />
+      <circle cx="134" cy="102" r="7" fill="#C4AAEE" opacity="0.55" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// cat (R) — Orange body with cat ears, ^ ^ eyes and whiskers
+// ---------------------------------------------------------------------------
+function TekkiCat({ size }: { size: number }) {
+  return (
+    <svg
+      viewBox="0 0 180 180"
+      width={size}
+      height={size}
+      aria-label="キャットテッキ"
+    >
+      {/* Left ear outer (same color as body, drawn before body) */}
+      <path d="M44 32 L52 6 L76 32 Z" fill="#D97B2A" />
+      {/* Right ear outer */}
+      <path d="M104 32 L128 6 L136 32 Z" fill="#D97B2A" />
+      {/* Body */}
+      <rect x="26" y="32" width="128" height="110" rx="28" fill="#D97B2A" />
+      {/* Tail */}
+      <path d="M66 142 L72 166 L92 142 Z" fill="#D97B2A" />
+      {/* Left ear inner */}
+      <path d="M50 30 L55 12 L70 30 Z" fill="#FFAAAA" opacity="0.75" />
+      {/* Right ear inner */}
+      <path d="M110 30 L125 12 L130 30 Z" fill="#FFAAAA" opacity="0.75" />
+      {/* Eyes ^ ^ */}
+      <path
+        d="M44 100 Q62 80 80 100"
+        stroke="#FAF7F1"
+        strokeWidth="5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M100 100 Q118 80 136 100"
+        stroke="#FAF7F1"
+        strokeWidth="5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Nose */}
+      <path d="M86 110 L90 116 L94 110 Z" fill="#FFAAAA" />
+      {/* Mouth */}
+      <path
+        d="M82 116 Q90 124 98 116"
+        stroke="#FAF7F1"
+        strokeWidth="3"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Left whiskers */}
+      <path d="M28 106 L76 109" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+      <path d="M28 114 L76 113" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+      <path d="M28 122 L76 117" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+      {/* Right whiskers */}
+      <path d="M104 109 L152 106" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+      <path d="M104 113 L152 114" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+      <path d="M104 117 L152 122" stroke="#FAF7F1" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// samurai (SR) — Dark crimson body with kabuto helmet and stern = = eyes
+// ---------------------------------------------------------------------------
+function TekkiSamurai({ size }: { size: number }) {
+  return (
+    <svg
+      viewBox="0 0 180 180"
+      width={size}
+      height={size}
+      aria-label="サムライテッキ"
+    >
+      {/* Body */}
+      <rect x="26" y="32" width="128" height="110" rx="28" fill="#8B1A1A" />
+      {/* Tail */}
+      <path d="M66 142 L72 166 L92 142 Z" fill="#8B1A1A" />
+      {/* Helmet dome (semi-ellipse) */}
+      <path d="M38 46 A52 46 0 0 0 142 46 Z" fill="#2A0808" />
+      {/* Helmet brim */}
+      <rect x="32" y="38" width="116" height="12" rx="6" fill="#1A0404" />
+      {/* Gold finial */}
+      <circle cx="90" cy="5" r="5" fill="#C99412" />
+      {/* Gold trim on brim */}
+      <rect x="34" y="47" width="112" height="2" rx="1" fill="#C99412" opacity="0.7" />
+      {/* Stern eyes = = */}
+      <rect x="44" y="88" width="38" height="8" rx="4" fill="#FAF7F1" />
+      <rect x="98" y="88" width="38" height="8" rx="4" fill="#FAF7F1" />
+      {/* Stern mouth */}
+      <rect x="76" y="116" width="28" height="4" rx="2" fill="#FAF7F1" />
+      {/* Armor plate details */}
+      <rect x="50" y="106" width="80" height="3" rx="1.5" fill="#6A0A0A" opacity="0.5" />
+      <rect x="50" y="113" width="80" height="3" rx="1.5" fill="#6A0A0A" opacity="0.5" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// idol (SR) — Pastel pink body with bow, heart eyes and microphone
+// ---------------------------------------------------------------------------
+function TekkiIdol({ size }: { size: number }) {
+  return (
+    <svg
+      viewBox="0 0 180 180"
+      width={size}
+      height={size}
+      aria-label="アイドルテッキ"
+    >
+      {/* Body */}
+      <rect x="26" y="32" width="128" height="110" rx="28" fill="#E080AA" />
+      {/* Tail */}
+      <path d="M66 142 L72 166 L92 142 Z" fill="#E080AA" />
+      {/* Bow ribbon: left wing */}
+      <path d="M52 30 L38 12 L82 26 L90 30 Z" fill="#FF9EC8" />
+      {/* Bow ribbon: right wing */}
+      <path d="M128 30 L142 12 L98 26 L90 30 Z" fill="#FF9EC8" />
+      {/* Bow ribbon: center knot */}
+      <circle cx="90" cy="28" r="7" fill="#E060A0" />
+      <circle cx="88" cy="26" r="2.5" fill="#FFFFFF" opacity="0.35" />
+      {/* Heart eyes ♥ ♥ */}
+      <text
+        x="62"
+        y="108"
+        fontSize="38"
+        textAnchor="middle"
+        fontFamily="ui-monospace,monospace"
+        fill="#FAF7F1"
+      >
+        ♥
+      </text>
+      <text
+        x="118"
+        y="108"
+        fontSize="38"
+        textAnchor="middle"
+        fontFamily="ui-monospace,monospace"
+        fill="#FAF7F1"
+      >
+        ♥
+      </text>
+      {/* Big smile */}
+      <path
+        d="M68 122 Q90 140 112 122"
+        stroke="#FAF7F1"
+        strokeWidth="4"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Microphone */}
+      <circle cx="144" cy="76" r="9" fill="#E8E8E8" />
+      <circle cx="144" cy="76" r="6" fill="#C8C8C8" />
+      <rect x="141" y="84" width="6" height="20" rx="3" fill="#D0D0D0" />
+      {/* Sparkle decorations */}
+      <path
+        d="M38 60 L39.5 56 L41 60 L45 61.5 L41 63 L39.5 67 L38 63 L34 61.5 Z"
+        fill="#FAF7F1"
+        opacity="0.6"
+      />
+      <path
+        d="M140 56 L141.5 52 L143 56 L147 57.5 L143 59 L141.5 63 L140 59 L136 57.5 Z"
+        fill="#FAF7F1"
+        opacity="0.6"
+      />
+      <circle cx="50" cy="78" r="2" fill="#FAF7F1" opacity="0.45" />
+      <circle cx="130" cy="72" r="2" fill="#FAF7F1" opacity="0.45" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// angel (SSR) — Cream body with golden halo, wings and gentle ^ ^ eyes
+// ---------------------------------------------------------------------------
+function TekkiAngel({ size }: { size: number }) {
+  return (
+    <svg
+      viewBox="0 0 180 180"
+      width={size}
+      height={size}
+      aria-label="エンジェルテッキ"
+    >
+      {/* Wings behind body */}
+      <path d="M26 70 Q4 56 6 106 Q10 132 26 120 Z" fill="#F8F5E4" opacity="0.9" />
+      <path d="M26 82 Q10 78 12 112 L26 106 Z" fill="#F0EDD8" opacity="0.5" />
+      <path d="M154 70 Q176 56 174 106 Q170 132 154 120 Z" fill="#F8F5E4" opacity="0.9" />
+      <path d="M154 82 Q170 78 168 112 L154 106 Z" fill="#F0EDD8" opacity="0.5" />
+      {/* Body */}
+      <rect x="26" y="32" width="128" height="110" rx="28" fill="#F0EDD8" />
+      {/* Body highlight */}
+      <rect x="38" y="44" width="104" height="18" rx="9" fill="#FFFFFF" opacity="0.38" />
+      {/* Tail */}
+      <path d="M66 142 L72 166 L92 142 Z" fill="#F0EDD8" />
+      {/* Halo glow */}
+      <circle
+        cx="90"
+        cy="22"
+        r="20"
+        fill="none"
+        stroke="#FFE066"
+        strokeWidth="9"
+        opacity="0.22"
+      />
+      {/* Halo ring */}
+      <circle
+        cx="90"
+        cy="22"
+        r="20"
+        fill="none"
+        stroke="#C99412"
+        strokeWidth="3.5"
+      />
+      {/* Gentle arc eyes ^ ^ */}
+      <path
+        d="M44 90 Q62 72 80 90"
+        stroke="#8B7455"
+        strokeWidth="4"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M100 90 Q118 72 136 90"
+        stroke="#8B7455"
+        strokeWidth="4"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Soft blush */}
+      <circle cx="46" cy="102" r="7" fill="#F0C8A8" opacity="0.42" />
+      <circle cx="134" cy="102" r="7" fill="#F0C8A8" opacity="0.42" />
+      {/* Gentle smile */}
+      <path
+        d="M76 118 Q90 128 104 118"
+        stroke="#8B7455"
+        strokeWidth="3.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Gold sparkles */}
+      <path
+        d="M44 52 L45 48 L46 52 L50 53 L46 54 L45 58 L44 54 L40 53 Z"
+        fill="#C99412"
+        opacity="0.5"
+      />
+      <path
+        d="M130 58 L131 54 L132 58 L136 59 L132 60 L131 64 L130 60 L126 59 Z"
+        fill="#C99412"
+        opacity="0.5"
+      />
+      <circle cx="58" cy="44" r="2" fill="#C99412" opacity="0.4" />
+      <circle cx="122" cy="46" r="2" fill="#C99412" opacity="0.4" />
     </svg>
   );
 }

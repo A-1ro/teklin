@@ -510,11 +510,16 @@ export type TekkiId =
   | "pink" // N
   | "mint" // N
   | "night" // N
+  | "sleepy" // N
   | "coral" // R
   | "plum" // R
   | "gold" // R
+  | "cat" // R
   | "wizard" // SR
-  | "cosmos"; // SSR
+  | "samurai" // SR
+  | "idol" // SR
+  | "cosmos" // SSR
+  | "angel"; // SSR
 
 export interface TekkiCatalogItem {
   id: TekkiId;
