@@ -17,6 +17,7 @@ import { RewritePage } from "@/pages/rewrite";
 import { RewriteHistoryPage } from "@/pages/rewrite-history";
 import { RewriteDetailPage } from "@/pages/rewrite-detail";
 import { LessonHistoryPage } from "@/pages/lesson-history";
+import { GachaPage } from "@/pages/gacha";
 import { NotFoundPage } from "@/pages/not-found";
 import { PlacementGate } from "@/components/auth/placement-gate";
 import { ProductLayout } from "@/components/layout/product-layout";
@@ -35,6 +36,7 @@ export function App() {
           <Route path="/lesson" element={<LessonHomePage />} />
           <Route path="/cards" element={<CardsPage />} />
           <Route path="/rewrite" element={<RewritePage />} />
+          <Route path="/gacha" element={<GachaPage />} />
         </Route>
         {/* These pages have their own layouts (back buttons etc.) */}
         <Route path="/lesson/history" element={<LessonHistoryPage />} />

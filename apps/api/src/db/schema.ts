@@ -303,7 +303,7 @@ export const tekBalances = sqliteTable("tek_balances", {
 /**
  * tek_transactions
  * Append-only audit log for every tek award.
- * reason: TekReason = "login_bonus" | "lesson_complete" | "card_review"
+ * reason: TekReason = "login_bonus" | "lesson_complete" | "card_review" | "gacha_pull"
  */
 export const tekTransactions = sqliteTable(
   "tek_transactions",
@@ -319,5 +319,48 @@ export const tekTransactions = sqliteTable(
       table.userId,
       table.createdAt
     ),
+  ]
+);
+
+/**
+ * gacha_collection
+ * One row per user per tekki variant; count tracks duplicates.
+ */
+export const gachaCollection = sqliteTable(
+  "gacha_collection",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    tekkiId: text("tekki_id").notNull(),
+    count: integer("count").notNull().default(1),
+    firstPulledAt: integer("first_pulled_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("gacha_collection_user_tekki_idx").on(
+      table.userId,
+      table.tekkiId
+    ),
+    index("gacha_collection_user_idx").on(table.userId),
+  ]
+);
+
+/**
+ * gacha_history
+ * Append-only log of every individual tekki pull.
+ * rarity: GachaRarity = "N" | "R" | "SR" | "SSR"
+ * is_bonus: 1 if this was the 11th bonus pull in a 10-pull
+ */
+export const gachaHistory = sqliteTable(
+  "gacha_history",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id),
+    tekkiId: text("tekki_id").notNull(),
+    rarity: text("rarity").notNull(),
+    isBonus: integer("is_bonus").notNull().default(0),
+    pulledAt: integer("pulled_at").notNull(),
+  },
+  (table) => [
+    index("gacha_history_user_pulled_idx").on(table.userId, table.pulledAt),
   ]
 );

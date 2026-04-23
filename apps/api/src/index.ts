@@ -8,6 +8,7 @@ import { cardRoutes } from "./routes/cards";
 import { rewriteRoutes } from "./routes/rewrite";
 import { notificationRoutes } from "./routes/notifications";
 import { tekRoutes } from "./routes/tek";
+import { gachaRoutes } from "./routes/gacha";
 import { handleScheduled, handleLessonQueue } from "./scheduled";
 import type { Bindings, LessonGenerationMessage } from "./types";
 
@@ -27,6 +28,7 @@ app.route("/api/cards", cardRoutes);
 app.route("/api/rewrite", rewriteRoutes);
 app.route("/api/notifications", notificationRoutes);
 app.route("/api/tek", tekRoutes);
+app.route("/api/gacha", gachaRoutes);
 
 // Health check
 app.get("/api/health", (c) => {

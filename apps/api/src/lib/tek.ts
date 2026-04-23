@@ -7,6 +7,8 @@ export const TEK_AMOUNTS: Record<TekReason, number> = {
   login_bonus: 10,
   lesson_complete: 30,
   card_review: 20,
+  // gacha_pull is a spend (negative), handled directly in the gacha route
+  gacha_pull: 0,
 };
 
 /**

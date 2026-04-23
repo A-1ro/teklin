@@ -398,8 +398,12 @@ export interface RewriteRemainingResponse {
 // Tek (gacha stone) types
 // ---------------------------------------------------------------------------
 
-/** Reasons for earning tek stones */
-export type TekReason = "login_bonus" | "lesson_complete" | "card_review";
+/** Reasons for earning or spending tek stones */
+export type TekReason =
+  | "login_bonus"
+  | "lesson_complete"
+  | "card_review"
+  | "gacha_pull";
 
 /** Response from GET /api/tek */
 export interface TekBalanceResponse {
@@ -491,4 +495,68 @@ export interface PlacementResultResponse {
   totalQuestions: number;
   completedAt: string;
   answers?: PlacementAnswerReview[];
+}
+
+// ---------------------------------------------------------------------------
+// Gacha types
+// ---------------------------------------------------------------------------
+
+export type GachaRarity = "N" | "R" | "SR" | "SSR";
+
+export type TekkiId =
+  | "default" // N
+  | "cool" // N
+  | "pink" // N
+  | "mint" // N
+  | "night" // N
+  | "coral" // R
+  | "plum" // R
+  | "gold" // R
+  | "wizard" // SR
+  | "cosmos"; // SSR
+
+export interface TekkiCatalogItem {
+  id: TekkiId;
+  name: string;
+  nameJa: string;
+  rarity: GachaRarity;
+  /** Integer probability weight out of 100 */
+  probability: number;
+}
+
+/** One result from a gacha pull */
+export interface GachaResultItem {
+  tekkiId: TekkiId;
+  rarity: GachaRarity;
+  name: string;
+  nameJa: string;
+  isNew: boolean;
+  isBonus: boolean;
+}
+
+/** Response from POST /api/gacha/pull */
+export interface GachaPullResponse {
+  results: GachaResultItem[];
+  newBalance: number;
+}
+
+/** One item in a user's collection */
+export interface GachaCollectionItem {
+  tekkiId: TekkiId;
+  rarity: GachaRarity;
+  name: string;
+  nameJa: string;
+  count: number;
+  firstPulledAt: string;
+}
+
+/** Response from GET /api/gacha/collection */
+export interface GachaCollectionResponse {
+  items: GachaCollectionItem[];
+  total: number;
+}
+
+/** Request body for POST /api/gacha/pull */
+export interface GachaPullPayload {
+  count: 1 | 10;
 }

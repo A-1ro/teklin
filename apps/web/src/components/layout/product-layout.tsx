@@ -20,6 +20,7 @@ const NAV_TABS = [
   { num: "02", label: "レッスン", path: "/lesson" },
   { num: "03", label: "カード", path: "/cards" },
   { num: "04", label: "Rewrite", path: "/rewrite" },
+  { num: "05", label: "ガチャ", path: "/gacha" },
 ] as const;
 
 export function ProductLayout() {

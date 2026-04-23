@@ -459,10 +459,22 @@ cardRoutes.post("/:id/answer", async (c) => {
   // Invalidate SRS KV cache for this user + direction
   await c.env.SRS_KV.delete(srsKey(userId, direction));
 
-  // Award tek for card review
+  // Award tek for card review — capped at 20 tek per Teklin day (first card only)
   let tekBalance: number | undefined;
+  let tekEarned = 0;
   try {
-    tekBalance = await awardTek(db, userId, "card_review");
+    const today = todayUtc();
+    const cardTekKey = `cardtek:${userId}:${today}`;
+    const alreadyEarned =
+      (await c.env.SRS_KV.get<number>(cardTekKey, "json")) ?? 0;
+
+    if (alreadyEarned < 20) {
+      tekBalance = await awardTek(db, userId, "card_review");
+      tekEarned = 20;
+      await c.env.SRS_KV.put(cardTekKey, JSON.stringify(20), {
+        expirationTtl: NEW_CARDS_KV_TTL, // 48 hours, same as new-card counter
+      });
+    }
   } catch {
     // Tek award failure must not block card review submission
   }
@@ -473,7 +485,7 @@ cardRoutes.post("/:id/answer", async (c) => {
     easeFactor: newState.easeFactor,
     repetitions: newState.repetitions,
     ...(tekBalance !== undefined
-      ? { tek: { balance: tekBalance, earned: 20 } }
+      ? { tek: { balance: tekBalance, earned: tekEarned } }
       : {}),
   };
   return c.json(response);
