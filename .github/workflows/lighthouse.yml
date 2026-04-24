@@ -94,9 +94,9 @@ jobs:
             table += '|-----|-------------|---------------|----------------|\n';
 
             for (const [urlPath, lhr] of Object.entries(reportsByUrl)) {
-              const perf = lhr.categories['performance'].score;
-              const a11y = lhr.categories['accessibility'].score;
-              const bp = lhr.categories['best-practices'].score;
+              const perf = lhr.categories['performance'].score ?? 0;
+              const a11y = lhr.categories['accessibility'].score ?? 0;
+              const bp = lhr.categories['best-practices'].score ?? 0;
               table += `| \`${urlPath}\` | ${scoreEmoji(perf)} ${fmtScore(perf)} | ${scoreEmoji(a11y)} ${fmtScore(a11y)} | ${scoreEmoji(bp)} ${fmtScore(bp)} |\n`;
             }
 
@@ -109,7 +109,7 @@ jobs:
             });
 
             const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('## Lighthouse CI Results')
+              c.user.login === 'github-actions[bot]' && c.body.includes('## Lighthouse CI Results')
             );
 
             if (existing) {

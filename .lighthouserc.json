@@ -1,13 +1,13 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "npm run preview -w apps/web -- --port 3000 --host",
+      "startServerCommand": "cd apps/web && npx vite preview --port 3000 --host",
       "startServerReadyPattern": "localhost:3000",
       "url": [
         "http://localhost:3000/",
         "http://localhost:3000/login"
       ],
-      "numberOfRuns": 1,
+      "numberOfRuns": 3,
       "settings": {
         "chromeFlags": "--no-sandbox"
       }
@@ -20,7 +20,7 @@
       }
     },
     "upload": {
-      "target": "temporary-public-storage"
+      "target": "filesystem"
     }
   }
 }
