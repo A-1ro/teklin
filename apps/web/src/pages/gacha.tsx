@@ -11,6 +11,7 @@ import type {
   GachaResultItem,
   GachaCollectionItem,
   GachaRarity,
+  TekkiId,
 } from "@teklin/shared";
 
 const RARITY_COLORS: Record<
@@ -31,6 +32,7 @@ export function GachaPage() {
   const [collection, setCollection] = useState<GachaCollectionItem[]>([]);
   const [collectionLoading, setCollectionLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTekki, setSelectedTekki] = useState<TekkiId | null>(null);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -408,9 +410,21 @@ export function GachaPage() {
             読み込み中...
           </div>
         ) : (
-          <CollectionGrid collection={collection} />
+          <CollectionGrid
+            collection={collection}
+            onSelect={setSelectedTekki}
+          />
         )}
       </div>
+
+      {/* Tekki profile overlay */}
+      {selectedTekki && (
+        <TekkiProfileOverlay
+          tekkiId={selectedTekki}
+          collection={collection}
+          onClose={() => setSelectedTekki(null)}
+        />
+      )}
 
       {/* Result overlay */}
       {results && (
@@ -436,7 +450,13 @@ export function GachaPage() {
 // ---------------------------------------------------------------------------
 // CollectionGrid
 // ---------------------------------------------------------------------------
-function CollectionGrid({ collection }: { collection: GachaCollectionItem[] }) {
+function CollectionGrid({
+  collection,
+  onSelect,
+}: {
+  collection: GachaCollectionItem[];
+  onSelect: (id: TekkiId) => void;
+}) {
   const ownedMap = new Map(collection.map((c) => [c.tekkiId, c]));
 
   return (
@@ -453,6 +473,19 @@ function CollectionGrid({ collection }: { collection: GachaCollectionItem[] }) {
         return (
           <div
             key={item.id}
+            role={owned ? "button" : undefined}
+            tabIndex={owned ? 0 : undefined}
+            onClick={owned ? () => onSelect(item.id) : undefined}
+            onKeyDown={
+              owned
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelect(item.id);
+                    }
+                  }
+                : undefined
+            }
             style={{
               borderRadius: 14,
               border: `1.5px solid ${owned ? colors.bg : "var(--color-rule)"}`,
@@ -461,7 +494,26 @@ function CollectionGrid({ collection }: { collection: GachaCollectionItem[] }) {
               textAlign: "center",
               opacity: owned ? 1 : 0.45,
               position: "relative",
+              cursor: owned ? "pointer" : "default",
+              transition: "transform 120ms, box-shadow 120ms",
             }}
+            onMouseEnter={
+              owned
+                ? (e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 4px 12px rgba(0,0,0,0.08)";
+                  }
+                : undefined
+            }
+            onMouseLeave={
+              owned
+                ? (e) => {
+                    e.currentTarget.style.transform = "";
+                    e.currentTarget.style.boxShadow = "";
+                  }
+                : undefined
+            }
           >
             {owned && owned.count > 1 && (
               <span
@@ -538,6 +590,205 @@ function CollectionGrid({ collection }: { collection: GachaCollectionItem[] }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// TekkiProfileOverlay
+// ---------------------------------------------------------------------------
+interface TekkiProfileOverlayProps {
+  tekkiId: TekkiId;
+  collection: GachaCollectionItem[];
+  onClose: () => void;
+}
+
+function TekkiProfileOverlay({
+  tekkiId,
+  collection,
+  onClose,
+}: TekkiProfileOverlayProps) {
+  const catalog = TEKKI_CATALOG_ITEMS.find((c) => c.id === tekkiId);
+  const owned = collection.find((c) => c.tekkiId === tekkiId);
+  if (!catalog || !owned) return null;
+
+  const colors = RARITY_COLORS[catalog.rarity];
+  const firstPulled = new Date(owned.firstPulledAt);
+  const dateStr = `${firstPulled.getFullYear()}/${String(firstPulled.getMonth() + 1).padStart(2, "0")}/${String(firstPulled.getDate()).padStart(2, "0")}`;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 250,
+        background: "rgba(10, 10, 15, 0.85)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 340,
+          borderRadius: 20,
+          background: "#fff",
+          overflow: "hidden",
+          animation: "profileFadeIn 0.25s ease",
+        }}
+      >
+        {/* Card top: colored background with Tekki */}
+        <div
+          style={{
+            background: colors.bg,
+            padding: "28px 24px 20px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            position: "relative",
+          }}
+        >
+          {/* Rarity badge */}
+          <span
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 14,
+              padding: "3px 10px",
+              borderRadius: 6,
+              background: colors.text,
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.05em",
+            }}
+          >
+            {catalog.rarity}
+          </span>
+
+          {/* Count badge */}
+          {owned.count > 1 && (
+            <span
+              style={{
+                position: "absolute",
+                top: 12,
+                left: 14,
+                padding: "3px 8px",
+                borderRadius: 6,
+                background: "rgba(0,0,0,0.12)",
+                color: colors.text,
+                fontSize: 11,
+                fontWeight: 700,
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              &times;{owned.count}
+            </span>
+          )}
+
+          <GachaTekkiSvg tekkiId={tekkiId} size={120} />
+
+          <h2
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: colors.text,
+              marginTop: 12,
+              marginBottom: 0,
+            }}
+          >
+            {catalog.nameJa}
+          </h2>
+        </div>
+
+        {/* Card body: profile info */}
+        <div style={{ padding: "20px 24px 24px" }}>
+          <p
+            style={{
+              fontSize: 13,
+              lineHeight: 1.7,
+              color: "var(--color-ink-2, #4A473F)",
+              marginBottom: 16,
+            }}
+          >
+            {catalog.description}
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 11,
+              color: "var(--color-ink-3, #8A8780)",
+            }}
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+            >
+              <rect
+                x="1"
+                y="3"
+                width="14"
+                height="12"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M1 7h14"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M5 1v4M11 1v4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span>初回獲得: {dateStr}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              marginTop: 20,
+              width: "100%",
+              padding: "10px 0",
+              borderRadius: 10,
+              border: "1.5px solid var(--color-rule, #E0DED8)",
+              background: "transparent",
+              color: "var(--color-ink-2, #4A473F)",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            閉じる
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes profileFadeIn {
+          from { opacity: 0; transform: scale(0.92) translateY(8px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
