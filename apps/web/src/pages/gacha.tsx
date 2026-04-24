@@ -471,7 +471,6 @@ const PARTICLE_COUNT = 28;
 function TekGatherAnimation() {
   const [particles] = useState(() =>
     Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-      // Distribute start positions around the screen edges and beyond
       const angle = (i / PARTICLE_COUNT) * Math.PI * 2 + Math.random() * 0.4;
       const dist = 300 + Math.random() * 200;
       const startX = Math.cos(angle) * dist;
@@ -484,12 +483,28 @@ function TekGatherAnimation() {
     })
   );
 
-  const [phase, setPhase] = useState<"gather" | "flash">("gather");
+  // scatter: particles at edges (no transition)
+  // gather:  particles fly to center (transition fires)
+  // flash:   burst effect
+  const [phase, setPhase] = useState<"scatter" | "gather" | "flash">(
+    "scatter"
+  );
 
   useEffect(() => {
-    const t = setTimeout(() => setPhase("flash"), 1100);
-    return () => clearTimeout(t);
+    // Next frame: start gathering
+    const raf = requestAnimationFrame(() => {
+      setPhase("gather");
+    });
+    // After particles arrive → flash
+    const t = setTimeout(() => setPhase("flash"), 1200);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t);
+    };
   }, []);
+
+  const scattered = phase === "scatter";
+  const flashing = phase === "flash";
 
   return (
     <div
@@ -497,15 +512,14 @@ function TekGatherAnimation() {
         position: "fixed",
         inset: 0,
         zIndex: 280,
-        background:
-          phase === "flash"
-            ? "rgba(255,255,255,0.95)"
-            : "rgba(10, 10, 15, 0.88)",
+        background: flashing
+          ? "rgba(255,255,255,0.95)"
+          : "rgba(10, 10, 15, 0.88)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
-        transition: "background 0.3s ease",
+        transition: flashing ? "background 0.3s ease" : "none",
       }}
     >
       {/* Particles */}
@@ -521,12 +535,14 @@ function TekGatherAnimation() {
             marginLeft: -p.size / 2,
             marginTop: -p.size / 2,
             color: "var(--color-teal)",
-            opacity: phase === "flash" ? 0 : 1,
+            opacity: flashing ? 0 : 1,
             transform:
-              phase === "gather"
-                ? `translate(${p.startX}px, ${p.startY}px) rotate(${p.rotation}deg)`
-                : "translate(0, 0) rotate(0deg) scale(0.5)",
-            transition: `transform ${p.duration}s cubic-bezier(0.23, 1, 0.32, 1) ${p.delay}s, opacity 0.25s ease ${phase === "flash" ? "0s" : "0.3s"}`,
+              scattered || flashing
+                ? `translate(${p.startX}px, ${p.startY}px) rotate(${p.rotation}deg)${flashing ? " scale(0.5)" : ""}`
+                : "translate(0, 0) rotate(0deg) scale(0.8)",
+            transition: scattered
+              ? "none"
+              : `transform ${p.duration}s cubic-bezier(0.23, 1, 0.32, 1) ${p.delay}s, opacity 0.2s ease`,
             pointerEvents: "none",
           }}
         >
@@ -534,24 +550,25 @@ function TekGatherAnimation() {
         </div>
       ))}
 
-      {/* Center glow that intensifies as particles arrive */}
+      {/* Center glow that grows as particles arrive */}
       <div
         style={{
           position: "absolute",
-          width: phase === "flash" ? 600 : 40,
-          height: phase === "flash" ? 600 : 40,
+          width: flashing ? 600 : scattered ? 0 : 80,
+          height: flashing ? 600 : scattered ? 0 : 80,
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(14,124,123,0.5) 0%, transparent 70%)",
-          opacity: phase === "flash" ? 0 : 1,
-          transition:
-            "width 0.3s ease, height 0.3s ease, opacity 0.25s ease 0.1s",
+          opacity: flashing ? 0 : 1,
+          transition: scattered
+            ? "none"
+            : "width 0.8s ease 0.4s, height 0.8s ease 0.4s, opacity 0.25s ease",
           pointerEvents: "none",
         }}
       />
 
       {/* Flash burst */}
-      {phase === "flash" && (
+      {flashing && (
         <div
           style={{
             position: "absolute",
