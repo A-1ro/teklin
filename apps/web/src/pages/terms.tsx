@@ -16,7 +16,7 @@ export function TermsPage() {
         </nav>
 
         <h1 className="mb-2 text-3xl font-bold text-ink">利用規約</h1>
-        <p className="mb-10 text-sm text-ink-3">最終更新: 2025年4月</p>
+        <p className="mb-10 text-sm text-ink-3">最終更新: 2026年4月</p>
 
         <section className="mb-8">
           <h2 className="mb-3 border-b border-rule pb-2 text-lg font-semibold text-ink">

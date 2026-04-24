@@ -26,7 +26,7 @@ export function Footer() {
               color: "var(--color-ink-3)",
             }}
           >
-            © 2025 teklin · tech english for engineers
+            © 2026 teklin · tech english for engineers
           </span>
           <div
             style={{

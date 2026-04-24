@@ -18,7 +18,7 @@ export function PrivacyPage() {
         <h1 className="mb-2 text-3xl font-bold text-ink">
           プライバシーポリシー
         </h1>
-        <p className="mb-10 text-sm text-ink-3">最終更新: 2025年4月</p>
+        <p className="mb-10 text-sm text-ink-3">最終更新: 2026年4月</p>
 
         <p className="mb-10 text-sm leading-relaxed text-ink-2">
           Teklin（以下「当サービス」）は、ユーザーのプライバシーを尊重し、個人情報の適切な保護に努めます。本プライバシーポリシーは、当サービスが収集する情報およびその利用方法について説明します。
