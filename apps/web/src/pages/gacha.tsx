@@ -34,6 +34,7 @@ export function GachaPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTekki, setSelectedTekki] = useState<TekkiId | null>(null);
   const [showGatherAnim, setShowGatherAnim] = useState(false);
+  const [evolutions, setEvolutions] = useState<TekkiId[]>([]);
   const pendingResultsRef = useRef<GachaPullResponse | null>(null);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export function GachaPage() {
         await new Promise((r) => setTimeout(r, 350));
         setResults(res.results);
         setBalance(res.newBalance);
+        setEvolutions(res.evolutions);
         window.dispatchEvent(
           new CustomEvent("tek-balance-updated", {
             detail: { balance: res.newBalance },
@@ -96,7 +98,10 @@ export function GachaPage() {
     [isPulling]
   );
 
-  const handleCloseResults = useCallback(() => setResults(null), []);
+  const handleCloseResults = useCallback(() => {
+    setResults(null);
+    setEvolutions([]);
+  }, []);
 
   if (authLoading) {
     return (
@@ -446,6 +451,7 @@ export function GachaPage() {
       {results && (
         <ResultOverlay
           results={results}
+          evolutions={evolutions}
           onClose={handleCloseResults}
           onPullAgain1={() => {
             handleCloseResults();
@@ -616,6 +622,7 @@ function CollectionGrid({
       {TEKKI_CATALOG_ITEMS.map((item) => {
         const owned = ownedMap.get(item.id);
         const colors = RARITY_COLORS[item.rarity];
+        const isEvolved = owned?.evolved ?? false;
         return (
           <div
             key={item.id}
@@ -634,7 +641,9 @@ function CollectionGrid({
             }
             style={{
               borderRadius: 14,
-              border: `1.5px solid ${owned ? colors.bg : "var(--color-rule)"}`,
+              border: isEvolved
+                ? "2px solid #C99412"
+                : `1.5px solid ${owned ? colors.bg : "var(--color-rule)"}`,
               background: owned ? colors.bg : "var(--color-paper-2, #F3F2EE)",
               padding: "12px 8px 10px",
               textAlign: "center",
@@ -642,6 +651,9 @@ function CollectionGrid({
               position: "relative",
               cursor: owned ? "pointer" : "default",
               transition: "transform 120ms, box-shadow 120ms",
+              boxShadow: isEvolved
+                ? "0 0 12px rgba(201,148,18,0.3)"
+                : undefined,
             }}
             onMouseEnter={
               owned
@@ -661,6 +673,21 @@ function CollectionGrid({
                 : undefined
             }
           >
+            {isEvolved && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: 5,
+                  left: 7,
+                  fontSize: 12,
+                  lineHeight: 1,
+                  color: "#C99412",
+                }}
+                aria-label="進化済み"
+              >
+                ★
+              </span>
+            )}
             {owned && owned.count > 1 && (
               <span
                 style={{
@@ -759,6 +786,7 @@ function TekkiProfileOverlay({
   if (!catalog || !owned) return null;
 
   const colors = RARITY_COLORS[catalog.rarity];
+  const isEvolved = owned.evolved;
   const firstPulled = new Date(owned.firstPulledAt);
   const dateStr = `${firstPulled.getFullYear()}/${String(firstPulled.getMonth() + 1).padStart(2, "0")}/${String(firstPulled.getDate()).padStart(2, "0")}`;
 
@@ -793,7 +821,9 @@ function TekkiProfileOverlay({
         {/* Card top: colored background with Tekki */}
         <div
           style={{
-            background: colors.bg,
+            background: isEvolved
+              ? `linear-gradient(135deg, ${colors.bg}, #FBF3D5)`
+              : colors.bg,
             padding: "28px 24px 20px",
             display: "flex",
             flexDirection: "column",
@@ -809,14 +839,14 @@ function TekkiProfileOverlay({
               right: 14,
               padding: "3px 10px",
               borderRadius: 6,
-              background: colors.text,
+              background: isEvolved ? "#C99412" : colors.text,
               color: "#fff",
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.05em",
             }}
           >
-            {catalog.rarity}
+            {isEvolved ? `${catalog.rarity}+` : catalog.rarity}
           </span>
 
           {/* Count badge */}
@@ -845,13 +875,29 @@ function TekkiProfileOverlay({
             style={{
               fontSize: 20,
               fontWeight: 700,
-              color: colors.text,
+              color: isEvolved ? "#C99412" : colors.text,
               marginTop: 12,
               marginBottom: 0,
             }}
           >
-            {catalog.nameJa}
+            {isEvolved ? `★ ${catalog.nameJa}` : catalog.nameJa}
           </h2>
+          {isEvolved && (
+            <span
+              style={{
+                marginTop: 6,
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "2px 10px",
+                borderRadius: 999,
+                background: "#C99412",
+                color: "#fff",
+                letterSpacing: "0.05em",
+              }}
+            >
+              進化済み
+            </span>
+          )}
         </div>
 
         {/* Card body: profile info */}
@@ -944,6 +990,7 @@ function TekkiProfileOverlay({
 // ---------------------------------------------------------------------------
 interface ResultOverlayProps {
   results: GachaResultItem[];
+  evolutions: TekkiId[];
   onClose: () => void;
   onPullAgain1: () => void;
   onPullAgain10: () => void;
@@ -953,6 +1000,7 @@ interface ResultOverlayProps {
 
 function ResultOverlay({
   results,
+  evolutions,
   onClose,
   onPullAgain1,
   onPullAgain10,
@@ -994,11 +1042,33 @@ function ResultOverlay({
           fontSize: 12,
           letterSpacing: "0.1em",
           textTransform: "uppercase",
-          marginBottom: 20,
+          marginBottom: evolutions.length > 0 ? 12 : 20,
         }}
       >
         ガチャ結果
       </p>
+
+      {evolutions.length > 0 && (
+        <div
+          style={{
+            marginBottom: 20,
+            padding: "10px 20px",
+            borderRadius: 10,
+            background: "linear-gradient(90deg, rgba(201,148,18,0.25), rgba(201,148,18,0.1))",
+            border: "1px solid rgba(201,148,18,0.5)",
+            textAlign: "center",
+          }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#F5D76E" }}>
+            ★ 進化発生! ★
+          </span>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginLeft: 8 }}>
+            {evolutions
+              .map((id) => TEKKI_CATALOG_ITEMS.find((c) => c.id === id)?.nameJa ?? id)
+              .join("、")}
+          </span>
+        </div>
+      )}
 
       <div
         style={{

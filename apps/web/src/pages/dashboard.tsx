@@ -72,6 +72,8 @@ export function DashboardPage() {
   const [loginBonusAvailable, setLoginBonusAvailable] = useState(false);
   const [loginBonusClaiming, setLoginBonusClaiming] = useState(false);
   const [loginBonusJustClaimed, setLoginBonusJustClaimed] = useState(false);
+  const [loginBonusStreak, setLoginBonusStreak] = useState(0);
+  const [lastStreakBonus, setLastStreakBonus] = useState(0);
 
   // Compute dismiss key before any early returns so the hook below is unconditional
   const todayKey = getLocalDateString(new Date());
@@ -99,7 +101,10 @@ export function DashboardPage() {
 
     // Check if login bonus is available (but do NOT auto-claim)
     apiFetch<TekBalanceResponse>("/api/tek")
-      .then((res) => setLoginBonusAvailable(res.loginBonusAvailable))
+      .then((res) => {
+        setLoginBonusAvailable(res.loginBonusAvailable);
+        setLoginBonusStreak(res.loginBonusStreak);
+      })
       .catch(() => {});
   }, [isLoading, user]);
 
@@ -229,6 +234,8 @@ export function DashboardPage() {
       if (!res.alreadyClaimed) {
         setLoginBonusAvailable(false);
         setLoginBonusJustClaimed(true);
+        setLoginBonusStreak(res.streak);
+        setLastStreakBonus(res.streakBonus);
         playCharin();
         window.dispatchEvent(
           new CustomEvent("tek-balance-updated", {
@@ -274,20 +281,46 @@ export function DashboardPage() {
           }}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-ink-3)", marginBottom: 2 }}>
-            デイリーログインボーナス
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-ink-3)" }}>
+              デイリーログインボーナス
+            </span>
+            {loginBonusStreak > 0 && (
+              <span style={{
+                fontSize: 10,
+                fontWeight: 700,
+                padding: "1px 6px",
+                borderRadius: 4,
+                background: loginBonusStreak % 7 === 0 ? "var(--color-mustard)" : "var(--color-paper-2, #F3F2EE)",
+                color: loginBonusStreak % 7 === 0 ? "#fff" : "var(--color-ink-3)",
+              }}>
+                {loginBonusStreak}日連続
+              </span>
+            )}
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: "var(--color-teal-dark)" }}>
               +10
             </span>
             <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-teal)" }}>tek</span>
+            {loginBonusAvailable && !loginBonusJustClaimed && (loginBonusStreak + 1) % 7 === 0 && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-mustard)" }}>
+                +50 (7日ボーナス!)
+              </span>
+            )}
           </div>
         </div>
         {loginBonusJustClaimed ? (
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-teal)", flexShrink: 0 }}>
-            受け取り済み ✓
-          </span>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-teal)", display: "block" }}>
+              受け取り済み ✓
+            </span>
+            {lastStreakBonus > 0 && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-mustard)" }}>
+                +{lastStreakBonus} ストリークボーナス!
+              </span>
+            )}
+          </div>
         ) : loginBonusAvailable ? (
           <button
             type="button"

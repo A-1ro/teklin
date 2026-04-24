@@ -3,6 +3,7 @@ import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import type { CookieOptions } from "hono/utils/cookie";
 import { eq, and } from "drizzle-orm";
 import { createDb, users } from "../db";
+import { awardTek } from "../lib/tek";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -113,8 +114,10 @@ authRoutes.get("/github/callback", async (c) => {
       )
       .get();
 
+    let isNewUser = false;
     const now = Date.now();
     if (!user) {
+      isNewUser = true;
       const newId = crypto.randomUUID();
       await db.insert(users).values({
         id: newId,
@@ -137,6 +140,10 @@ authRoutes.get("/github/callback", async (c) => {
 
     if (!user) {
       return c.json({ error: "Failed to create user" }, 500);
+    }
+
+    if (isNewUser) {
+      await awardTek(db, user.id, "registration_bonus");
     }
 
     const jti = generateTokenId();
@@ -253,8 +260,10 @@ authRoutes.get("/google/callback", async (c) => {
       )
       .get();
 
+    let isNewUser = false;
     const now = Date.now();
     if (!user) {
+      isNewUser = true;
       const newId = crypto.randomUUID();
       await db.insert(users).values({
         id: newId,
@@ -277,6 +286,10 @@ authRoutes.get("/google/callback", async (c) => {
 
     if (!user) {
       return c.json({ error: "Failed to create user" }, 500);
+    }
+
+    if (isNewUser) {
+      await awardTek(db, user.id, "registration_bonus");
     }
 
     const jti = generateTokenId();

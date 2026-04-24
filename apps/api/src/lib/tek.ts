@@ -5,6 +5,8 @@ import type { TekReason } from "@teklin/shared";
 
 export const TEK_AMOUNTS: Record<TekReason, number> = {
   login_bonus: 10,
+  login_bonus_streak: 50,
+  registration_bonus: 100,
   lesson_complete: 30,
   card_review: 20,
   // gacha_pull is a spend (negative), handled directly in the gacha route

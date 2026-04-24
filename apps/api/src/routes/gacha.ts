@@ -15,6 +15,7 @@ import type {
   GachaPullResponse,
   GachaCollectionResponse,
   GachaResultItem,
+  TekkiId,
 } from "@teklin/shared";
 
 export const gachaRoutes = new Hono<{
@@ -105,7 +106,9 @@ gachaRoutes.post("/pull", async (c) => {
     createdAt: now,
   });
 
-  // Update collection counts and insert history
+  // Update collection counts, insert history, and check for evolutions
+  const evolutions: TekkiId[] = [];
+
   for (const { item, isBonus } of draws) {
     // Insert history record
     await db.insert(gachaHistory).values({
@@ -119,7 +122,11 @@ gachaRoutes.post("/pull", async (c) => {
 
     // Upsert collection
     const existing = await db
-      .select({ id: gachaCollection.id, count: gachaCollection.count })
+      .select({
+        id: gachaCollection.id,
+        count: gachaCollection.count,
+        evolved: gachaCollection.evolved,
+      })
       .from(gachaCollection)
       .where(
         and(
@@ -130,10 +137,20 @@ gachaRoutes.post("/pull", async (c) => {
       .get();
 
     if (existing) {
+      const newCount = existing.count + 1;
+      const shouldEvolve = newCount >= 5 && existing.evolved === 0;
+
       await db
         .update(gachaCollection)
-        .set({ count: existing.count + 1 })
+        .set({
+          count: shouldEvolve ? newCount - 4 : newCount,
+          ...(shouldEvolve ? { evolved: 1 } : {}),
+        })
         .where(eq(gachaCollection.id, existing.id));
+
+      if (shouldEvolve) {
+        evolutions.push(item.id);
+      }
     } else {
       await db.insert(gachaCollection).values({
         id: crypto.randomUUID(),
@@ -147,7 +164,7 @@ gachaRoutes.post("/pull", async (c) => {
     }
   }
 
-  return c.json({ results, newBalance } satisfies GachaPullResponse);
+  return c.json({ results, newBalance, evolutions } satisfies GachaPullResponse);
 });
 
 // ---------------------------------------------------------------------------
@@ -174,6 +191,7 @@ gachaRoutes.get("/collection", async (c) => {
         name: catalog.name,
         nameJa: catalog.nameJa,
         count: row.count,
+        evolved: row.evolved === 1,
         firstPulledAt: new Date(row.firstPulledAt).toISOString(),
       };
     })

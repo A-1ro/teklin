@@ -297,6 +297,7 @@ export const tekBalances = sqliteTable("tek_balances", {
   userId: text("user_id").primaryKey().references(() => users.id),
   balance: integer("balance").notNull().default(0),
   lastLoginBonusAt: text("last_login_bonus_at"),
+  loginBonusStreak: integer("login_bonus_streak").notNull().default(0),
   updatedAt: integer("updated_at").notNull(),
 });
 
@@ -333,6 +334,7 @@ export const gachaCollection = sqliteTable(
     userId: text("user_id").notNull().references(() => users.id),
     tekkiId: text("tekki_id").notNull(),
     count: integer("count").notNull().default(1),
+    evolved: integer("evolved").notNull().default(0),
     firstPulledAt: integer("first_pulled_at").notNull(),
   },
   (table) => [

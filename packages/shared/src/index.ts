@@ -401,6 +401,8 @@ export interface RewriteRemainingResponse {
 /** Reasons for earning or spending tek stones */
 export type TekReason =
   | "login_bonus"
+  | "login_bonus_streak"
+  | "registration_bonus"
   | "lesson_complete"
   | "card_review"
   | "gacha_pull";
@@ -409,6 +411,7 @@ export type TekReason =
 export interface TekBalanceResponse {
   balance: number;
   loginBonusAvailable: boolean;
+  loginBonusStreak: number;
 }
 
 /** Tek earned in a single action (included in lesson/card responses) */
@@ -422,6 +425,8 @@ export interface TekLoginBonusResponse {
   balance: number;
   earned: number;
   alreadyClaimed: boolean;
+  streak: number;
+  streakBonus: number;
 }
 
 /** LLM provider identifiers */
@@ -544,6 +549,7 @@ export interface GachaResultItem {
 export interface GachaPullResponse {
   results: GachaResultItem[];
   newBalance: number;
+  evolutions: TekkiId[];
 }
 
 /** One item in a user's collection */
@@ -553,6 +559,7 @@ export interface GachaCollectionItem {
   name: string;
   nameJa: string;
   count: number;
+  evolved: boolean;
   firstPulledAt: string;
 }
 
