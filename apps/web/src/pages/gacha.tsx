@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRequireAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { TekIcon } from "@/components/icons/tek-icon";
@@ -33,6 +33,8 @@ export function GachaPage() {
   const [collectionLoading, setCollectionLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTekki, setSelectedTekki] = useState<TekkiId | null>(null);
+  const [showGatherAnim, setShowGatherAnim] = useState(false);
+  const pendingResultsRef = useRef<GachaPullResponse | null>(null);
 
   useEffect(() => {
     if (authLoading || !user) return;
@@ -50,24 +52,35 @@ export function GachaPage() {
       if (isPulling) return;
       setError(null);
       setIsPulling(true);
+      setShowGatherAnim(true);
+      pendingResultsRef.current = null;
+
       try {
-        const res = await apiFetch<GachaPullResponse>("/api/gacha/pull", {
-          method: "POST",
-          body: JSON.stringify({ count }),
-        });
+        // Run API call and minimum animation duration in parallel
+        const [res] = await Promise.all([
+          apiFetch<GachaPullResponse>("/api/gacha/pull", {
+            method: "POST",
+            body: JSON.stringify({ count }),
+          }),
+          new Promise((r) => setTimeout(r, 1400)),
+        ]);
+        pendingResultsRef.current = res;
+        // Transition: gather animation ends → flash → results
+        setShowGatherAnim(false);
+        // Small gap so the flash frame renders before results overlay
+        await new Promise((r) => setTimeout(r, 350));
         setResults(res.results);
         setBalance(res.newBalance);
-        // Update header balance chip
         window.dispatchEvent(
           new CustomEvent("tek-balance-updated", {
             detail: { balance: res.newBalance },
           })
         );
-        // Refresh collection
         apiFetch<GachaCollectionResponse>("/api/gacha/collection")
           .then((r) => setCollection(r.items))
           .catch(() => {});
       } catch (err: unknown) {
+        setShowGatherAnim(false);
         const msg = err instanceof Error ? err.message : String(err);
         if (msg.includes("tekが不足")) {
           setError(
@@ -417,6 +430,9 @@ export function GachaPage() {
         )}
       </div>
 
+      {/* Tek gather animation */}
+      {showGatherAnim && <TekGatherAnimation />}
+
       {/* Tekki profile overlay */}
       {selectedTekki && (
         <TekkiProfileOverlay
@@ -443,6 +459,119 @@ export function GachaPage() {
           isPulling={isPulling}
         />
       )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// TekGatherAnimation — tek icons fly from all directions to center then flash
+// ---------------------------------------------------------------------------
+const PARTICLE_COUNT = 28;
+
+function TekGatherAnimation() {
+  const [particles] = useState(() =>
+    Array.from({ length: PARTICLE_COUNT }, (_, i) => {
+      // Distribute start positions around the screen edges and beyond
+      const angle = (i / PARTICLE_COUNT) * Math.PI * 2 + Math.random() * 0.4;
+      const dist = 300 + Math.random() * 200;
+      const startX = Math.cos(angle) * dist;
+      const startY = Math.sin(angle) * dist;
+      const size = 14 + Math.random() * 14;
+      const delay = Math.random() * 0.35;
+      const duration = 0.7 + Math.random() * 0.4;
+      const rotation = Math.random() * 360;
+      return { startX, startY, size, delay, duration, rotation };
+    })
+  );
+
+  const [phase, setPhase] = useState<"gather" | "flash">("gather");
+
+  useEffect(() => {
+    const t = setTimeout(() => setPhase("flash"), 1100);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 280,
+        background:
+          phase === "flash"
+            ? "rgba(255,255,255,0.95)"
+            : "rgba(10, 10, 15, 0.88)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        transition: "background 0.3s ease",
+      }}
+    >
+      {/* Particles */}
+      {particles.map((p, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: p.size,
+            height: p.size,
+            marginLeft: -p.size / 2,
+            marginTop: -p.size / 2,
+            color: "var(--color-teal)",
+            opacity: phase === "flash" ? 0 : 1,
+            transform:
+              phase === "gather"
+                ? `translate(${p.startX}px, ${p.startY}px) rotate(${p.rotation}deg)`
+                : "translate(0, 0) rotate(0deg) scale(0.5)",
+            transition: `transform ${p.duration}s cubic-bezier(0.23, 1, 0.32, 1) ${p.delay}s, opacity 0.25s ease ${phase === "flash" ? "0s" : "0.3s"}`,
+            pointerEvents: "none",
+          }}
+        >
+          <TekIcon size={p.size} />
+        </div>
+      ))}
+
+      {/* Center glow that intensifies as particles arrive */}
+      <div
+        style={{
+          position: "absolute",
+          width: phase === "flash" ? 600 : 40,
+          height: phase === "flash" ? 600 : 40,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(14,124,123,0.5) 0%, transparent 70%)",
+          opacity: phase === "flash" ? 0 : 1,
+          transition:
+            "width 0.3s ease, height 0.3s ease, opacity 0.25s ease 0.1s",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Flash burst */}
+      {phase === "flash" && (
+        <div
+          style={{
+            position: "absolute",
+            width: 20,
+            height: 20,
+            borderRadius: "50%",
+            background: "var(--color-teal)",
+            animation: "tekBurst 0.35s ease-out forwards",
+            pointerEvents: "none",
+          }}
+        />
+      )}
+
+      <style>{`
+        @keyframes tekBurst {
+          0%   { transform: scale(1); opacity: 0.9; }
+          50%  { transform: scale(30); opacity: 0.4; }
+          100% { transform: scale(50); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }
