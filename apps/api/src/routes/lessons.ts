@@ -22,8 +22,6 @@ import {
 import { createLLMService } from "../lib/llm";
 import { awardTek } from "../lib/tek";
 import {
-  generateLesson,
-  buildLearnerProfile,
   scoreMultipleChoice,
   scoreFillInBlank,
   scoreReorder,
@@ -108,183 +106,115 @@ lessonRoutes.get("/today", async (c) => {
   const kv = c.env.SESSION_KV;
   const sessionKvKey = lessonSessionKey(userId, today);
 
-  // Check KV for existing session
-  const existing = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
+  const db = createDb(c.env.DB);
 
   // Retrieve streak info
   const streakKvKey = streakKey(userId);
-  let streakData = await c.env.STREAK_KV.get<StreakKvValue>(
-    streakKvKey,
-    "json"
-  );
+  let streakData = await c.env.STREAK_KV.get<StreakKvValue>(streakKvKey, "json");
   if (!streakData) {
     streakData = { currentStreak: 0, longestStreak: 0, lastLearnedAt: null };
   }
-
   const streakInfo = {
     currentStreak: streakData.currentStreak,
     longestStreak: streakData.longestStreak,
   };
 
-  // If session exists in KV, try to load the lesson from D1
-  if (existing) {
-    const db = createDb(c.env.DB);
-    const lesson = await db
-      .select()
-      .from(lessons)
-      .where(eq(lessons.id, existing.lessonId))
+  // Step 1: Check KV for existing session
+  let session = await kv.get<LessonSessionKvValue>(sessionKvKey, "json");
+
+  // Step 2: KV miss — recover session from D1
+  if (!session) {
+    const uncompletedUserLesson = await db
+      .select({ lessonId: userLessons.lessonId })
+      .from(userLessons)
+      .where(
+        and(
+          eq(userLessons.userId, userId),
+          isNull(userLessons.completedAt)
+        )
+      )
+      .orderBy(desc(userLessons.id))
+      .limit(1)
       .get();
 
-    if (lesson) {
-      const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
-
-      // Detect corrupted warmup (choices missing, empty, or malformed)
-      const hasValidChoices = content.warmup.questions.every(
-        (q) =>
-          Array.isArray(q.choices) &&
-          q.choices.length > 0 &&
-          q.choices.every(
-            (ch) =>
-              typeof ch === "object" &&
-              ch !== null &&
-              typeof ch.id === "string" &&
-              typeof ch.text === "string"
-          )
-      );
-      if (hasValidChoices) {
-        const isCompleted =
-          existing.completedAt !== null && existing.completedAt !== undefined;
-        return c.json({
-          lesson: {
-            id: lesson.id,
-            domain: lesson.domain,
-            level: lesson.level,
-            type: lesson.type,
-            content: toClientContent(content),
-            createdAt: new Date(lesson.createdAt).toISOString(),
-          },
-          streak: streakInfo,
-          isCompleted,
-        });
-      }
-
-      // Warmup choices are corrupted — discard KV session and re-generate
-      await kv.delete(sessionKvKey);
+    if (uncompletedUserLesson) {
+      // サボったレッスン or Eventual Consistency lag → populate KV from D1
+      session = {
+        lessonId: uncompletedUserLesson.lessonId,
+        startedAt: null,
+        answers: [],
+        completedAt: null,
+        score: null,
+        feedback: null,
+      };
+      await kv.put(sessionKvKey, JSON.stringify(session), {
+        expirationTtl: LESSON_SESSION_TTL,
+      });
     } else {
-      // KV session is orphaned (D1 record missing) — clean up before generating
-      await kv.delete(sessionKvKey);
-    }
-  }
+      // No uncompleted lesson in D1
+      const anyUserLesson = await db
+        .select({ lessonId: userLessons.lessonId })
+        .from(userLessons)
+        .where(eq(userLessons.userId, userId))
+        .limit(1)
+        .get();
 
-  // Generate a new lesson
-  const db = createDb(c.env.DB);
-
-  // Get user profile for level and domain
-  const user = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, userId))
-    .get();
-
-  if (!user) {
-    return c.json({ error: "User not found" }, 404);
-  }
-
-  // Build learner profile (aggregates all learning data in parallel)
-  const profile = await buildLearnerProfile(db, userId);
-
-  // Get nextPreview from the most recent completed lesson
-  const lastUserLesson = await db
-    .select({ lessonId: userLessons.lessonId })
-    .from(userLessons)
-    .where(eq(userLessons.userId, userId))
-    .orderBy(desc(userLessons.completedAt))
-    .limit(1)
-    .get();
-
-  let previousNextPreview: string | undefined;
-  if (lastUserLesson) {
-    const lastLesson = await db
-      .select({ contentJson: lessons.contentJson })
-      .from(lessons)
-      .where(eq(lessons.id, lastUserLesson.lessonId))
-      .get();
-    if (lastLesson) {
-      try {
-        const parsed = JSON.parse(lastLesson.contentJson) as {
-          wrapup?: { nextPreview?: string };
-        };
-        previousNextPreview = parsed.wrapup?.nextPreview;
-      } catch {
-        // ignore parse errors
+      if (!anyUserLesson) {
+        // New user → enqueue lesson generation
+        await c.env.LESSON_QUEUE.send({ userId, today });
       }
+      // else: existing user with all lessons completed → Queue is in-flight
+
+      return c.json({ status: "generating" }, 202);
     }
   }
 
-  const llm = createLLMService(c.env);
-  const { content: lessonContent, context: lessonContext } =
-    await generateLesson(llm, {
-      level: user.level as Parameters<typeof generateLesson>[1]["level"],
-      domain: user.domain as Parameters<typeof generateLesson>[1]["domain"],
-      weaknesses: profile.placementWeaknesses as Parameters<
-        typeof generateLesson
-      >[1]["weaknesses"],
-      completedLessonCount: profile.completedLessonCount,
-      previousNextPreview,
-      profile,
-    });
+  // Step 3: Load lesson content from D1
+  const lesson = await db
+    .select()
+    .from(lessons)
+    .where(eq(lessons.id, session.lessonId))
+    .get();
 
-  // Persist lesson to D1
-  const lessonId = crypto.randomUUID();
-  const now = Date.now();
+  if (lesson) {
+    const content = JSON.parse(lesson.contentJson) as LessonContentInternal;
 
-  await db.insert(lessons).values({
-    id: lessonId,
-    domain: user.domain,
-    level: user.level,
-    contentJson: JSON.stringify(lessonContent),
-    type: "rewrite",
-    context: lessonContext,
-    targetWeaknesses: JSON.stringify(profile.placementWeaknesses),
-    createdAt: now,
-  });
+    // Detect corrupted warmup (choices missing, empty, or malformed)
+    const hasValidChoices = content.warmup.questions.every(
+      (q) =>
+        Array.isArray(q.choices) &&
+        q.choices.length > 0 &&
+        q.choices.every(
+          (ch) =>
+            typeof ch === "object" &&
+            ch !== null &&
+            typeof ch.id === "string" &&
+            typeof ch.text === "string"
+        )
+    );
 
-  // Create user_lessons record
-  await db.insert(userLessons).values({
-    id: crypto.randomUUID(),
-    userId,
-    lessonId,
-    startedAt: null,
-    completedAt: null,
-    score: 0,
-    feedback: null,
-  });
+    if (hasValidChoices) {
+      const isCompleted =
+        session.completedAt !== null && session.completedAt !== undefined;
+      return c.json({
+        lesson: {
+          id: lesson.id,
+          domain: lesson.domain,
+          level: lesson.level,
+          type: lesson.type,
+          content: toClientContent(content),
+          createdAt: new Date(lesson.createdAt).toISOString(),
+        },
+        streak: streakInfo,
+        isCompleted,
+      });
+    }
+  }
 
-  // Cache session in KV
-  const session: LessonSessionKvValue = {
-    lessonId,
-    startedAt: null,
-    answers: [],
-    completedAt: null,
-    score: null,
-    feedback: null,
-  };
-  await kv.put(sessionKvKey, JSON.stringify(session), {
-    expirationTtl: LESSON_SESSION_TTL,
-  });
-
-  return c.json({
-    lesson: {
-      id: lessonId,
-      domain: user.domain,
-      level: user.level,
-      type: "rewrite",
-      content: toClientContent(lessonContent),
-      createdAt: new Date(now).toISOString(),
-    },
-    streak: streakInfo,
-    isCompleted: false,
-  });
+  // Lesson is missing or corrupted — clean up and enqueue fresh generation
+  await kv.delete(sessionKvKey);
+  await c.env.LESSON_QUEUE.send({ userId, today });
+  return c.json({ status: "generating" }, 202);
 });
 
 // ---------------------------------------------------------------------------

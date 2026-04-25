@@ -5,8 +5,6 @@ import type {
   SkillAxis,
   RewriteContext,
   LessonContentInternal,
-  WarmupQuestion,
-  Exercise,
   ExerciseType,
   ExercisePlan,
 } from "@teklin/shared";
@@ -234,137 +232,6 @@ function isValidLesson(data: unknown): data is LessonContentInternal {
       );
     });
   });
-}
-
-// ---------------------------------------------------------------------------
-// Fallback lesson
-// ---------------------------------------------------------------------------
-
-function buildFallbackLesson(
-  level: Level,
-  domain: Domain,
-  context: RewriteContext
-): LessonContentInternal {
-  const domainExamples: Record<Domain, string> = {
-    web: "Fix button alignment in the login form",
-    infra: "Update Kubernetes deployment config",
-    ml: "Improve model training pipeline",
-    mobile: "Fix crash on app startup",
-  };
-
-  const example = domainExamples[domain];
-
-  const warmupQuestions: WarmupQuestion[] = [
-    {
-      id: "w1",
-      phrase: "Fix the null pointer exception in the user service",
-      translation: "ユーザーサービスのnullポインタ例外を修正する",
-      context: "Used in commit messages to indicate a bug fix",
-      type: "multiple_choice",
-      choices: [
-        { id: "a", text: "ユーザーサービスのnullポインタ例外を修正する" },
-        { id: "b", text: "ユーザーサービスにnullポインタの例外処理を追加する" },
-        { id: "c", text: "nullポインタ例外が発生するユーザーサービスを修正する" },
-        { id: "d", text: "ユーザーサービスのnullポインタ例外を調査する" },
-      ],
-      correctChoiceId: "a",
-    },
-    {
-      id: "w2",
-      phrase: "Add pagination to the search results page",
-      translation: "検索結果ページにページネーションを追加する",
-      context: "Used in commit messages to indicate new functionality",
-      type: "multiple_choice",
-      choices: [
-        { id: "a", text: "検索結果ページのページネーションを修正する" },
-        { id: "b", text: "検索結果ページにページネーションを追加する" },
-        { id: "c", text: "検索結果のページネーション機能を改善する" },
-        { id: "d", text: "ページネーション付きの検索結果ページを追加する" },
-      ],
-      correctChoiceId: "b",
-    },
-    {
-      id: "w3",
-      phrase: "Refactor the authentication module without changing its API",
-      translation: "APIを変えずに認証モジュールをリファクタリングする",
-      context: "Used when restructuring code without changing behavior",
-      type: "multiple_choice",
-      choices: [
-        { id: "a", text: "認証モジュールのAPIを変更してリファクタリングする" },
-        { id: "b", text: "認証モジュールとAPIの両方をリファクタリングする" },
-        { id: "c", text: "APIを変えずに認証モジュールをリファクタリングする" },
-        { id: "d", text: "認証モジュールのAPI変更に合わせてリファクタリングする" },
-      ],
-      correctChoiceId: "c",
-    },
-  ];
-
-  const exercises: Exercise[] = [
-    {
-      id: "p1",
-      type: "fill_in_blank",
-      instruction: "空欄に正しい動詞を入れよう。",
-      sentence: `___ the ${context === "commit_message" ? "bug in" : "issue with"} ${example.toLowerCase()}`,
-      correctAnswer:
-        context === "commit_message" ? "Fix" : "Resolve",
-      acceptableAnswers: ["Fix", "Resolve", "Address"],
-    },
-    {
-      id: "p2",
-      type: "reorder",
-      instruction: "単語を並び替えて正しいコミットメッセージを作ろう。",
-      words: ["button", "Fix", "alignment", "login", "the"],
-      correctAnswer: "Fix the login button alignment",
-    },
-    {
-      id: "p3",
-      type: "free_text",
-      instruction: "この変更に対するコミットメッセージを英語で書こう。",
-      prompt: domain === "web"
-        ? "サインアップページのCSSのレイアウト崩れを修正しました。"
-        : "デプロイ設定ファイルを最新の環境に合わせて更新しました。",
-    },
-  ];
-
-  return {
-    warmup: { questions: warmupQuestions },
-    focus: {
-      phrase: "Fix <specific issue>",
-      explanation:
-        "Use the imperative mood in commit messages. Start with a verb like 'Fix', 'Add', 'Update', or 'Remove'. This is the standard convention in most open-source projects.",
-      examples: [
-        {
-          english: "Fix null pointer exception in user service",
-          japanese: "ユーザーサービスのnullポインタ例外を修正",
-          context: "commit_message",
-        },
-        {
-          english: "Add pagination to the search results",
-          japanese: "検索結果にページネーションを追加",
-          context: "commit_message",
-        },
-        {
-          english: "Update dependencies to resolve security vulnerabilities",
-          japanese: "セキュリティ脆弱性を解決するため依存関係を更新",
-          context: "commit_message",
-        },
-      ],
-      tips: [
-        "Use the imperative mood: 'Fix' not 'Fixed' or 'Fixes'",
-        "Keep the subject line under 50 characters",
-      ],
-    },
-    practice: { exercises },
-    wrapup: {
-      summary: `命令形の動詞を使った${context === "commit_message" ? "コミットメッセージ" : context === "pr_comment" ? "PRコメント" : "技術英語"}の書き方を練習しました。`,
-      keyPoints: [
-        "命令形を使う（Fix, Add, Update など過去形・進行形はNG）",
-        "何を変えたか具体的に書く",
-        "簡潔・明確に",
-      ],
-      nextPreview: `次回：${level === "L1" || level === "L2" ? "PR の説明文の書き方" : "技術ドキュメントの書き方"}`,
-    },
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -735,7 +602,7 @@ export async function generateLesson(
 
     if (!isValidLesson(data)) {
       console.error(
-        "[generateLesson] Validation failed after schema-enforced output, using fallback.",
+        "[generateLesson] Validation failed after schema-enforced output.",
         "warmup questions:",
         JSON.stringify(
           (data as Record<string, unknown>).warmup,
@@ -743,12 +610,7 @@ export async function generateLesson(
           0
         )?.slice(0, 300)
       );
-      return {
-        content: shuffleWarmupChoices(
-          buildFallbackLesson(options.level, options.domain, context)
-        ),
-        context,
-      };
+      throw new Error("LLM output failed validation");
     }
 
     const lesson = data;
@@ -773,11 +635,6 @@ export async function generateLesson(
     return { content: shuffleWarmupChoices(lesson), context };
   } catch (err) {
     console.error("[generateLesson] Failed to generate lesson:", err);
-    return {
-      content: shuffleWarmupChoices(
-        buildFallbackLesson(options.level, options.domain, context)
-      ),
-      context,
-    };
+    throw err;
   }
 }

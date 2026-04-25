@@ -31,8 +31,12 @@ export function ProductLayout() {
   const [tekBalance, setTekBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    apiFetch<TodayLessonResponse>("/api/lessons/today")
-      .then((res) => setStreak(res.streak.currentStreak))
+    apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+      .then((res) => {
+        if (!("status" in res)) {
+          setStreak(res.streak.currentStreak);
+        }
+      })
       .catch(() => {});
     apiFetch<TekBalanceResponse>("/api/tek")
       .then((res) => setTekBalance(res.balance))

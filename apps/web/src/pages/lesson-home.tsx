@@ -27,15 +27,37 @@ export function LessonHomePage() {
   const [data, setData] = useState<TodayLessonResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (authLoading || !user) return;
 
-    apiFetch<TodayLessonResponse>("/api/lessons/today")
-      .then((res) => setData(res))
+    apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+      .then((res) => {
+        if ("status" in res) {
+          setIsGenerating(true);
+        } else {
+          setData(res);
+        }
+      })
       .catch(() => setError("Failed to load today's lesson."))
       .finally(() => setIsLoading(false));
   }, [authLoading, user]);
+
+  useEffect(() => {
+    if (!isGenerating) return;
+    const timer = setInterval(() => {
+      apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+        .then((res) => {
+          if (!("status" in res)) {
+            setData(res);
+            setIsGenerating(false);
+          }
+        })
+        .catch(() => setIsGenerating(false));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [isGenerating]);
 
   if (authLoading || isLoading) {
     return (
@@ -54,6 +76,20 @@ export function LessonHomePage() {
 
   if (!user) {
     return null;
+  }
+
+  if (isGenerating) {
+    return (
+      <div className="flex min-h-[300px] flex-col items-center justify-center">
+        <div
+          className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-rule border-t-teal"
+          role="status"
+          aria-label="Generating lesson"
+        />
+        <p className="text-sm text-ink-2">今日のレッスンを生成中です...</p>
+        <p className="mt-1 text-xs text-ink-3">しばらくお待ちください</p>
+      </div>
+    );
   }
 
   if (error || !data) {

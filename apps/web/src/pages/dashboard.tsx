@@ -58,6 +58,7 @@ export function DashboardPage() {
     null
   );
   const [lessonLoading, setLessonLoading] = useState(true);
+  const [lessonGenerating, setLessonGenerating] = useState(false);
   const [isPlacementPromptDismissed, setIsPlacementPromptDismissed] =
     useState(false);
 
@@ -82,8 +83,14 @@ export function DashboardPage() {
   useEffect(() => {
     if (isLoading || !user) return;
 
-    apiFetch<TodayLessonResponse>("/api/lessons/today")
-      .then((res) => setLessonData(res))
+    apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+      .then((res) => {
+        if ("status" in res) {
+          setLessonGenerating(true);
+        } else {
+          setLessonData(res);
+        }
+      })
       .catch(() => {})
       .finally(() => setLessonLoading(false));
 
@@ -107,6 +114,21 @@ export function DashboardPage() {
       })
       .catch(() => {});
   }, [isLoading, user]);
+
+  useEffect(() => {
+    if (!lessonGenerating) return;
+    const timer = setInterval(() => {
+      apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+        .then((res) => {
+          if (!("status" in res)) {
+            setLessonData(res);
+            setLessonGenerating(false);
+          }
+        })
+        .catch(() => setLessonGenerating(false));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [lessonGenerating]);
 
   useEffect(() => {
     if (!placementPromptDismissValue) return;
@@ -410,6 +432,29 @@ export function DashboardPage() {
                   }}
                 />
               ))}
+            </div>
+          ) : lessonGenerating ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                color: "var(--color-ink-2)",
+                fontSize: 14,
+              }}
+            >
+              <div
+                style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: "50%",
+                  border: "2px solid var(--color-rule)",
+                  borderTopColor: "var(--color-teal)",
+                  animation: "spin 0.8s linear infinite",
+                  flexShrink: 0,
+                }}
+              />
+              今日のレッスンを生成中です...
             </div>
           ) : lessonData && lessonData.lesson ? (
             <TodayLessonContent
