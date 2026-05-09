@@ -143,7 +143,10 @@ function buildLessonResponseSchema(exerciseCount: number) {
               minItems: 3,
               maxItems: 3,
             },
-            tips: { type: "array" as const, items: { type: "string" as const } },
+            tips: {
+              type: "array" as const,
+              items: { type: "string" as const },
+            },
           },
           required: ["phrase", "explanation", "examples", "tips"],
         },
@@ -165,7 +168,10 @@ function buildLessonResponseSchema(exerciseCount: number) {
           additionalProperties: false,
           properties: {
             summary: { type: "string" as const },
-            keyPoints: { type: "array" as const, items: { type: "string" as const } },
+            keyPoints: {
+              type: "array" as const,
+              items: { type: "string" as const },
+            },
             nextPreview: { type: "string" as const },
           },
           required: ["summary", "keyPoints", "nextPreview"],
@@ -248,17 +254,10 @@ export interface GenerateResult {
 // ---------------------------------------------------------------------------
 
 /** Base types available to all levels */
-const BASE_TYPES: ExerciseType[] = [
-  "fill_in_blank",
-  "reorder",
-  "free_text",
-];
+const BASE_TYPES: ExerciseType[] = ["fill_in_blank", "reorder", "free_text"];
 
 /** Advanced types unlocked after enough data */
-const ADVANCED_TYPES: ExerciseType[] = [
-  "error_correction",
-  "paraphrase",
-];
+const ADVANCED_TYPES: ExerciseType[] = ["error_correction", "paraphrase"];
 
 /** Minimum recorded attempts before we use adaptive logic */
 const MIN_ATTEMPTS_FOR_ADAPTIVE = 5;
@@ -474,7 +473,9 @@ function formatProfileForPrompt(profile: LearnerProfile | null): string {
       `Difficulty feedback (last ${totalFeedback} lessons): ${ft.tooEasy} too_easy, ${ft.justRight} just_right, ${ft.tooHard} too_hard`
     );
     if (ft.tooHard > ft.justRight) {
-      lines.push("→ User finds lessons DIFFICULT. Simplify vocabulary and sentences.");
+      lines.push(
+        "→ User finds lessons DIFFICULT. Simplify vocabulary and sentences."
+      );
     } else if (ft.tooEasy > ft.justRight) {
       lines.push("→ User finds lessons EASY. Increase complexity and nuance.");
     }
@@ -550,6 +551,22 @@ function formatProfileForPrompt(profile: LearnerProfile | null): string {
     }
   }
 
+  // Focus phrase appearance history (for context only)
+  if (profile.focusHistory.length > 0) {
+    lines.push("For your reference only — past appearances of focus phrases:");
+    for (const fh of profile.focusHistory) {
+      const entries = fh.appearances
+        .map(
+          (a) =>
+            `[${a.date.slice(0, 10)} ${a.context}/${a.domain}/${a.viewpoint} (${a.exerciseTypes.join(",")})]`
+        )
+        .join(" ");
+      lines.push(
+        `  - "${fh.phrase}": ${entries} × ${fh.appearances.length} entries`
+      );
+    }
+  }
+
   return lines.join("\n");
 }
 
@@ -568,9 +585,7 @@ export async function generateLesson(
   const exerciseComposition = compositionLines.join("\n      ");
 
   const weaknessText =
-    options.weaknesses.length > 0
-      ? options.weaknesses.join(", ")
-      : "general";
+    options.weaknesses.length > 0 ? options.weaknesses.join(", ") : "general";
 
   const { system, user } = llm.prompts.render(
     llm.prompts.templates.daily_lesson,

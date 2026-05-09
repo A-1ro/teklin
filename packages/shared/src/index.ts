@@ -45,6 +45,31 @@ export type ExerciseType =
   | "error_correction"
   | "paraphrase";
 
+/**
+ * Viewpoint of the learner relative to the communication context.
+ *
+ * As of #64, only `"writer"` and `"reviewer"` are produced by `deriveViewpoint`
+ * (mapping `pr_comment` → `reviewer`, all others → `writer`).
+ * `"reader"` is reserved for future expansion (e.g. reading-comprehension lessons
+ * or #65 / #66 where viewpoint may be decided independently of context).
+ */
+export type FocusViewpoint = "writer" | "reader" | "reviewer";
+
+/** A single appearance record of a focus phrase in a lesson */
+export interface FocusAppearance {
+  date: string;
+  context: RewriteContext;
+  domain: Domain;
+  viewpoint: FocusViewpoint;
+  exerciseTypes: ExerciseType[];
+}
+
+/** History of appearances for a single focus phrase */
+export interface FocusHistory {
+  phrase: string;
+  appearances: FocusAppearance[];
+}
+
 // ---------------------------------------------------------------------------
 // Lesson types
 // ---------------------------------------------------------------------------
@@ -115,7 +140,9 @@ export interface WrapupContent {
 export interface LessonContent {
   warmup: { questions: Omit<WarmupQuestion, "correctChoiceId">[] };
   focus: FocusContent;
-  practice: { exercises: Omit<Exercise, "correctAnswer" | "acceptableAnswers">[] };
+  practice: {
+    exercises: Omit<Exercise, "correctAnswer" | "acceptableAnswers">[];
+  };
   wrapup: WrapupContent;
 }
 

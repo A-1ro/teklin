@@ -10,3 +10,4 @@ export {
   scoreErrorCorrection,
   scoreParaphraseWithFeedback,
 } from "./scoring";
+export { recordFocusAppearance, deriveViewpoint } from "./appearances";

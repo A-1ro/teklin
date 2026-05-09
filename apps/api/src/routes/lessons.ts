@@ -5,7 +5,6 @@ import {
   lessons,
   userLessons,
   streaks,
-  users,
   phraseCards,
   exerciseScores,
 } from "../db";
@@ -28,6 +27,7 @@ import {
   scoreFreeTextWithFeedback,
   scoreErrorCorrection,
   scoreParaphraseWithFeedback,
+  recordFocusAppearance,
 } from "../lib/lesson";
 import type {
   LessonContent,
@@ -38,6 +38,7 @@ import type {
   CardCategory,
   RewriteContext,
   AddLessonPhraseCardResponse,
+  Domain,
 } from "@teklin/shared";
 
 const LESSON_SESSION_TTL = 86400; // 24 hours
@@ -110,7 +111,10 @@ lessonRoutes.get("/today", async (c) => {
 
   // Retrieve streak info
   const streakKvKey = streakKey(userId);
-  let streakData = await c.env.STREAK_KV.get<StreakKvValue>(streakKvKey, "json");
+  let streakData = await c.env.STREAK_KV.get<StreakKvValue>(
+    streakKvKey,
+    "json"
+  );
   if (!streakData) {
     streakData = { currentStreak: 0, longestStreak: 0, lastLearnedAt: null };
   }
@@ -128,10 +132,7 @@ lessonRoutes.get("/today", async (c) => {
       .select({ lessonId: userLessons.lessonId })
       .from(userLessons)
       .where(
-        and(
-          eq(userLessons.userId, userId),
-          isNull(userLessons.completedAt)
-        )
+        and(eq(userLessons.userId, userId), isNull(userLessons.completedAt))
       )
       .orderBy(desc(userLessons.id))
       .limit(1)
@@ -664,7 +665,11 @@ lessonRoutes.post("/:id/complete", async (c) => {
   let focusPhrase: LessonFocusPhrase | null = null;
   try {
     const lessonRow = await db
-      .select({ contentJson: lessons.contentJson })
+      .select({
+        contentJson: lessons.contentJson,
+        context: lessons.context,
+        domain: lessons.domain,
+      })
       .from(lessons)
       .where(eq(lessons.id, lessonId))
       .get();
@@ -680,6 +685,27 @@ lessonRoutes.post("/:id/complete", async (c) => {
           japanese: e.japanese,
         })),
       };
+
+      // Record focus phrase appearance for LearnerProfile history
+      try {
+        const lessonContext =
+          (lessonRow.context as RewriteContext | null) ?? "general";
+        const exerciseTypes = content.practice.exercises.map((e) => e.type);
+        await recordFocusAppearance(db, {
+          userId,
+          lessonId,
+          phrase: content.focus.phrase,
+          context: lessonContext,
+          domain: lessonRow.domain as Domain,
+          exerciseTypes,
+          appearedAt: now,
+        });
+      } catch (err) {
+        console.warn(
+          "[complete] recordFocusAppearance failed (non-blocking):",
+          err
+        );
+      }
     }
   } catch {
     // ignore parse errors — focusPhrase stays null
@@ -780,8 +806,7 @@ lessonRoutes.post("/:id/add-to-cards", async (c) => {
     return c.json({ error: "This phrase is already in your cards" }, 409);
   }
 
-  const context =
-    (lessonRow.context as RewriteContext | null) ?? "general";
+  const context = (lessonRow.context as RewriteContext | null) ?? "general";
   const category = CONTEXT_TO_CATEGORY[context];
   const cardId = crypto.randomUUID();
   const now = Date.now();
