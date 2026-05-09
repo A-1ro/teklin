@@ -17,12 +17,30 @@ CREATE UNIQUE INDEX focus_appearances_user_lesson_uidx ON focus_appearances(user
 -- Backfill from existing completed user_lessons joined with lessons.
 -- INSERT OR IGNORE provides idempotency in case this migration is ever re-applied
 -- manually (wrangler tracks applied migrations, so re-runs are not expected).
+--
+-- The phrase is sanitized in SQL to mirror sanitizePhrase() in lesson/appearances.ts:
+-- newlines / tabs / quote chars are replaced with spaces, and the result is
+-- truncated to 200 chars. Without this, legacy rows would bypass the runtime
+-- sanitization and could carry prompt-injection payloads into the LLM via
+-- formatProfileForPrompt().
 INSERT OR IGNORE INTO focus_appearances
 SELECT
   lower(hex(randomblob(16))) AS id,
   ul.user_id,
   ul.lesson_id,
-  json_extract(l.content_json, '$.focus.phrase') AS phrase,
+  substr(
+    trim(
+      replace(replace(replace(replace(replace(replace(
+        json_extract(l.content_json, '$.focus.phrase'),
+        char(10), ' '),
+        char(13), ' '),
+        char(9),  ' '),
+        '"',      ' '),
+        '''',     ' '),
+        '`',      ' ')
+    ),
+    1, 200
+  ) AS phrase,
   l.context,
   l.domain,
   CASE l.context WHEN 'pr_comment' THEN 'reviewer' ELSE 'writer' END AS viewpoint,
