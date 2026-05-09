@@ -8,12 +8,16 @@ import {
   aiRewriteHistory,
   placementResults,
   exerciseScores,
+  focusAppearances,
 } from "../../db/schema";
 import type {
   RewriteContext,
   SkillAxis,
   ExerciseType,
   ExerciseTypePerformance,
+  FocusHistory,
+  FocusAppearance,
+  FocusViewpoint,
 } from "@teklin/shared";
 
 // ---------------------------------------------------------------------------
@@ -89,6 +93,8 @@ export interface LearnerProfile {
   recentContexts: RewriteContext[];
   /** Per-exercise-type performance (from exercise_scores table) */
   exerciseTypePerformance: ExerciseTypePerformance[];
+  /** Focus phrase appearance history (from focus_appearances table) */
+  focusHistory: FocusHistory[];
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +124,7 @@ export async function buildLearnerProfile(
     rewriteRows,
     placementRow,
     exerciseTypePerfRows,
+    focusAppearanceRows,
   ] = await Promise.all([
     // 1. Context-level performance (all completed lessons)
     db
@@ -161,10 +168,8 @@ export async function buildLearnerProfile(
     db
       .select({
         totalCards: count(),
-        masteredCards:
-          sql<number>`SUM(CASE WHEN ${userSrs.interval} >= ${MASTERED_INTERVAL} THEN 1 ELSE 0 END)`,
-        strugglingCards:
-          sql<number>`SUM(CASE WHEN ${userSrs.easeFactor} < ${STRUGGLING_EF} THEN 1 ELSE 0 END)`,
+        masteredCards: sql<number>`SUM(CASE WHEN ${userSrs.interval} >= ${MASTERED_INTERVAL} THEN 1 ELSE 0 END)`,
+        strugglingCards: sql<number>`SUM(CASE WHEN ${userSrs.easeFactor} < ${STRUGGLING_EF} THEN 1 ELSE 0 END)`,
       })
       .from(userSrs)
       .where(eq(userSrs.userId, userId))
@@ -192,9 +197,7 @@ export async function buildLearnerProfile(
     db
       .select({ value: count() })
       .from(userSrs)
-      .where(
-        and(eq(userSrs.userId, userId), lte(userSrs.nextReview, now))
-      )
+      .where(and(eq(userSrs.userId, userId), lte(userSrs.nextReview, now)))
       .get(),
 
     // 6. Recent rewrites (last 10) for context distribution
@@ -225,6 +228,22 @@ export async function buildLearnerProfile(
       .from(exerciseScores)
       .where(eq(exerciseScores.userId, userId))
       .groupBy(exerciseScores.exerciseType)
+      .all(),
+
+    // 9. Focus phrase appearance history (last 50, newest first)
+    db
+      .select({
+        phrase: focusAppearances.phrase,
+        context: focusAppearances.context,
+        domain: focusAppearances.domain,
+        viewpoint: focusAppearances.viewpoint,
+        exerciseTypes: focusAppearances.exerciseTypes,
+        appearedAt: focusAppearances.appearedAt,
+      })
+      .from(focusAppearances)
+      .where(eq(focusAppearances.userId, userId))
+      .orderBy(desc(focusAppearances.appearedAt))
+      .limit(50)
       .all(),
   ]);
 
@@ -335,6 +354,38 @@ export async function buildLearnerProfile(
       avgScore: Math.round(Number(r.avgScore) || 0),
     }));
 
+  // --- Focus history (group by phrase, keep latest 5 appearances each) ---
+  const phraseMap = new Map<string, FocusAppearance[]>();
+  for (const row of focusAppearanceRows) {
+    let types: ExerciseType[] = [];
+    try {
+      types = JSON.parse(row.exerciseTypes) as ExerciseType[];
+    } catch {
+      // ignore
+    }
+    const appearance: FocusAppearance = {
+      date: new Date(row.appearedAt).toISOString(),
+      context: row.context as RewriteContext,
+      domain: row.domain as FocusAppearance["domain"],
+      viewpoint: row.viewpoint as FocusViewpoint,
+      exerciseTypes: types,
+    };
+    const existing = phraseMap.get(row.phrase);
+    if (existing) {
+      existing.push(appearance);
+    } else {
+      phraseMap.set(row.phrase, [appearance]);
+    }
+  }
+
+  const focusHistory: FocusHistory[] = [];
+  for (const [phrase, appearances] of phraseMap) {
+    focusHistory.push({
+      phrase,
+      appearances: appearances.slice(0, 5),
+    });
+  }
+
   return {
     contextPerformance,
     weakestContext,
@@ -348,5 +399,6 @@ export async function buildLearnerProfile(
     recentFocusPhrases,
     recentContexts,
     exerciseTypePerformance,
+    focusHistory,
   };
 }

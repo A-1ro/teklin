@@ -264,10 +264,7 @@ export const exerciseScores = sqliteTable(
     answeredAt: integer("answered_at").notNull(),
   },
   (table) => [
-    index("exercise_scores_user_type_idx").on(
-      table.userId,
-      table.exerciseType
-    ),
+    index("exercise_scores_user_type_idx").on(table.userId, table.exerciseType),
     index("exercise_scores_user_answered_idx").on(
       table.userId,
       table.answeredAt
@@ -281,7 +278,9 @@ export const exerciseScores = sqliteTable(
  * last_learned_at: Unix epoch ms of the most recent learning session
  */
 export const streaks = sqliteTable("streaks", {
-  userId: text("user_id").primaryKey().references(() => users.id),
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id),
   currentStreak: integer("current_streak").notNull().default(0),
   longestStreak: integer("longest_streak").notNull().default(0),
   lastLearnedAt: integer("last_learned_at"),
@@ -294,7 +293,9 @@ export const streaks = sqliteTable("streaks", {
  * last_login_bonus_at: Teklin day (YYYY-MM-DD) of the last claimed daily login bonus
  */
 export const tekBalances = sqliteTable("tek_balances", {
-  userId: text("user_id").primaryKey().references(() => users.id),
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id),
   balance: integer("balance").notNull().default(0),
   lastLoginBonusAt: text("last_login_bonus_at"),
   loginBonusStreak: integer("login_bonus_streak").notNull().default(0),
@@ -310,7 +311,9 @@ export const tekTransactions = sqliteTable(
   "tek_transactions",
   {
     id: text("id").primaryKey(),
-    userId: text("user_id").notNull().references(() => users.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
     amount: integer("amount").notNull(),
     reason: text("reason").notNull(),
     createdAt: integer("created_at").notNull(),
@@ -331,7 +334,9 @@ export const gachaCollection = sqliteTable(
   "gacha_collection",
   {
     id: text("id").primaryKey(),
-    userId: text("user_id").notNull().references(() => users.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
     tekkiId: text("tekki_id").notNull(),
     count: integer("count").notNull().default(1),
     evolved: integer("evolved").notNull().default(0),
@@ -356,7 +361,9 @@ export const gachaHistory = sqliteTable(
   "gacha_history",
   {
     id: text("id").primaryKey(),
-    userId: text("user_id").notNull().references(() => users.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
     tekkiId: text("tekki_id").notNull(),
     rarity: text("rarity").notNull(),
     isBonus: integer("is_bonus").notNull().default(0),
@@ -364,5 +371,51 @@ export const gachaHistory = sqliteTable(
   },
   (table) => [
     index("gacha_history_user_pulled_idx").on(table.userId, table.pulledAt),
+  ]
+);
+
+/**
+ * focus_appearances
+ * Append-only record of each focus phrase appearance in a completed lesson.
+ * viewpoint: FocusViewpoint = "writer" | "reader" | "reviewer"
+ *   - derived from context: "pr_comment" → "reviewer", others → "writer"
+ * exercise_types: JSON string of ExerciseType[] e.g. '["fill_in_blank","reorder"]'
+ * appeared_at: Unix epoch ms (copied from user_lessons.completed_at)
+ */
+export const focusAppearances = sqliteTable(
+  "focus_appearances",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    lessonId: text("lesson_id")
+      .notNull()
+      .references(() => lessons.id),
+    phrase: text("phrase").notNull(),
+    // RewriteContext: "commit_message" | "pr_comment" | "github_issue" | "slack" | "general"
+    context: text("context").notNull(),
+    // Domain: "web" | "infra" | "ml" | "mobile"
+    domain: text("domain").notNull(),
+    // FocusViewpoint: "writer" | "reader" | "reviewer"
+    viewpoint: text("viewpoint").notNull(),
+    // JSON string: ExerciseType[] e.g. '["fill_in_blank","reorder"]'
+    exerciseTypes: text("exercise_types").notNull(),
+    appearedAt: integer("appeared_at").notNull(),
+  },
+  (table) => [
+    index("focus_appearances_user_phrase_idx").on(
+      table.userId,
+      table.phrase,
+      table.appearedAt
+    ),
+    index("focus_appearances_user_appeared_idx").on(
+      table.userId,
+      table.appearedAt
+    ),
+    uniqueIndex("focus_appearances_user_lesson_uidx").on(
+      table.userId,
+      table.lessonId
+    ),
   ]
 );
