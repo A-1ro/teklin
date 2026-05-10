@@ -17,11 +17,7 @@ meRoutes.get("/me", async (c) => {
   const { userId } = c.get("user");
   const db = createDb(c.env.DB);
 
-  const user = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, userId))
-    .get();
+  const user = await db.select().from(users).where(eq(users.id, userId)).get();
 
   if (!user) {
     return c.json({ error: "User not found" }, 404);
@@ -48,7 +44,10 @@ meRoutes.patch("/me", async (c) => {
     return c.json({ error: "Invalid request body" }, 400);
   }
 
-  if (!body.domain || !(VALID_DOMAINS as readonly string[]).includes(body.domain)) {
+  if (
+    !body.domain ||
+    !(VALID_DOMAINS as readonly string[]).includes(body.domain)
+  ) {
     return c.json(
       { error: `domain must be one of: ${VALID_DOMAINS.join(", ")}` },
       400

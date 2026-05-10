@@ -71,7 +71,9 @@ function buildRequestBody(
   };
 }
 
-function buildAiOptions(gatewayId?: string): { gateway: { id: string } } | undefined {
+function buildAiOptions(
+  gatewayId?: string
+): { gateway: { id: string } } | undefined {
   if (!gatewayId) {
     return undefined;
   }
@@ -158,10 +160,7 @@ function extractUsage(result: WorkersAiTextResponse): {
   return { promptTokens, completionTokens, totalTokens };
 }
 
-export function createWorkersAiAdapter(
-  ai: Ai,
-  gatewayId?: string
-): LLMAdapter {
+export function createWorkersAiAdapter(ai: Ai, gatewayId?: string): LLMAdapter {
   return {
     provider: "workers-ai",
 
@@ -202,7 +201,10 @@ export function createWorkersAiAdapter(
       };
     },
 
-    stream(prompt: string, options: LLMAdapterOptions = {}): ReadableStream<string> {
+    stream(
+      prompt: string,
+      options: LLMAdapterOptions = {}
+    ): ReadableStream<string> {
       const model = resolveModel(options);
 
       const { readable, writable } = new TransformStream<string, string>();
@@ -252,8 +254,7 @@ export function createWorkersAiAdapter(
                 }
                 // OpenAI-compatible format
                 const delta = parsed.choices?.[0]?.delta;
-                const deltaContent =
-                  delta?.content ?? delta?.reasoning_content;
+                const deltaContent = delta?.content ?? delta?.reasoning_content;
                 if (typeof deltaContent === "string" && deltaContent) {
                   await writer.write(deltaContent);
                   continue;

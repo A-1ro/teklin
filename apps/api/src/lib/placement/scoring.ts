@@ -51,10 +51,9 @@ export async function scoreWriting(
     ? `\n\nScoring criteria: ${q.scoringCriteria}`
     : "";
 
-  const { system, user } = llm.prompts.render(
-    llm.prompts.templates.placement,
-    { text: sanitizedAnswer + criteria }
-  );
+  const { system, user } = llm.prompts.render(llm.prompts.templates.placement, {
+    text: sanitizedAnswer + criteria,
+  });
 
   try {
     const { data } = await llm.router.generateJson<{

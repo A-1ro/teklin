@@ -55,8 +55,7 @@ authRoutes.get("/github", async (c) => {
   });
 
   const config = getGitHubConfig();
-  const redirectUri =
-    new URL(c.req.url).origin + "/auth/github/callback";
+  const redirectUri = new URL(c.req.url).origin + "/auth/github/callback";
   const params = new URLSearchParams({
     client_id: c.env.GITHUB_CLIENT_ID,
     redirect_uri: redirectUri,
@@ -91,8 +90,7 @@ authRoutes.get("/github/callback", async (c) => {
 
   try {
     const config = getGitHubConfig();
-    const redirectUri =
-      new URL(c.req.url).origin + "/auth/github/callback";
+    const redirectUri = new URL(c.req.url).origin + "/auth/github/callback";
     const accessToken = await exchangeCodeForToken(
       config,
       code,
@@ -107,10 +105,7 @@ authRoutes.get("/github/callback", async (c) => {
       .select()
       .from(users)
       .where(
-        and(
-          eq(users.oauthProvider, "github"),
-          eq(users.oauthId, userInfo.id)
-        )
+        and(eq(users.oauthProvider, "github"), eq(users.oauthId, userInfo.id))
       )
       .get();
 
@@ -131,11 +126,7 @@ authRoutes.get("/github/callback", async (c) => {
         createdAt: now,
         updatedAt: now,
       });
-      user = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, newId))
-        .get();
+      user = await db.select().from(users).where(eq(users.id, newId)).get();
     }
 
     if (!user) {
@@ -161,11 +152,9 @@ authRoutes.get("/github/callback", async (c) => {
       name: user.name,
       expiresAt: now + REFRESH_TOKEN_TTL_SEC * 1000,
     };
-    await c.env.SESSION_KV.put(
-      sessionKey(jti),
-      JSON.stringify(sessionValue),
-      { expirationTtl: REFRESH_TOKEN_TTL_SEC }
-    );
+    await c.env.SESSION_KV.put(sessionKey(jti), JSON.stringify(sessionValue), {
+      expirationTtl: REFRESH_TOKEN_TTL_SEC,
+    });
 
     const opts = cookieOptions(c.env.ENVIRONMENT);
     setCookie(c, "access_token", newAccessToken, {
@@ -199,8 +188,7 @@ authRoutes.get("/google", async (c) => {
   });
 
   const config = getGoogleConfig();
-  const redirectUri =
-    new URL(c.req.url).origin + "/auth/google/callback";
+  const redirectUri = new URL(c.req.url).origin + "/auth/google/callback";
   const params = new URLSearchParams({
     client_id: c.env.GOOGLE_CLIENT_ID,
     redirect_uri: redirectUri,
@@ -237,8 +225,7 @@ authRoutes.get("/google/callback", async (c) => {
 
   try {
     const config = getGoogleConfig();
-    const redirectUri =
-      new URL(c.req.url).origin + "/auth/google/callback";
+    const redirectUri = new URL(c.req.url).origin + "/auth/google/callback";
     const accessToken = await exchangeCodeForToken(
       config,
       code,
@@ -253,10 +240,7 @@ authRoutes.get("/google/callback", async (c) => {
       .select()
       .from(users)
       .where(
-        and(
-          eq(users.oauthProvider, "google"),
-          eq(users.oauthId, userInfo.id)
-        )
+        and(eq(users.oauthProvider, "google"), eq(users.oauthId, userInfo.id))
       )
       .get();
 
@@ -277,11 +261,7 @@ authRoutes.get("/google/callback", async (c) => {
         createdAt: now,
         updatedAt: now,
       });
-      user = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, newId))
-        .get();
+      user = await db.select().from(users).where(eq(users.id, newId)).get();
     }
 
     if (!user) {
@@ -307,11 +287,9 @@ authRoutes.get("/google/callback", async (c) => {
       name: user.name,
       expiresAt: now + REFRESH_TOKEN_TTL_SEC * 1000,
     };
-    await c.env.SESSION_KV.put(
-      sessionKey(jti),
-      JSON.stringify(sessionValue),
-      { expirationTtl: REFRESH_TOKEN_TTL_SEC }
-    );
+    await c.env.SESSION_KV.put(sessionKey(jti), JSON.stringify(sessionValue), {
+      expirationTtl: REFRESH_TOKEN_TTL_SEC,
+    });
 
     const opts = cookieOptions(c.env.ENVIRONMENT);
     setCookie(c, "access_token", newAccessToken, {
@@ -379,11 +357,9 @@ authRoutes.post("/refresh", async (c) => {
     name: session.name,
     expiresAt: now + REFRESH_TOKEN_TTL_SEC * 1000,
   };
-  await c.env.SESSION_KV.put(
-    sessionKey(newJti),
-    JSON.stringify(newSession),
-    { expirationTtl: REFRESH_TOKEN_TTL_SEC }
-  );
+  await c.env.SESSION_KV.put(sessionKey(newJti), JSON.stringify(newSession), {
+    expirationTtl: REFRESH_TOKEN_TTL_SEC,
+  });
 
   const opts = cookieOptions(c.env.ENVIRONMENT);
   setCookie(c, "access_token", newAccessToken, {

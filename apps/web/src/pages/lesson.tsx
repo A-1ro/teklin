@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+  useSearchParams,
+  Link,
+} from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { ApiError, apiFetch } from "@/lib/api";
 import { playSound } from "@/lib/sound";
@@ -128,7 +133,7 @@ export function LessonPage() {
           });
       }
     },
-    [lessonId, isReview, navigate],
+    [lessonId, isReview, navigate]
   );
 
   if (authLoading || isLoading) {
@@ -154,7 +159,9 @@ export function LessonPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-paper px-4">
         <div className="text-center">
-          <p className="mb-4 text-ink-2">{error || "レッスンが見つかりませんでした。"}</p>
+          <p className="mb-4 text-ink-2">
+            {error || "レッスンが見つかりませんでした。"}
+          </p>
           <Link
             to="/lesson"
             className="inline-block rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark"
@@ -370,7 +377,7 @@ function WarmupStep({
               exerciseId: question.id,
               answer: choiceId,
             }),
-          },
+          }
         );
         setResult(res);
         playSound(res.correct ? "correct" : "incorrect");
@@ -380,7 +387,7 @@ function WarmupStep({
         setIsSubmitting(false);
       }
     },
-    [selected, isSubmitting, lessonId, question],
+    [selected, isSubmitting, lessonId, question]
   );
 
   const handleNext = useCallback(() => {
@@ -395,7 +402,9 @@ function WarmupStep({
 
   if (!question) {
     return (
-      <div className="text-center text-ink-2">ウォームアップ問題がありません。</div>
+      <div className="text-center text-ink-2">
+        ウォームアップ問題がありません。
+      </div>
     );
   }
 
@@ -527,17 +536,13 @@ function FocusStep({
         <p className="mb-1 text-xs font-medium uppercase tracking-wider text-ink-3">
           フォーカス
         </p>
-        <h2 className="text-lg font-semibold text-ink">
-          今日のキーフレーズ
-        </h2>
+        <h2 className="text-lg font-semibold text-ink">今日のキーフレーズ</h2>
       </div>
 
       {/* Phrase highlight */}
       <div className="mb-6 rounded-[14px] border border-teal/30 bg-teal-50 p-6">
         <p className="mb-3 text-2xl font-bold text-teal">{focus.phrase}</p>
-        <p className="text-sm leading-relaxed text-ink">
-          {focus.explanation}
-        </p>
+        <p className="text-sm leading-relaxed text-ink">{focus.explanation}</p>
       </div>
 
       {/* Examples carousel */}
@@ -576,7 +581,7 @@ function FocusStep({
               <button
                 onClick={() =>
                   setExampleIdx((i) =>
-                    Math.min(focus.examples.length - 1, i + 1),
+                    Math.min(focus.examples.length - 1, i + 1)
                   )
                 }
                 disabled={exampleIdx === focus.examples.length - 1}
@@ -635,7 +640,7 @@ function PracticeStep({
 }) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [results, setResults] = useState<Map<string, LessonAnswerResponse>>(
-    new Map(),
+    new Map()
   );
 
   const exercise = exercises[currentIdx];
@@ -644,7 +649,7 @@ function PracticeStep({
     (result: LessonAnswerResponse) => {
       setResults((prev) => new Map(prev).set(exercise.id, result));
     },
-    [exercise],
+    [exercise]
   );
 
   const handleNext = useCallback(() => {
@@ -656,9 +661,7 @@ function PracticeStep({
   }, [currentIdx, exercises.length, onComplete]);
 
   if (!exercise) {
-    return (
-      <div className="text-center text-ink-2">練習問題がありません。</div>
-    );
+    return <div className="text-center text-ink-2">練習問題がありません。</div>;
   }
 
   const currentResult = results.get(exercise.id) ?? null;
@@ -729,9 +732,7 @@ function PracticeStep({
           onClick={handleNext}
           className="mt-6 w-full rounded-lg bg-teal px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-teal-dark active:bg-teal-dark"
         >
-          {currentIdx < exercises.length - 1
-            ? "次の問題"
-            : "練習完了"}
+          {currentIdx < exercises.length - 1 ? "次の問題" : "練習完了"}
         </button>
       )}
     </div>
@@ -780,7 +781,7 @@ function FillInBlank({
             exerciseId: exercise.id,
             answer: value.trim(),
           }),
-        },
+        }
       );
       onAnswer(res);
       playSound(res.correct ? "correct" : "incorrect");
@@ -895,7 +896,7 @@ function ReorderExercise({
       setBank((prev) => prev.filter((_, i) => i !== idx));
       setChosen((prev) => [...prev, word]);
     },
-    [result],
+    [result]
   );
 
   const removeWord = useCallback(
@@ -904,7 +905,7 @@ function ReorderExercise({
       setChosen((prev) => prev.filter((_, i) => i !== idx));
       setBank((prev) => [...prev, word]);
     },
-    [result],
+    [result]
   );
 
   const handleSubmit = useCallback(async () => {
@@ -921,7 +922,7 @@ function ReorderExercise({
             exerciseId: exercise.id,
             answer: chosen.join(" "),
           }),
-        },
+        }
       );
       onAnswer(res);
       playSound(res.correct ? "correct" : "incorrect");
@@ -941,9 +942,7 @@ function ReorderExercise({
       {/* Chosen area */}
       <div className="mb-4 min-h-[60px] rounded-[14px] border border-dashed border-rule bg-paper-2 p-4">
         {chosen.length === 0 ? (
-          <p className="text-sm text-ink-3">
-            下の単語をタップして文を作ろう
-          </p>
+          <p className="text-sm text-ink-3">下の単語をタップして文を作ろう</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {chosen.map((word, i) => (
@@ -1050,7 +1049,7 @@ function FreeTextExercise({
             exerciseId: exercise.id,
             answer: value.trim(),
           }),
-        },
+        }
       );
       onAnswer(res);
       playSound(res.correct ? "correct" : "incorrect");
@@ -1115,9 +1114,7 @@ function FreeTextExercise({
           )}
           {result.correctAnswer && (
             <div className="mt-3 rounded-lg border border-rule bg-paper p-3">
-              <p className="mb-1 text-xs font-medium text-ink-3">
-                模範解答
-              </p>
+              <p className="mb-1 text-xs font-medium text-ink-3">模範解答</p>
               <p className="text-sm text-ink">{result.correctAnswer}</p>
             </div>
           )}
@@ -1166,7 +1163,7 @@ function ErrorCorrectionExercise({
             exerciseId: exercise.id,
             answer: value.trim(),
           }),
-        },
+        }
       );
       onAnswer(res);
       playSound(res.correct ? "correct" : "incorrect");
@@ -1282,7 +1279,7 @@ function ParaphraseExercise({
             exerciseId: exercise.id,
             answer: value.trim(),
           }),
-        },
+        }
       );
       onAnswer(res);
       playSound(res.correct ? "correct" : "incorrect");
@@ -1378,9 +1375,7 @@ function WrapupStep({
 
       {/* Summary */}
       <div className="mb-6 rounded-[14px] border border-rule bg-paper-2 p-6">
-        <p className="text-sm leading-relaxed text-ink">
-          {wrapup.summary}
-        </p>
+        <p className="text-sm leading-relaxed text-ink">{wrapup.summary}</p>
       </div>
 
       {/* Key points */}
@@ -1485,9 +1480,7 @@ function CompleteScreen({
           </div>
         </div>
 
-        <h1 className="mb-2 text-2xl font-bold text-ink">
-          レッスン完了！
-        </h1>
+        <h1 className="mb-2 text-2xl font-bold text-ink">レッスン完了！</h1>
         <p className="mb-8 text-sm text-ink-2">
           今日のレッスンが終わりました。引き続き頑張りましょう！
         </p>
@@ -1525,7 +1518,8 @@ function CompleteScreen({
             {completionData.streak.isNewRecord && (
               <div className="mt-4 rounded-lg border border-mustard/40 bg-mustard-50 px-4 py-3">
                 <p className="text-sm font-semibold text-mustard-fg">
-                  {"\uD83C\uDF89"} 新記録達成：{completionData.streak.longestStreak}日連続！
+                  {"\uD83C\uDF89"} 新記録達成：
+                  {completionData.streak.longestStreak}日連続！
                 </p>
               </div>
             )}
@@ -1572,9 +1566,7 @@ function CompleteScreen({
                   disabled={addingCard}
                   className="w-full rounded-lg border border-plum/30 bg-plum-50 px-4 py-3 text-sm font-semibold text-plum transition-colors hover:border-plum/50 hover:bg-plum-50/80 active:bg-plum-50/60 disabled:opacity-50"
                 >
-                  {addingCard
-                    ? "追加中..."
-                    : "フレーズカードに追加する"}
+                  {addingCard ? "追加中..." : "フレーズカードに追加する"}
                 </button>
                 {addCardError && (
                   <p className="mt-2 text-xs text-coral">{addCardError}</p>

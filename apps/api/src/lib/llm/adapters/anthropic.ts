@@ -41,9 +41,7 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
       prompt: string,
       options: LLMAdapterOptions = {}
     ): Promise<LLMResponse> {
-      const messages: AnthropicMessage[] = [
-        { role: "user", content: prompt },
-      ];
+      const messages: AnthropicMessage[] = [{ role: "user", content: prompt }];
 
       const body: Record<string, unknown> = {
         model: options.model ?? DEFAULT_MODEL,
@@ -90,7 +88,7 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
       return {
         text,
         provider: "anthropic",
-        model: data.model ?? (options.model ?? DEFAULT_MODEL),
+        model: data.model ?? options.model ?? DEFAULT_MODEL,
         usage: {
           promptTokens: data.usage.input_tokens,
           completionTokens: data.usage.output_tokens,
@@ -99,10 +97,11 @@ export function createAnthropicAdapter(config: AnthropicConfig): LLMAdapter {
       };
     },
 
-    stream(prompt: string, options: LLMAdapterOptions = {}): ReadableStream<string> {
-      const messages: AnthropicMessage[] = [
-        { role: "user", content: prompt },
-      ];
+    stream(
+      prompt: string,
+      options: LLMAdapterOptions = {}
+    ): ReadableStream<string> {
+      const messages: AnthropicMessage[] = [{ role: "user", content: prompt }];
 
       const body: Record<string, unknown> = {
         model: options.model ?? DEFAULT_MODEL,

@@ -164,7 +164,11 @@ gachaRoutes.post("/pull", async (c) => {
     }
   }
 
-  return c.json({ results, newBalance, evolutions } satisfies GachaPullResponse);
+  return c.json({
+    results,
+    newBalance,
+    evolutions,
+  } satisfies GachaPullResponse);
 });
 
 // ---------------------------------------------------------------------------
@@ -197,5 +201,8 @@ gachaRoutes.get("/collection", async (c) => {
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);
 
-  return c.json({ items, total: items.length } satisfies GachaCollectionResponse);
+  return c.json({
+    items,
+    total: items.length,
+  } satisfies GachaCollectionResponse);
 });

@@ -136,7 +136,7 @@ export const templates = {
       '        "correctChoiceId": "<id of the choice whose text matches the correct Japanese translation>",',
       "      }",
       "      (3 questions total)",
-   "    ]",
+      "    ]",
       "  },",
       '  "focus": {',
       '    "phrase": "<key phrase/pattern to learn>",',

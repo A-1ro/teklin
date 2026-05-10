@@ -199,9 +199,7 @@ export function DeckCategoryPage() {
                       {status.label}
                     </span>
                   </div>
-                  <p className="mb-3 text-sm text-ink-2">
-                    {card.translation}
-                  </p>
+                  <p className="mb-3 text-sm text-ink-2">{card.translation}</p>
                   <div className="flex items-center justify-between text-xs text-ink-3">
                     <span className="flex items-center gap-2">
                       <span
@@ -219,9 +217,7 @@ export function DeckCategoryPage() {
                       </span>
                     </span>
                     {card.srs && (
-                      <span className="text-ink-3">
-                        次の復習: {nextReview}
-                      </span>
+                      <span className="text-ink-3">次の復習: {nextReview}</span>
                     )}
                   </div>
                 </div>

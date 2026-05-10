@@ -47,10 +47,7 @@ export function calculateSrs(
 
   // Update ease factor: EF' = EF + (0.1 - (5-q) * (0.08 + (5-q) * 0.02))
   const efDelta = 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02);
-  const easeFactor = Math.max(
-    MIN_EASE_FACTOR,
-    prevEaseFactor + efDelta
-  );
+  const easeFactor = Math.max(MIN_EASE_FACTOR, prevEaseFactor + efDelta);
 
   let interval: number;
   let repetitions: number;

@@ -346,12 +346,18 @@ export function RewriteDetailPage() {
                     {saveCard?.changeIndex === index ? (
                       saveCard.saved ? (
                         <p className="text-xs font-medium text-teal">
-                          {saveCard.isExistingCard ? "Phrase Card updated" : "Saved to Phrase Cards"}
+                          {saveCard.isExistingCard
+                            ? "Phrase Card updated"
+                            : "Saved to Phrase Cards"}
                         </p>
                       ) : (
                         <SaveCardForm
                           saveCard={saveCard}
-                          submitLabel={saveCard.cardId ? "Update card" : "Save to Phrase Card"}
+                          submitLabel={
+                            saveCard.cardId
+                              ? "Update card"
+                              : "Save to Phrase Card"
+                          }
                           onPhraseChange={(phrase) =>
                             setSaveCard((prev) =>
                               prev ? { ...prev, phrase } : null
@@ -373,7 +379,9 @@ export function RewriteDetailPage() {
                         className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-3 py-1.5 text-xs font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
                       >
                         <Save className="h-3 w-3" />
-                        {findLinkedCard(index) ? "Edit Phrase Card" : "Save to Phrase Card"}
+                        {findLinkedCard(index)
+                          ? "Edit Phrase Card"
+                          : "Save to Phrase Card"}
                       </button>
                     )}
                   </div>
@@ -436,7 +444,9 @@ function SaveCardForm({
         </button>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-ink-3">Phrase (English)</label>
+        <label className="mb-1 block text-xs text-ink-3">
+          Phrase (English)
+        </label>
         <input
           type="text"
           value={saveCard.phrase}
@@ -446,7 +456,9 @@ function SaveCardForm({
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs text-ink-3">Translation / Note</label>
+        <label className="mb-1 block text-xs text-ink-3">
+          Translation / Note
+        </label>
         <input
           type="text"
           value={saveCard.translation}
@@ -455,9 +467,7 @@ function SaveCardForm({
           className="w-full rounded-lg border border-rule bg-paper px-3 py-2 text-sm text-ink focus:border-plum focus:outline-none"
         />
       </div>
-      {saveCard.error && (
-        <p className="text-xs text-coral">{saveCard.error}</p>
-      )}
+      {saveCard.error && <p className="text-xs text-coral">{saveCard.error}</p>}
       <div className="flex items-center gap-2">
         <button
           type="button"

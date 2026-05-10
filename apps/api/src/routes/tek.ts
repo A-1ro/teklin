@@ -4,10 +4,7 @@ import { createDb, tekBalances, tekTransactions } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
 import { TEK_AMOUNTS } from "../lib/tek";
-import type {
-  TekBalanceResponse,
-  TekLoginBonusResponse,
-} from "@teklin/shared";
+import type { TekBalanceResponse, TekLoginBonusResponse } from "@teklin/shared";
 
 export const tekRoutes = new Hono<{
   Bindings: Bindings;
@@ -103,9 +100,7 @@ tekRoutes.post("/login-bonus", async (c) => {
 
   // Award streak bonus every 7 consecutive days
   const streakBonus =
-    newStreak > 0 && newStreak % 7 === 0
-      ? TEK_AMOUNTS.login_bonus_streak
-      : 0;
+    newStreak > 0 && newStreak % 7 === 0 ? TEK_AMOUNTS.login_bonus_streak : 0;
 
   const earned = TEK_AMOUNTS.login_bonus;
   const totalEarned = earned + streakBonus;

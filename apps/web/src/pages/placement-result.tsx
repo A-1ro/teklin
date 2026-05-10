@@ -321,18 +321,20 @@ export function PlacementResultPage() {
                     {review.type === "multiple_choice" && !isSkip && (
                       <div className="space-y-1 text-xs">
                         <div className="flex gap-2">
-                          <span className="w-16 flex-shrink-0 text-ink-3">あなた:</span>
+                          <span className="w-16 flex-shrink-0 text-ink-3">
+                            あなた:
+                          </span>
                           <span
-                            className={
-                              isCorrect ? "text-teal" : "text-coral"
-                            }
+                            className={isCorrect ? "text-teal" : "text-coral"}
                           >
                             {userChoice?.text ?? review.userAnswer}
                           </span>
                         </div>
                         {!isCorrect && correctChoice && (
                           <div className="flex gap-2">
-                            <span className="w-16 flex-shrink-0 text-ink-3">正解:</span>
+                            <span className="w-16 flex-shrink-0 text-ink-3">
+                              正解:
+                            </span>
                             <span className="text-teal">
                               {correctChoice.text}
                             </span>
@@ -359,9 +361,7 @@ export function PlacementResultPage() {
                     )}
 
                     {/* Skip */}
-                    {isSkip && (
-                      <p className="text-xs text-ink-3">回答なし</p>
-                    )}
+                    {isSkip && <p className="text-xs text-ink-3">回答なし</p>}
                   </div>
                 );
               })}

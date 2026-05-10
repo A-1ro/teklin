@@ -178,9 +178,7 @@ export function PlacementPage() {
               >
                 <span className="mt-0.5 flex-shrink-0">{axis.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold text-ink">
-                    {axis.label}
-                  </p>
+                  <p className="text-sm font-semibold text-ink">{axis.label}</p>
                   <p className="text-sm text-ink-2">{axis.description}</p>
                 </div>
               </div>

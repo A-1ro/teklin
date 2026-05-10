@@ -50,10 +50,7 @@ export function Personas() {
         {/* Grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-5">
           {personas.map((persona) => (
-            <PaperCard
-              key={persona.id}
-              style={{ padding: "28px 26px" }}
-            >
+            <PaperCard key={persona.id} style={{ padding: "28px 26px" }}>
               <div
                 style={{
                   display: "flex",

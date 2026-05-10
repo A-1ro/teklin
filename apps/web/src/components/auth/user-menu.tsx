@@ -48,9 +48,7 @@ export function UserMenu() {
             {initials}
           </span>
         )}
-        <span className="text-sm font-medium text-ink">
-          {user.name}
-        </span>
+        <span className="text-sm font-medium text-ink">{user.name}</span>
         <svg
           className={`h-4 w-4 text-ink-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
@@ -74,12 +72,8 @@ export function UserMenu() {
           />
           <div className="absolute right-0 z-20 mt-2 w-56 rounded-[14px] border border-rule bg-paper py-1">
             <div className="border-b border-rule px-4 py-3">
-              <p className="text-sm font-medium text-ink">
-                {user.name}
-              </p>
-              <p className="truncate text-xs text-ink-3">
-                {user.email}
-              </p>
+              <p className="text-sm font-medium text-ink">{user.name}</p>
+              <p className="truncate text-xs text-ink-3">{user.email}</p>
             </div>
             <div className="px-4 py-2">
               <p className="text-xs text-ink-3">

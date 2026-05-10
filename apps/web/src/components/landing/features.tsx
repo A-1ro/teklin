@@ -45,9 +45,7 @@ export function Features() {
     >
       <div style={{ maxWidth: 1120, margin: "0 auto" }}>
         {/* Header row */}
-        <div
-          className="mb-8 flex flex-col gap-4 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-10"
-        >
+        <div className="mb-8 flex flex-col gap-4 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-10">
           <div>
             <Kicker>§ 01 — features</Kicker>
             <Display

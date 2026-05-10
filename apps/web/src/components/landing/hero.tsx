@@ -37,9 +37,7 @@ export function Hero() {
           <Display size={64} className="!text-[40px] md:!text-[64px]">
             コードを書くように、
             <br />
-            <span
-              style={{ fontStyle: "italic", color: "var(--color-teal)" }}
-            >
+            <span style={{ fontStyle: "italic", color: "var(--color-teal)" }}>
               英語を書く
             </span>
             。
@@ -58,9 +56,7 @@ export function Hero() {
             AIが「なぜその表現か」まで添えて返します。
           </p>
 
-          <div
-            className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center md:mt-8"
-          >
+          <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center md:mt-8">
             <TkButton
               size="lg"
               kicker="→ cmd"
@@ -167,9 +163,7 @@ export function Hero() {
 
             <div style={{ height: 12 }} />
 
-            <div style={{ color: "var(--color-ink-3)" }}>
-              {"// PR comment"}
-            </div>
+            <div style={{ color: "var(--color-ink-3)" }}>{"// PR comment"}</div>
             <div
               style={{
                 color: "var(--color-coral)",

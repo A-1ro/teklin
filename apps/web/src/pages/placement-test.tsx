@@ -34,8 +34,12 @@ export function PlacementTestPage() {
   const [isComplete, setIsComplete] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<PlacementAnswerFeedback | null>(null);
-  const [pendingNext, setPendingNext] = useState<PlacementNextResponse | null>(null);
+  const [feedback, setFeedback] = useState<PlacementAnswerFeedback | null>(
+    null
+  );
+  const [pendingNext, setPendingNext] = useState<PlacementNextResponse | null>(
+    null
+  );
 
   // Load the first question on mount
   useEffect(() => {
@@ -60,47 +64,50 @@ export function PlacementTestPage() {
       });
   }, [authLoading, user]);
 
-  const submitAnswer = useCallback(async (answer: string) => {
-    if (!question || isSubmitting) return;
-    setIsSubmitting(true);
-    setError(null);
+  const submitAnswer = useCallback(
+    async (answer: string) => {
+      if (!question || isSubmitting) return;
+      setIsSubmitting(true);
+      setError(null);
 
-    try {
-      const data = await apiFetch<PlacementNextResponse>(
-        "/api/placement/answer",
-        {
-          method: "POST",
-          body: JSON.stringify({ questionId: question.id, answer }),
-        }
-      );
+      try {
+        const data = await apiFetch<PlacementNextResponse>(
+          "/api/placement/answer",
+          {
+            method: "POST",
+            body: JSON.stringify({ questionId: question.id, answer }),
+          }
+        );
 
-      if (data.feedback) {
-        setFeedback(data.feedback);
-        setPendingNext(data);
-        const fb = data.feedback;
-        if (fb.type === "multiple_choice") {
-          playSound(fb.isCorrect ? "correct" : "incorrect");
-        } else if (fb.type === "free_text") {
-          playSound(
-            fb.rating === "Excellent!!!" || fb.rating === "Good!"
-              ? "correct"
-              : "incorrect",
-          );
+        if (data.feedback) {
+          setFeedback(data.feedback);
+          setPendingNext(data);
+          const fb = data.feedback;
+          if (fb.type === "multiple_choice") {
+            playSound(fb.isCorrect ? "correct" : "incorrect");
+          } else if (fb.type === "free_text") {
+            playSound(
+              fb.rating === "Excellent!!!" || fb.rating === "Good!"
+                ? "correct"
+                : "incorrect"
+            );
+          }
+        } else if (data.isComplete) {
+          setIsComplete(true);
+        } else {
+          setQuestion(data.question);
+          setProgress(data.progress);
+          setSelectedChoice(null);
+          setFreeText("");
         }
-      } else if (data.isComplete) {
-        setIsComplete(true);
-      } else {
-        setQuestion(data.question);
-        setProgress(data.progress);
-        setSelectedChoice(null);
-        setFreeText("");
+      } catch {
+        setError("回答の送信に失敗しました。もう一度お試しください。");
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch {
-      setError("回答の送信に失敗しました。もう一度お試しください。");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [question, isSubmitting]);
+    },
+    [question, isSubmitting]
+  );
 
   const dismissFeedback = useCallback(() => {
     if (!pendingNext) return;
@@ -281,9 +288,13 @@ export function PlacementTestPage() {
                       : "border-coral/40 bg-coral-50 text-coral-fg"
               }`}
             >
-              <p className="text-center text-2xl font-bold">{feedback.rating}</p>
+              <p className="text-center text-2xl font-bold">
+                {feedback.rating}
+              </p>
               {feedback.advice && (
-                <p className="mt-2 text-center text-sm opacity-80">{feedback.advice}</p>
+                <p className="mt-2 text-center text-sm opacity-80">
+                  {feedback.advice}
+                </p>
               )}
             </div>
           )}
@@ -303,8 +314,7 @@ export function PlacementTestPage() {
 
                 let borderColor = "border-rule bg-paper hover:border-ink-3";
                 if (mcFeedback) {
-                  if (isCorrectChoice)
-                    borderColor = "border-teal bg-teal-50";
+                  if (isCorrectChoice) borderColor = "border-teal bg-teal-50";
                   else if (isWrongSelected)
                     borderColor = "border-coral bg-coral-50";
                   else borderColor = "border-rule bg-paper";

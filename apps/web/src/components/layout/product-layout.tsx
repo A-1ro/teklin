@@ -31,7 +31,9 @@ export function ProductLayout() {
   const [tekBalance, setTekBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+    apiFetch<TodayLessonResponse | { status: "generating" }>(
+      "/api/lessons/today"
+    )
       .then((res) => {
         if (!("status" in res)) {
           setStreak(res.streak.currentStreak);
@@ -48,8 +50,15 @@ export function ProductLayout() {
     function handleTekUpdate(e: CustomEvent<{ balance: number }>) {
       setTekBalance(e.detail.balance);
     }
-    window.addEventListener("tek-balance-updated", handleTekUpdate as EventListener);
-    return () => window.removeEventListener("tek-balance-updated", handleTekUpdate as EventListener);
+    window.addEventListener(
+      "tek-balance-updated",
+      handleTekUpdate as EventListener
+    );
+    return () =>
+      window.removeEventListener(
+        "tek-balance-updated",
+        handleTekUpdate as EventListener
+      );
   }, []);
 
   const initials = user
@@ -135,9 +144,7 @@ export function ProductLayout() {
                     fontFamily: "inherit",
                     fontSize: 13,
                     fontWeight: isActive ? 600 : 500,
-                    color: isActive
-                      ? "var(--color-ink)"
-                      : "var(--color-ink-2)",
+                    color: isActive ? "var(--color-ink)" : "var(--color-ink-2)",
                     transition: "color 120ms",
                     whiteSpace: "nowrap",
                   }}
@@ -294,9 +301,7 @@ export function ProductLayout() {
                 fontFamily: "inherit",
                 fontSize: 11,
                 fontWeight: isActive ? 600 : 500,
-                color: isActive
-                  ? "var(--color-ink)"
-                  : "var(--color-ink-3)",
+                color: isActive ? "var(--color-ink)" : "var(--color-ink-3)",
                 transition: "color 120ms",
               }}
             >
@@ -304,9 +309,7 @@ export function ProductLayout() {
                 style={{
                   fontFamily: "var(--font-mono)",
                   fontSize: 10,
-                  color: isActive
-                    ? "var(--color-teal)"
-                    : "var(--color-ink-3)",
+                  color: isActive ? "var(--color-teal)" : "var(--color-ink-3)",
                 }}
               >
                 {tab.num}
@@ -334,7 +337,9 @@ function AvatarMenu({ initials }: { initials: string }) {
 
   useEffect(() => {
     if (pushSupported) {
-      isPushSubscribed().then(setPushEnabled).catch(() => {});
+      isPushSubscribed()
+        .then(setPushEnabled)
+        .catch(() => {});
     }
   }, [pushSupported]);
 
@@ -475,7 +480,9 @@ function AvatarMenu({ initials }: { initials: string }) {
                 type="button"
                 onClick={handleTogglePush}
                 disabled={pushToggling}
-                aria-label={pushEnabled ? "通知をオフにする" : "通知をオンにする"}
+                aria-label={
+                  pushEnabled ? "通知をオフにする" : "通知をオンにする"
+                }
                 style={{
                   position: "relative",
                   width: 40,
@@ -557,7 +564,13 @@ function AvatarMenu({ initials }: { initials: string }) {
                     color: "var(--color-ink-2)",
                   }}
                 >
-                  <p style={{ margin: "0 0 8px", fontWeight: 500, color: "var(--color-ink)" }}>
+                  <p
+                    style={{
+                      margin: "0 0 8px",
+                      fontWeight: 500,
+                      color: "var(--color-ink)",
+                    }}
+                  >
                     ホーム画面に追加してね
                   </p>
                   <ol
@@ -571,12 +584,23 @@ function AvatarMenu({ initials }: { initials: string }) {
                   >
                     <li>
                       画面下の{" "}
-                      <span style={{ fontWeight: 600 }}>
-                        共有ボタン
-                      </span>
-                      {" "}
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", display: "inline" }}><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
-                      {" "}をタップ
+                      <span style={{ fontWeight: 600 }}>共有ボタン</span>{" "}
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ verticalAlign: "middle", display: "inline" }}
+                      >
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                        <polyline points="16 6 12 2 8 6" />
+                        <line x1="12" y1="2" x2="12" y2="15" />
+                      </svg>{" "}
+                      をタップ
                     </li>
                     <li>
                       <span style={{ fontWeight: 600 }}>
@@ -593,7 +617,10 @@ function AvatarMenu({ initials }: { initials: string }) {
           <div style={{ padding: "6px 8px" }}>
             <button
               type="button"
-              onClick={() => { navigate("/settings"); setOpen(false); }}
+              onClick={() => {
+                navigate("/settings");
+                setOpen(false);
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -611,10 +638,11 @@ function AvatarMenu({ initials }: { initials: string }) {
                 transition: "background 120ms",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget.style.background) = "var(--color-paper-2, #f5f2ec)";
+                e.currentTarget.style.background =
+                  "var(--color-paper-2, #f5f2ec)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget.style.background) = "none";
+                e.currentTarget.style.background = "none";
               }}
             >
               設定
@@ -641,10 +669,11 @@ function AvatarMenu({ initials }: { initials: string }) {
                 transition: "background 120ms",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget.style.background) = "var(--color-coral-50, #fef2f2)";
+                e.currentTarget.style.background =
+                  "var(--color-coral-50, #fef2f2)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget.style.background) = "none";
+                e.currentTarget.style.background = "none";
               }}
             >
               {loggingOut ? "ログアウト中..." : "ログアウト"}

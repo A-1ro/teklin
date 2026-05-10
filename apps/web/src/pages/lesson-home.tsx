@@ -32,7 +32,9 @@ export function LessonHomePage() {
   useEffect(() => {
     if (authLoading || !user) return;
 
-    apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+    apiFetch<TodayLessonResponse | { status: "generating" }>(
+      "/api/lessons/today"
+    )
       .then((res) => {
         if ("status" in res) {
           setIsGenerating(true);
@@ -47,7 +49,9 @@ export function LessonHomePage() {
   useEffect(() => {
     if (!isGenerating) return;
     const timer = setInterval(() => {
-      apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+      apiFetch<TodayLessonResponse | { status: "generating" }>(
+        "/api/lessons/today"
+      )
         .then((res) => {
           if (!("status" in res)) {
             setData(res);
@@ -120,9 +124,7 @@ export function LessonHomePage() {
               <FlameIcon
                 size={32}
                 className={
-                  streak.currentStreak > 0
-                    ? "text-coral"
-                    : "text-ink-3"
+                  streak.currentStreak > 0 ? "text-coral" : "text-ink-3"
                 }
               />
               <div>
@@ -211,7 +213,9 @@ export function LessonHomePage() {
                     d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"
                   />
                 </svg>
-                {lesson.content.warmup.questions.length + lesson.content.practice.exercises.length}問
+                {lesson.content.warmup.questions.length +
+                  lesson.content.practice.exercises.length}
+                問
               </span>
             </div>
 

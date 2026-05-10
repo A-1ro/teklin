@@ -3,7 +3,12 @@ import { eq, and, lte, sql, inArray, count, or, isNull } from "drizzle-orm";
 import { createDb, phraseCards, userSrs, users } from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
-import { srsKey, newCardsKey, type SrsKvValue, type NewCardsKvValue } from "../kv";
+import {
+  srsKey,
+  newCardsKey,
+  type SrsKvValue,
+  type NewCardsKvValue,
+} from "../kv";
 import { calculateSrs } from "../lib/srs";
 import { awardTek } from "../lib/tek";
 import type {
@@ -172,7 +177,10 @@ cardRoutes.get("/review", async (c) => {
   const ncKey = newCardsKey(userId, today, direction);
   const ncValue = await kv.get<NewCardsKvValue>(ncKey, "json");
   const newCardsStartedToday = ncValue?.count ?? 0;
-  const newCardsRemaining = Math.max(0, NEW_CARDS_PER_DAY - newCardsStartedToday);
+  const newCardsRemaining = Math.max(
+    0,
+    NEW_CARDS_PER_DAY - newCardsStartedToday
+  );
 
   // Try KV cache first
   const cached = await kv.get<SrsKvValue>(kvKey, "json");
@@ -182,31 +190,32 @@ cardRoutes.get("/review", async (c) => {
   let dueCards: PhraseCardWithSrs[];
 
   // Unseen = no user_srs row for this (userId, cardId, direction) combo
-  const unseenRows = newCardsRemaining > 0
-    ? await db
-        .select(reviewSelectColumns)
-        .from(phraseCards)
-        .leftJoin(
-          userSrs,
-          and(
-            eq(phraseCards.id, userSrs.cardId),
-            eq(userSrs.userId, userId),
-            eq(userSrs.direction, direction)
+  const unseenRows =
+    newCardsRemaining > 0
+      ? await db
+          .select(reviewSelectColumns)
+          .from(phraseCards)
+          .leftJoin(
+            userSrs,
+            and(
+              eq(phraseCards.id, userSrs.cardId),
+              eq(userSrs.userId, userId),
+              eq(userSrs.direction, direction)
+            )
           )
-        )
-        .where(
-          and(
-            sql`${userSrs.cardId} IS NULL`,
-            eq(phraseCards.domain, user.domain),
-            cardVisibilityCondition(userId),
-            sql`${phraseCards.level} IN (${sql.join(
-              allowedLevels.map((l) => sql`${l}`),
-              sql`, `
-            )})`
+          .where(
+            and(
+              sql`${userSrs.cardId} IS NULL`,
+              eq(phraseCards.domain, user.domain),
+              cardVisibilityCondition(userId),
+              sql`${phraseCards.level} IN (${sql.join(
+                allowedLevels.map((l) => sql`${l}`),
+                sql`, `
+              )})`
+            )
           )
-        )
-        .limit(newCardsRemaining)
-    : [];
+          .limit(newCardsRemaining)
+      : [];
 
   if (isFresh && cached !== null) {
     // Cache hit: use cached dueCardIds as the filter
@@ -517,7 +526,9 @@ cardRoutes.put("/:id", async (c) => {
   const existing = await db
     .select({ id: phraseCards.id })
     .from(phraseCards)
-    .where(and(eq(phraseCards.id, cardId), eq(phraseCards.createdByUserId, userId)))
+    .where(
+      and(eq(phraseCards.id, cardId), eq(phraseCards.createdByUserId, userId))
+    )
     .get();
 
   if (!existing) {
@@ -532,7 +543,11 @@ cardRoutes.put("/:id", async (c) => {
     })
     .where(eq(phraseCards.id, cardId));
 
-  return c.json({ id: cardId, phrase: body.phrase, translation: body.translation });
+  return c.json({
+    id: cardId,
+    phrase: body.phrase,
+    translation: body.translation,
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -569,12 +584,9 @@ cardRoutes.get("/stats", async (c) => {
     .select({
       category: phraseCards.category,
       total: count(),
-      unseen:
-        sql<number>`SUM(CASE WHEN ${userSrs.interval} IS NULL THEN 1 ELSE 0 END)`,
-      learning:
-        sql<number>`SUM(CASE WHEN ${userSrs.interval} IS NOT NULL AND ${userSrs.interval} < 21 THEN 1 ELSE 0 END)`,
-      mastered:
-        sql<number>`SUM(CASE WHEN ${userSrs.interval} >= 21 THEN 1 ELSE 0 END)`,
+      unseen: sql<number>`SUM(CASE WHEN ${userSrs.interval} IS NULL THEN 1 ELSE 0 END)`,
+      learning: sql<number>`SUM(CASE WHEN ${userSrs.interval} IS NOT NULL AND ${userSrs.interval} < 21 THEN 1 ELSE 0 END)`,
+      mastered: sql<number>`SUM(CASE WHEN ${userSrs.interval} >= 21 THEN 1 ELSE 0 END)`,
     })
     .from(phraseCards)
     .leftJoin(
@@ -585,7 +597,9 @@ cardRoutes.get("/stats", async (c) => {
         eq(userSrs.direction, "jp_to_en")
       )
     )
-    .where(and(eq(phraseCards.domain, user.domain), cardVisibilityCondition(userId)))
+    .where(
+      and(eq(phraseCards.domain, user.domain), cardVisibilityCondition(userId))
+    )
     .groupBy(phraseCards.category);
 
   // Helper: count due + unseen cards for a given direction

@@ -51,6 +51,7 @@ npm run deploy       # Build web + wrangler deploy (single Worker)
 ### Single Worker Deployment
 
 The app deploys as a single Cloudflare Worker:
+
 - Hono handles `/api/*` and `/auth/*` routes
 - Cloudflare Workers Static Assets serves the SPA from `apps/web/dist/`
 - `not_found_handling = "single-page-application"` enables SPA fallback to index.html
@@ -59,6 +60,7 @@ The app deploys as a single Cloudflare Worker:
 ### API Bindings (wrangler.toml)
 
 The Hono app is typed with Cloudflare bindings accessed via `c.env`:
+
 - `DB` — D1Database
 - `SESSION_KV`, `SRS_KV`, `STREAK_KV`, `USAGE_KV` — KVNamespace
 - `CONTENT_BUCKET` — R2Bucket
@@ -68,6 +70,7 @@ The Hono app is typed with Cloudflare bindings accessed via `c.env`:
 ### Shared Domain Types
 
 `packages/shared/src/index.ts` exports core enums and types used by both apps:
+
 - `Level` (L1–L4), `Domain` (web/infra/ml/mobile), `SkillAxis` (reading/writing/vocabulary/nuance)
 - `RewriteContext`, `SRSQuality`, `CardCategory` — domain-specific types
 

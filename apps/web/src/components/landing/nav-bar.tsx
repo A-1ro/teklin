@@ -42,7 +42,10 @@ export function NavBar() {
         <Wordmark size={18} />
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex" style={{ alignItems: "center", gap: 28 }}>
+        <nav
+          className="hidden md:flex"
+          style={{ alignItems: "center", gap: 28 }}
+        >
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
@@ -80,11 +83,7 @@ export function NavBar() {
           >
             ログイン
           </a>
-          <TkButton
-            kicker="01"
-            size="sm"
-            onClick={() => navigate("/login")}
-          >
+          <TkButton kicker="01" size="sm" onClick={() => navigate("/login")}>
             無料で始める
           </TkButton>
 
