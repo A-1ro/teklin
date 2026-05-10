@@ -10,6 +10,7 @@ import {
   exerciseScores,
   focusAppearances,
 } from "../../db/schema";
+import { normalizePhrase } from "./normalize";
 import type {
   RewriteContext,
   SkillAxis,
@@ -233,7 +234,8 @@ export async function buildLearnerProfile(
     // 9. Focus phrase appearance history (last 50, newest first)
     db
       .select({
-        phrase: focusAppearances.phraseNormalized,
+        phrase: focusAppearances.phrase,
+        phraseNormalized: focusAppearances.phraseNormalized,
         context: focusAppearances.context,
         domain: focusAppearances.domain,
         viewpoint: focusAppearances.viewpoint,
@@ -370,11 +372,15 @@ export async function buildLearnerProfile(
       viewpoint: row.viewpoint as FocusViewpoint,
       exerciseTypes: types,
     };
-    const existing = phraseMap.get(row.phrase);
+    // Fall back to runtime normalization for rows written before migration 0013
+    // (or by older Worker instances during a rolling deploy) where
+    // phrase_normalized is NULL.
+    const groupKey = row.phraseNormalized ?? normalizePhrase(row.phrase);
+    const existing = phraseMap.get(groupKey);
     if (existing) {
       existing.push(appearance);
     } else {
-      phraseMap.set(row.phrase, [appearance]);
+      phraseMap.set(groupKey, [appearance]);
     }
   }
 
