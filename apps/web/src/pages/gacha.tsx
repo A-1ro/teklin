@@ -428,10 +428,7 @@ export function GachaPage() {
             読み込み中...
           </div>
         ) : (
-          <CollectionGrid
-            collection={collection}
-            onSelect={setSelectedTekki}
-          />
+          <CollectionGrid collection={collection} onSelect={setSelectedTekki} />
         )}
       </div>
 
@@ -492,9 +489,7 @@ function TekGatherAnimation() {
   // scatter: particles at edges (no transition)
   // gather:  particles fly to center (transition fires)
   // flash:   burst effect
-  const [phase, setPhase] = useState<"scatter" | "gather" | "flash">(
-    "scatter"
-  );
+  const [phase, setPhase] = useState<"scatter" | "gather" | "flash">("scatter");
 
   useEffect(() => {
     // Next frame: start gathering
@@ -938,11 +933,7 @@ function TekkiProfileOverlay({
                 stroke="currentColor"
                 strokeWidth="1.5"
               />
-              <path
-                d="M1 7h14"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
+              <path d="M1 7h14" stroke="currentColor" strokeWidth="1.5" />
               <path
                 d="M5 1v4M11 1v4"
                 stroke="currentColor"
@@ -1054,7 +1045,8 @@ function ResultOverlay({
             marginBottom: 20,
             padding: "10px 20px",
             borderRadius: 10,
-            background: "linear-gradient(90deg, rgba(201,148,18,0.25), rgba(201,148,18,0.1))",
+            background:
+              "linear-gradient(90deg, rgba(201,148,18,0.25), rgba(201,148,18,0.1))",
             border: "1px solid rgba(201,148,18,0.5)",
             textAlign: "center",
           }}
@@ -1062,9 +1054,18 @@ function ResultOverlay({
           <span style={{ fontSize: 14, fontWeight: 700, color: "#F5D76E" }}>
             ★ 進化発生! ★
           </span>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginLeft: 8 }}>
+          <span
+            style={{
+              fontSize: 12,
+              color: "rgba(255,255,255,0.7)",
+              marginLeft: 8,
+            }}
+          >
             {evolutions
-              .map((id) => TEKKI_CATALOG_ITEMS.find((c) => c.id === id)?.nameJa ?? id)
+              .map(
+                (id) =>
+                  TEKKI_CATALOG_ITEMS.find((c) => c.id === id)?.nameJa ?? id
+              )
               .join("、")}
           </span>
         </div>

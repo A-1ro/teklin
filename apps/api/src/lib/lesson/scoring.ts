@@ -222,6 +222,9 @@ export async function scoreFreeTextWithFeedback(
     if (err instanceof Error) {
       console.error("[scoreFreeTextWithFeedback] message:", err.message);
     }
-    return { score: 50, feedback: "回答を受け付けました。引き続き練習を続けましょう！" };
+    return {
+      score: 50,
+      feedback: "回答を受け付けました。引き続き練習を続けましょう！",
+    };
   }
 }

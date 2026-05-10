@@ -63,12 +63,8 @@
           "name": "ai_rewrite_history_user_id_users_id_fk",
           "tableFrom": "ai_rewrite_history",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -272,10 +268,7 @@
       "indexes": {
         "placement_results_user_created_idx": {
           "name": "placement_results_user_created_idx",
-          "columns": [
-            "user_id",
-            "created_at"
-          ],
+          "columns": ["user_id", "created_at"],
           "isUnique": false
         }
       },
@@ -284,12 +277,8 @@
           "name": "placement_results_user_id_users_id_fk",
           "tableFrom": "placement_results",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -338,12 +327,8 @@
           "name": "streaks_user_id_users_id_fk",
           "tableFrom": "streaks",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -408,10 +393,7 @@
       "indexes": {
         "user_lessons_user_lesson_idx": {
           "name": "user_lessons_user_lesson_idx",
-          "columns": [
-            "user_id",
-            "lesson_id"
-          ],
+          "columns": ["user_id", "lesson_id"],
           "isUnique": true
         }
       },
@@ -420,12 +402,8 @@
           "name": "user_lessons_user_id_users_id_fk",
           "tableFrom": "user_lessons",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -433,12 +411,8 @@
           "name": "user_lessons_lesson_id_lessons_id_fk",
           "tableFrom": "user_lessons",
           "tableTo": "lessons",
-          "columnsFrom": [
-            "lesson_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lesson_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -512,18 +486,12 @@
       "indexes": {
         "user_srs_user_card_idx": {
           "name": "user_srs_user_card_idx",
-          "columns": [
-            "user_id",
-            "card_id"
-          ],
+          "columns": ["user_id", "card_id"],
           "isUnique": true
         },
         "user_srs_user_next_review_idx": {
           "name": "user_srs_user_next_review_idx",
-          "columns": [
-            "user_id",
-            "next_review"
-          ],
+          "columns": ["user_id", "next_review"],
           "isUnique": false
         }
       },
@@ -532,12 +500,8 @@
           "name": "user_srs_user_id_users_id_fk",
           "tableFrom": "user_srs",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -545,12 +509,8 @@
           "name": "user_srs_card_id_phrase_cards_id_fk",
           "tableFrom": "user_srs",
           "tableTo": "phrase_cards",
-          "columnsFrom": [
-            "card_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["card_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -636,17 +596,12 @@
       "indexes": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         },
         "users_oauth_provider_id_idx": {
           "name": "users_oauth_provider_id_idx",
-          "columns": [
-            "oauth_provider",
-            "oauth_id"
-          ],
+          "columns": ["oauth_provider", "oauth_id"],
           "isUnique": true
         }
       },

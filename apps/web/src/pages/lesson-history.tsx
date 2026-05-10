@@ -185,9 +185,7 @@ function HistoryCard({ item }: { item: LessonHistoryItem }) {
           {item.score}%
         </span>
         {item.feedback && (
-          <span
-            className={`text-xs ${FEEDBACK_COLORS[item.feedback]}`}
-          >
+          <span className={`text-xs ${FEEDBACK_COLORS[item.feedback]}`}>
             {FEEDBACK_LABELS[item.feedback]}
           </span>
         )}

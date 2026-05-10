@@ -1,7 +1,7 @@
 export class ApiError extends Error {
   constructor(
     public status: number,
-    message: string,
+    message: string
   ) {
     super(message);
     this.name = "ApiError";
@@ -48,7 +48,7 @@ async function refreshSession(): Promise<boolean> {
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit,
-  hasRetried = false,
+  hasRetried = false
 ): Promise<T> {
   const res = await fetch(path, {
     ...options,

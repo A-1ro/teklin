@@ -15,7 +15,10 @@ function base64urlEncode(buf: ArrayBuffer | Uint8Array): string {
   const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 function base64urlDecode(str: string): Uint8Array {
@@ -113,13 +116,9 @@ async function hkdfDerive(
   info: Uint8Array,
   length: number
 ): Promise<ArrayBuffer> {
-  const baseKey = await crypto.subtle.importKey(
-    "raw",
-    ikm,
-    "HKDF",
-    false,
-    ["deriveBits"]
-  );
+  const baseKey = await crypto.subtle.importKey("raw", ikm, "HKDF", false, [
+    "deriveBits",
+  ]);
   return crypto.subtle.deriveBits(
     { name: "HKDF", hash: "SHA-256", salt, info },
     baseKey,
@@ -165,13 +164,20 @@ async function encryptPayload(
 
   // Export ephemeral public key (uncompressed, 65 bytes)
   const ephemeralPublicKey = new Uint8Array(
-    (await crypto.subtle.exportKey("raw", ephemeralKeys.publicKey)) as ArrayBuffer
+    (await crypto.subtle.exportKey(
+      "raw",
+      ephemeralKeys.publicKey
+    )) as ArrayBuffer
   );
 
   // Build info for IKM derivation:
   // "WebPush: info\0" || ua_public || as_public
   const keyInfoHeader = new TextEncoder().encode("WebPush: info\0");
-  const keyInfo = concat(keyInfoHeader, subscriberPublicKeyBytes, ephemeralPublicKey);
+  const keyInfo = concat(
+    keyInfoHeader,
+    subscriberPublicKeyBytes,
+    ephemeralPublicKey
+  );
 
   // Derive IKM: HKDF(salt=auth, IKM=sharedSecret, info=keyInfo, 32)
   const ikm = await hkdfDerive(authSecret, sharedSecret, keyInfo, 32);
@@ -191,13 +197,9 @@ async function encryptPayload(
   const paddedPayload = concat(payloadBytes, new Uint8Array([2]));
 
   // Encrypt with AES-128-GCM
-  const aesKey = await crypto.subtle.importKey(
-    "raw",
-    cek,
-    "AES-GCM",
-    false,
-    ["encrypt"]
-  );
+  const aesKey = await crypto.subtle.importKey("raw", cek, "AES-GCM", false, [
+    "encrypt",
+  ]);
   const ciphertext = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv: nonce },
     aesKey,

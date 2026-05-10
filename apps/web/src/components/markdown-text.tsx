@@ -74,10 +74,7 @@ export function MarkdownText({ text, className }: MarkdownTextProps) {
       flushParagraph();
       flushList();
       nodes.push(
-        <div
-          key={`h-${nodes.length}`}
-          className="font-semibold text-ink"
-        >
+        <div key={`h-${nodes.length}`} className="font-semibold text-ink">
           {renderInline(headingMatch[2])}
         </div>
       );

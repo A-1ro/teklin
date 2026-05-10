@@ -18,7 +18,12 @@ import {
   determineLevel,
   identifyWeaknesses,
 } from "../lib/placement";
-import type { PlacementAnswerFeedback, PlacementAnswerReview, SkillAxis, WritingRating } from "@teklin/shared";
+import type {
+  PlacementAnswerFeedback,
+  PlacementAnswerReview,
+  SkillAxis,
+  WritingRating,
+} from "@teklin/shared";
 import type { QuestionData } from "../lib/placement/questions";
 
 const SKIP_ANSWER = "__skip__";
@@ -122,7 +127,8 @@ function selectNextQuestion(
 
   // Prefer target difficulty; fall back to any unused question for this axis
   let candidates = PLACEMENT_QUESTIONS.filter(
-    (q) => q.axis === axis && q.difficulty === targetDifficulty && !usedIds.has(q.id)
+    (q) =>
+      q.axis === axis && q.difficulty === targetDifficulty && !usedIds.has(q.id)
   );
 
   if (candidates.length === 0) {
@@ -264,8 +270,19 @@ placementRoutes.post("/answer", async (c) => {
     const writingResult = await scoreWriting(questionId, answer, llm);
     score = writingResult.score;
     const rating: WritingRating =
-      score >= 80 ? "Excellent!!!" : score >= 60 ? "Good!" : score >= 40 ? "OK" : "Bad...";
-    feedback = { type: "free_text", score, rating, advice: writingResult.advice };
+      score >= 80
+        ? "Excellent!!!"
+        : score >= 60
+          ? "Good!"
+          : score >= 40
+            ? "OK"
+            : "Bad...";
+    feedback = {
+      type: "free_text",
+      score,
+      rating,
+      advice: writingResult.advice,
+    };
   }
 
   // Record the answer

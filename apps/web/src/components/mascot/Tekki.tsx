@@ -49,46 +49,11 @@ export function TekkiWave({
     >
       <ellipse cx="130" cy="248" rx="58" ry="5" fill="#000" opacity="0.08" />
       <g className="tk-float" transform="translate(20 10)">
-        <rect
-          x="78"
-          y="178"
-          width="14"
-          height="28"
-          rx="7"
-          fill="#0A5E5D"
-        />
-        <rect
-          x="128"
-          y="178"
-          width="14"
-          height="28"
-          rx="7"
-          fill="#0A5E5D"
-        />
-        <rect
-          x="70"
-          y="200"
-          width="26"
-          height="12"
-          rx="6"
-          fill="#3B3A36"
-        />
-        <rect
-          x="124"
-          y="200"
-          width="26"
-          height="12"
-          rx="6"
-          fill="#3B3A36"
-        />
-        <rect
-          x="24"
-          y="44"
-          width="172"
-          height="140"
-          rx="36"
-          fill="#0E7C7B"
-        />
+        <rect x="78" y="178" width="14" height="28" rx="7" fill="#0A5E5D" />
+        <rect x="128" y="178" width="14" height="28" rx="7" fill="#0A5E5D" />
+        <rect x="70" y="200" width="26" height="12" rx="6" fill="#3B3A36" />
+        <rect x="124" y="200" width="26" height="12" rx="6" fill="#3B3A36" />
+        <rect x="24" y="44" width="172" height="140" rx="36" fill="#0E7C7B" />
         <path d="M72 184 L80 212 L104 184 Z" fill="#0E7C7B" />
         <rect
           x="38"
@@ -154,10 +119,7 @@ export function TekkiWave({
   );
 }
 
-export function TekkiIdle({
-  size = 36,
-  ariaLabel = "Tekki",
-}: PoseProps) {
+export function TekkiIdle({ size = 36, ariaLabel = "Tekki" }: PoseProps) {
   return (
     <svg
       viewBox="0 0 180 180"
@@ -166,14 +128,7 @@ export function TekkiIdle({
       aria-label={ariaLabel}
     >
       <g className="tk-float">
-        <rect
-          x="26"
-          y="32"
-          width="128"
-          height="110"
-          rx="28"
-          fill="#0E7C7B"
-        />
+        <rect x="26" y="32" width="128" height="110" rx="28" fill="#0E7C7B" />
         <path d="M66 142 L72 166 L92 142 Z" fill="#0E7C7B" />
         <g
           className="tk-blink"
@@ -207,46 +162,11 @@ export function TekkiThinking({
     >
       <ellipse cx="90" cy="172" rx="48" ry="5" fill="#000" opacity="0.08" />
       <g className="tk-tilt">
-        <rect
-          x="68"
-          y="132"
-          width="11"
-          height="20"
-          rx="5"
-          fill="#0A5E5D"
-        />
-        <rect
-          x="101"
-          y="132"
-          width="11"
-          height="20"
-          rx="5"
-          fill="#0A5E5D"
-        />
-        <rect
-          x="62"
-          y="148"
-          width="22"
-          height="10"
-          rx="5"
-          fill="#3B3A36"
-        />
-        <rect
-          x="96"
-          y="148"
-          width="22"
-          height="10"
-          rx="5"
-          fill="#3B3A36"
-        />
-        <rect
-          x="26"
-          y="32"
-          width="128"
-          height="110"
-          rx="28"
-          fill="#0E7C7B"
-        />
+        <rect x="68" y="132" width="11" height="20" rx="5" fill="#0A5E5D" />
+        <rect x="101" y="132" width="11" height="20" rx="5" fill="#0A5E5D" />
+        <rect x="62" y="148" width="22" height="10" rx="5" fill="#3B3A36" />
+        <rect x="96" y="148" width="22" height="10" rx="5" fill="#3B3A36" />
+        <rect x="26" y="32" width="128" height="110" rx="28" fill="#0E7C7B" />
         <path d="M66 142 L72 166 L92 142 Z" fill="#0E7C7B" />
         <path
           d="M28 92 Q14 108 24 128"
@@ -318,46 +238,11 @@ export function TekkiCheer({
         />
       </g>
       <g className="tk-jump">
-        <rect
-          x="68"
-          y="148"
-          width="11"
-          height="20"
-          rx="5"
-          fill="#0A5E5D"
-        />
-        <rect
-          x="101"
-          y="148"
-          width="11"
-          height="20"
-          rx="5"
-          fill="#0A5E5D"
-        />
-        <rect
-          x="62"
-          y="164"
-          width="22"
-          height="10"
-          rx="5"
-          fill="#3B3A36"
-        />
-        <rect
-          x="96"
-          y="164"
-          width="22"
-          height="10"
-          rx="5"
-          fill="#3B3A36"
-        />
-        <rect
-          x="26"
-          y="48"
-          width="128"
-          height="110"
-          rx="28"
-          fill="#0E7C7B"
-        />
+        <rect x="68" y="148" width="11" height="20" rx="5" fill="#0A5E5D" />
+        <rect x="101" y="148" width="11" height="20" rx="5" fill="#0A5E5D" />
+        <rect x="62" y="164" width="22" height="10" rx="5" fill="#3B3A36" />
+        <rect x="96" y="164" width="22" height="10" rx="5" fill="#3B3A36" />
+        <rect x="26" y="48" width="128" height="110" rx="28" fill="#0E7C7B" />
         <path d="M66 158 L72 182 L92 158 Z" fill="#0E7C7B" />
         <path
           d="M32 96 Q10 70 22 46"
@@ -416,38 +301,10 @@ export function TekkiSleepy({
     >
       <ellipse cx="90" cy="172" rx="48" ry="5" fill="#000" opacity="0.08" />
       <g className="tk-breathe">
-        <rect
-          x="68"
-          y="132"
-          width="11"
-          height="20"
-          rx="5"
-          fill="#0A5E5D"
-        />
-        <rect
-          x="101"
-          y="132"
-          width="11"
-          height="20"
-          rx="5"
-          fill="#0A5E5D"
-        />
-        <rect
-          x="62"
-          y="148"
-          width="22"
-          height="10"
-          rx="5"
-          fill="#3B3A36"
-        />
-        <rect
-          x="96"
-          y="148"
-          width="22"
-          height="10"
-          rx="5"
-          fill="#3B3A36"
-        />
+        <rect x="68" y="132" width="11" height="20" rx="5" fill="#0A5E5D" />
+        <rect x="101" y="132" width="11" height="20" rx="5" fill="#0A5E5D" />
+        <rect x="62" y="148" width="22" height="10" rx="5" fill="#3B3A36" />
+        <rect x="96" y="148" width="22" height="10" rx="5" fill="#3B3A36" />
         <rect
           x="26"
           y="32"
@@ -458,10 +315,7 @@ export function TekkiSleepy({
           opacity="0.85"
         />
         <path d="M66 142 L72 166 L92 142 Z" fill="#0E7C7B" opacity="0.85" />
-        <path
-          d="M66 24 Q90 -2 128 20 L128 40 L66 40 Z"
-          fill="#6B4E8C"
-        />
+        <path d="M66 24 Q90 -2 128 20 L128 40 L66 40 Z" fill="#6B4E8C" />
         <circle cx="70" cy="22" r="8" fill="#F1ECDF" />
         <path
           d="M52 100 Q62 108 72 100"
@@ -479,11 +333,7 @@ export function TekkiSleepy({
         />
         <rect x="83" y="120" width="14" height="4" rx="2" fill="#FAF7F1" />
       </g>
-      <g
-        fontFamily="ui-serif, Georgia, serif"
-        fill="#6B4E8C"
-        fontWeight="600"
-      >
+      <g fontFamily="ui-serif, Georgia, serif" fill="#6B4E8C" fontWeight="600">
         <text className="tk-z1" x="150" y="36" fontSize="14">
           z
         </text>

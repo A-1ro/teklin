@@ -26,7 +26,7 @@ function tone(
     gain?: number;
     delay?: number;
     detune?: number;
-  },
+  }
 ) {
   const ac = getCtx();
   const t = ac.currentTime + (opts?.delay ?? 0);

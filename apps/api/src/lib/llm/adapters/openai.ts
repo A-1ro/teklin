@@ -34,10 +34,7 @@ function buildUrl(accountId: string, gatewayId: string): string {
   );
 }
 
-function buildMessages(
-  prompt: string,
-  system?: string
-): OpenAiMessage[] {
+function buildMessages(prompt: string, system?: string): OpenAiMessage[] {
   const messages: OpenAiMessage[] = [];
   if (system) {
     messages.push({ role: "system", content: system });
@@ -96,7 +93,7 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
       return {
         text,
         provider: "openai",
-        model: data.model ?? (options.model ?? DEFAULT_MODEL),
+        model: data.model ?? options.model ?? DEFAULT_MODEL,
         usage: {
           promptTokens: data.usage.prompt_tokens,
           completionTokens: data.usage.completion_tokens,
@@ -105,7 +102,10 @@ export function createOpenAiAdapter(config: OpenAiConfig): LLMAdapter {
       };
     },
 
-    stream(prompt: string, options: LLMAdapterOptions = {}): ReadableStream<string> {
+    stream(
+      prompt: string,
+      options: LLMAdapterOptions = {}
+    ): ReadableStream<string> {
       const body = {
         model: options.model ?? DEFAULT_MODEL,
         messages: buildMessages(prompt, options.system),

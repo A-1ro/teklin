@@ -83,7 +83,9 @@ export function DashboardPage() {
   useEffect(() => {
     if (isLoading || !user) return;
 
-    apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+    apiFetch<TodayLessonResponse | { status: "generating" }>(
+      "/api/lessons/today"
+    )
       .then((res) => {
         if ("status" in res) {
           setLessonGenerating(true);
@@ -118,7 +120,9 @@ export function DashboardPage() {
   useEffect(() => {
     if (!lessonGenerating) return;
     const timer = setInterval(() => {
-      apiFetch<TodayLessonResponse | { status: "generating" }>("/api/lessons/today")
+      apiFetch<TodayLessonResponse | { status: "generating" }>(
+        "/api/lessons/today"
+      )
         .then((res) => {
           if (!("status" in res)) {
             setLessonData(res);
@@ -250,9 +254,12 @@ export function DashboardPage() {
     if (loginBonusClaiming || !loginBonusAvailable) return;
     setLoginBonusClaiming(true);
     try {
-      const res = await apiFetch<TekLoginBonusResponse>("/api/tek/login-bonus", {
-        method: "POST",
-      });
+      const res = await apiFetch<TekLoginBonusResponse>(
+        "/api/tek/login-bonus",
+        {
+          method: "POST",
+        }
+      );
       if (!res.alreadyClaimed) {
         setLoginBonusAvailable(false);
         setLoginBonusJustClaimed(true);
@@ -288,57 +295,114 @@ export function DashboardPage() {
             : loginBonusAvailable
               ? "var(--color-teal-50)"
               : "var(--color-paper-2, #F3F2EE)",
-          border: loginBonusAvailable && !loginBonusJustClaimed
-            ? "1.5px solid #bfdedd"
-            : "1.5px solid var(--color-rule)",
+          border:
+            loginBonusAvailable && !loginBonusJustClaimed
+              ? "1.5px solid #bfdedd"
+              : "1.5px solid var(--color-rule)",
         }}
       >
         <TekIcon
           size={28}
           style={{
-            color: loginBonusAvailable && !loginBonusJustClaimed
-              ? "var(--color-teal)"
-              : "var(--color-ink-3)",
+            color:
+              loginBonusAvailable && !loginBonusJustClaimed
+                ? "var(--color-teal)"
+                : "var(--color-ink-3)",
             flexShrink: 0,
           }}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-ink-3)" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 2,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--color-ink-3)",
+              }}
+            >
               デイリーログインボーナス
             </span>
             {loginBonusStreak > 0 && (
-              <span style={{
-                fontSize: 10,
-                fontWeight: 700,
-                padding: "1px 6px",
-                borderRadius: 4,
-                background: loginBonusStreak % 7 === 0 ? "var(--color-mustard)" : "var(--color-paper-2, #F3F2EE)",
-                color: loginBonusStreak % 7 === 0 ? "#fff" : "var(--color-ink-3)",
-              }}>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  padding: "1px 6px",
+                  borderRadius: 4,
+                  background:
+                    loginBonusStreak % 7 === 0
+                      ? "var(--color-mustard)"
+                      : "var(--color-paper-2, #F3F2EE)",
+                  color:
+                    loginBonusStreak % 7 === 0 ? "#fff" : "var(--color-ink-3)",
+                }}
+              >
                 {loginBonusStreak}日連続
               </span>
             )}
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: "var(--color-teal-dark)" }}>
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 18,
+                fontWeight: 700,
+                color: "var(--color-teal-dark)",
+              }}
+            >
               +10
             </span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-teal)" }}>tek</span>
-            {loginBonusAvailable && !loginBonusJustClaimed && (loginBonusStreak + 1) % 7 === 0 && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-mustard)" }}>
-                +50 (7日ボーナス!)
-              </span>
-            )}
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--color-teal)",
+              }}
+            >
+              tek
+            </span>
+            {loginBonusAvailable &&
+              !loginBonusJustClaimed &&
+              (loginBonusStreak + 1) % 7 === 0 && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "var(--color-mustard)",
+                  }}
+                >
+                  +50 (7日ボーナス!)
+                </span>
+              )}
           </div>
         </div>
         {loginBonusJustClaimed ? (
           <div style={{ textAlign: "right", flexShrink: 0 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-teal)", display: "block" }}>
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--color-teal)",
+                display: "block",
+              }}
+            >
               受け取り済み ✓
             </span>
             {lastStreakBonus > 0 && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-mustard)" }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "var(--color-mustard)",
+                }}
+              >
                 +{lastStreakBonus} ストリークボーナス!
               </span>
             )}
@@ -365,7 +429,9 @@ export function DashboardPage() {
             {loginBonusClaiming ? "..." : "受け取る"}
           </button>
         ) : (
-          <span style={{ fontSize: 12, color: "var(--color-ink-3)", flexShrink: 0 }}>
+          <span
+            style={{ fontSize: 12, color: "var(--color-ink-3)", flexShrink: 0 }}
+          >
             受け取り済み
           </span>
         )}

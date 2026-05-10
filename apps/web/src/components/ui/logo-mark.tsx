@@ -1,12 +1,14 @@
 export function LogoMark({ size = 32 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      aria-hidden="true"
-    >
-      <rect x="2" y="4" width="28" height="22" rx="6" fill="var(--color-teal)" />
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <rect
+        x="2"
+        y="4"
+        width="28"
+        height="22"
+        rx="6"
+        fill="var(--color-teal)"
+      />
       <text
         x="16"
         y="19"

@@ -9,6 +9,7 @@ out/
 .wrangler/
 dist/
 .dev.vars
+apps/api/.dev.var
 
 # Build
 *.tsbuildinfo

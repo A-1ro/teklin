@@ -605,7 +605,8 @@ const WARMUP_QUESTIONS: Record<DomainLevel, WarmupQuestion[]> = {
       id: "w3",
       phrase: "accidental complexity",
       translation: "偶有的複雑性",
-      context: "Complexity introduced by implementation choices, not the domain",
+      context:
+        "Complexity introduced by implementation choices, not the domain",
       type: "multiple_choice",
       choices: [
         { id: "a", text: "偶有的複雑性" },
@@ -656,7 +657,8 @@ const FOCUS_CONTENT: Record<DomainLevel, FocusContent> = {
       "'nit' (short for nitpick) signals a minor, non-blocking suggestion in a PR comment. Use it to improve code quality without blocking the merge. It sets a professional tone that distinguishes must-fix items from nice-to-haves.",
     examples: [
       {
-        english: "nit: prefer const over let here since this is never reassigned",
+        english:
+          "nit: prefer const over let here since this is never reassigned",
         japanese:
           "細かい点: 再代入されないのでここではletよりconstが好ましいです",
         context: "pr_comment",
@@ -667,7 +669,8 @@ const FOCUS_CONTENT: Record<DomainLevel, FocusContent> = {
         context: "pr_comment",
       },
       {
-        english: "nit: consider extracting this magic number into a named constant",
+        english:
+          "nit: consider extracting this magic number into a named constant",
         japanese:
           "細かい点: このマジックナンバーを名前付き定数に切り出すことを検討してください",
         context: "pr_comment",
@@ -730,8 +733,7 @@ const FOCUS_CONTENT: Record<DomainLevel, FocusContent> = {
         context: "pr_comment",
       },
       {
-        english:
-          "refactor: decouple auth middleware from session management",
+        english: "refactor: decouple auth middleware from session management",
         japanese: "認証ミドルウェアをセッション管理から分離",
         context: "commit_message",
       },
@@ -756,7 +758,8 @@ const FOCUS_CONTENT: Record<DomainLevel, FocusContent> = {
       },
       {
         english: "Heads up: the deploy pipeline is slower than usual today",
-        japanese: "お知らせ: 今日はデプロイパイプラインがいつもより遅くなっています",
+        japanese:
+          "お知らせ: 今日はデプロイパイプラインがいつもより遅くなっています",
         context: "slack",
       },
       {
@@ -886,8 +889,10 @@ const FOCUS_CONTENT: Record<DomainLevel, FocusContent> = {
         context: "github_issue",
       },
       {
-        english: "Steps to reproduce:\n1. Send a batch of 200 samples\n2. Wait for response",
-        japanese: "再現手順:\n1. 200サンプルのバッチを送信\n2. レスポンスを待つ",
+        english:
+          "Steps to reproduce:\n1. Send a batch of 200 samples\n2. Wait for response",
+        japanese:
+          "再現手順:\n1. 200サンプルのバッチを送信\n2. レスポンスを待つ",
         context: "github_issue",
       },
     ],
@@ -937,7 +942,8 @@ const FOCUS_CONTENT: Record<DomainLevel, FocusContent> = {
       {
         english:
           "The root cause is a missing normalization step in the preprocessing pipeline",
-        japanese: "根本原因はプリプロセッシングパイプラインにおける正規化ステップの欠如です",
+        japanese:
+          "根本原因はプリプロセッシングパイプラインにおける正規化ステップの欠如です",
         context: "github_issue",
       },
       {
@@ -950,7 +956,8 @@ const FOCUS_CONTENT: Record<DomainLevel, FocusContent> = {
       {
         english:
           "perf: replace O(n²) sort with radix sort in feature engineering pipeline",
-        japanese: "特徴量エンジニアリングパイプラインのO(n²)ソートをRadixソートに置き換え",
+        japanese:
+          "特徴量エンジニアリングパイプラインのO(n²)ソートをRadixソートに置き換え",
         context: "commit_message",
       },
     ],
@@ -1004,7 +1011,8 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "空欄に正しいコンベンショナルコミットのプレフィックスを入れよう。",
+      instruction:
+        "空欄に正しいコンベンショナルコミットのプレフィックスを入れよう。",
       sentence: "___ : add user authentication feature",
       correctAnswer: "feat",
       acceptableAnswers: ["feat"],
@@ -1028,23 +1036,19 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "空欄に細かい提案を示す正しいPRコメントのプレフィックスを入れよう。",
-      sentence: "___ : prefer const over let here since this value is never reassigned",
+      instruction:
+        "空欄に細かい提案を示す正しいPRコメントのプレフィックスを入れよう。",
+      sentence:
+        "___ : prefer const over let here since this value is never reassigned",
       correctAnswer: "nit",
       acceptableAnswers: ["nit", "Nit"],
     },
     {
       id: "p2",
       type: "reorder",
-      instruction: "単語を並び替えてメモリ問題に関する正しいコードレビューコメントを作ろう。",
-      words: [
-        "cause",
-        "This",
-        "might",
-        "a",
-        "memory",
-        "leak",
-      ],
+      instruction:
+        "単語を並び替えてメモリ問題に関する正しいコードレビューコメントを作ろう。",
+      words: ["cause", "This", "might", "a", "memory", "leak"],
       correctAnswer: "This might cause a memory leak",
     },
     {
@@ -1060,8 +1064,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p1",
       type: "fill_in_blank",
       instruction: "空欄に正しい技術用語を入れよう。",
-      sentence:
-        "fix: resolve ___ condition in the concurrent request handler",
+      sentence: "fix: resolve ___ condition in the concurrent request handler",
       correctAnswer: "race",
       acceptableAnswers: ["race"],
     },
@@ -1069,13 +1072,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p2",
       type: "reorder",
       instruction: "単語を並び替えて正しいコードレビューコメントを作ろう。",
-      words: [
-        "swallow",
-        "silently",
-        "could",
-        "exceptions",
-        "This",
-      ],
+      words: ["swallow", "silently", "could", "exceptions", "This"],
       correctAnswer: "This could silently swallow exceptions",
     },
     {
@@ -1100,12 +1097,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p2",
       type: "reorder",
       instruction: "単語を並び替えて抽象化に関する正しいPRコメントを作ろう。",
-      words: [
-        "leaks",
-        "This",
-        "the",
-        "abstraction",
-      ],
+      words: ["leaks", "This", "the", "abstraction"],
       correctAnswer: "This leaks the abstraction",
     },
     {
@@ -1121,8 +1113,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p1",
       type: "fill_in_blank",
       instruction: "空欄に情報を事前共有する正しいSlackのフレーズを入れよう。",
-      sentence:
-        "___ — the production deploy will run at 3pm today",
+      sentence: "___ — the production deploy will run at 3pm today",
       correctAnswer: "Heads up",
       acceptableAnswers: ["Heads up", "heads up", "FYI"],
     },
@@ -1155,12 +1146,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p2",
       type: "reorder",
       instruction: "単語を並び替えて正しいSlackメッセージを作ろう。",
-      words: [
-        "for",
-        "you",
-        "Pinging",
-        "visibility",
-      ],
+      words: ["for", "you", "Pinging", "visibility"],
       correctAnswer: "Pinging you for visibility",
     },
     {
@@ -1185,15 +1171,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p2",
       type: "reorder",
       instruction: "単語を並び替えて正しいPRコメントを作ろう。",
-      words: [
-        "partial",
-        "not",
-        "resilient",
-        "This",
-        "to",
-        "is",
-        "failures",
-      ],
+      words: ["partial", "not", "resilient", "This", "to", "is", "failures"],
       correctAnswer: "This is not resilient to partial failures",
     },
     {
@@ -1209,8 +1187,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p1",
       type: "fill_in_blank",
       instruction: "空欄に正しいアーキテクチャ用語を入れよう。",
-      sentence:
-        "feat: introduce ___ sourcing for the payment audit trail",
+      sentence: "feat: introduce ___ sourcing for the payment audit trail",
       correctAnswer: "event",
       acceptableAnswers: ["event"],
     },
@@ -1218,13 +1195,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p2",
       type: "reorder",
       instruction: "単語を並び替えて調査を求める正しいフレーズを作ろう。",
-      words: [
-        "spike",
-        "warrants",
-        "This",
-        "dedicated",
-        "a",
-      ],
+      words: ["spike", "warrants", "This", "dedicated", "a"],
       correctAnswer: "This warrants a dedicated spike",
     },
     {
@@ -1240,7 +1211,8 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p1",
       type: "fill_in_blank",
       instruction: "空欄にバグレポートの正しいセクション見出しを入れよう。",
-      sentence: "___ behavior: The model returns an error for inputs longer than 512 tokens",
+      sentence:
+        "___ behavior: The model returns an error for inputs longer than 512 tokens",
       correctAnswer: "Expected",
       acceptableAnswers: ["Expected", "Actual"],
     },
@@ -1263,7 +1235,8 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
     {
       id: "p1",
       type: "fill_in_blank",
-      instruction: "空欄に正しい語句を入れてメモリに関するPRコメントを完成させよう。",
+      instruction:
+        "空欄に正しい語句を入れてメモリに関するPRコメントを完成させよう。",
       sentence:
         "Have you considered the ___ implications here? This could cause an OOM on large datasets",
       correctAnswer: "memory",
@@ -1298,15 +1271,7 @@ const EXERCISES: Record<DomainLevel, Exercise[]> = {
       id: "p2",
       type: "reorder",
       instruction: "単語を並び替えて正しいコミットメッセージを作ろう。",
-      words: [
-        "sort",
-        "perf:",
-        "with",
-        "O(n²)",
-        "replace",
-        "radix",
-        "sort",
-      ],
+      words: ["sort", "perf:", "with", "O(n²)", "replace", "radix", "sort"],
       correctAnswer: "perf: replace O(n²) sort with radix sort",
     },
     {
@@ -1389,8 +1354,7 @@ const WRAPUP_CONTENT: Record<DomainLevel, WrapupContent> = {
       "例外を 'silently swallow' するコードはエラーを隠す — 常に再スローかログを残すこと",
       "bool フラグが型の曖昧さを生み出すときは 'discriminated union' を使う",
     ],
-    nextPreview:
-      "次回: アーキテクチャ語彙 — 抽象化・結合・設計原則の議論",
+    nextPreview: "次回: アーキテクチャ語彙 — 抽象化・結合・設計原則の議論",
   },
   "web-L4": {
     summary:
@@ -1466,8 +1430,7 @@ const WRAPUP_CONTENT: Record<DomainLevel, WrapupContent> = {
       "'Have you considered the memory implications?' は対立せず議論を促す聞き方",
       "MLにおけるメモリリークは解放されていないテンソル参照から生じることが多い",
     ],
-    nextPreview:
-      "次回: 根本原因分析の語彙 — 何が起きてなぜかを伝える表現",
+    nextPreview: "次回: 根本原因分析の語彙 — 何が起きてなぜかを伝える表現",
   },
   "ml-L3": {
     summary:

@@ -1,10 +1,6 @@
 import { LogoMark } from "./logo-mark";
 
-export function Wordmark({
-  size = 20,
-}: {
-  size?: number;
-}) {
+export function Wordmark({ size = 20 }: { size?: number }) {
   return (
     <a
       href="/"

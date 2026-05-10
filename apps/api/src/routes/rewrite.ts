@@ -1,6 +1,12 @@
 import { Hono } from "hono";
 import { eq, and, desc, count } from "drizzle-orm";
-import { createDb, aiRewriteHistory, phraseCards, rewriteHistoryCards, users } from "../db";
+import {
+  createDb,
+  aiRewriteHistory,
+  phraseCards,
+  rewriteHistoryCards,
+  users,
+} from "../db";
 import { authMiddleware, type AuthVariables } from "../middleware/auth";
 import type { Bindings } from "../types";
 import { createLLMService } from "../lib/llm";
@@ -58,7 +64,13 @@ const REWRITE_METADATA_SCHEMA = {
       },
       tone: {
         type: "string",
-        enum: ["friendly", "professional", "too_casual", "too_formal", "neutral"],
+        enum: [
+          "friendly",
+          "professional",
+          "too_casual",
+          "too_formal",
+          "neutral",
+        ],
       },
     },
     required: ["changes", "tone"],
@@ -230,9 +242,7 @@ function buildRewriteUserPrompt(
   }
 
   if (context === "slack") {
-    prompt.push(
-      "Keep the output suitable for posting directly in Slack."
-    );
+    prompt.push("Keep the output suitable for posting directly in Slack.");
   }
 
   if (context === "general") {
@@ -376,10 +386,7 @@ rewriteRoutes.post("/", async (c) => {
     return c.json({ error: "text is required" }, 400);
   }
   if (body.text.length > 2000) {
-    return c.json(
-      { error: "text must be 2000 characters or fewer" },
-      400
-    );
+    return c.json({ error: "text must be 2000 characters or fewer" }, 400);
   }
 
   // Check daily rewrite limit
@@ -392,10 +399,7 @@ rewriteRoutes.post("/", async (c) => {
   const currentCount = countValue?.count ?? 0;
 
   if (currentCount >= DAILY_REWRITE_LIMIT) {
-    return c.json(
-      { error: "Daily rewrite limit reached", remaining: 0 },
-      429
-    );
+    return c.json({ error: "Daily rewrite limit reached", remaining: 0 }, 429);
   }
 
   // Pre-increment rewrite count to prevent race conditions.
@@ -475,9 +479,15 @@ rewriteRoutes.post("/", async (c) => {
   );
 
   let metadata: Pick<RewriteResult, "changes" | "tone">;
-  let analysisUsage: { promptTokens: number; completionTokens: number; totalTokens: number };
+  let analysisUsage: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
   try {
-    const { data, raw } = await llmService.router.generateJson<Partial<RewriteResult>>(
+    const { data, raw } = await llmService.router.generateJson<
+      Partial<RewriteResult>
+    >(
       analysisUserPrompt,
       {
         system: analysisSystemPrompt,
@@ -520,7 +530,11 @@ rewriteRoutes.post("/", async (c) => {
   );
 
   let tips: string[];
-  let tipsUsage: { promptTokens: number; completionTokens: number; totalTokens: number };
+  let tipsUsage: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
   try {
     const tipsResult = await llmService.router.generateJson<{ tips?: unknown }>(
       tipsUserPrompt,
@@ -540,7 +554,9 @@ rewriteRoutes.post("/", async (c) => {
           .filter(Boolean)
       : [];
   } catch (err) {
-    console.error("[rewrite] LLM tips generation failed", { error: String(err) });
+    console.error("[rewrite] LLM tips generation failed", {
+      error: String(err),
+    });
     const rollbackValue: RewriteCountValue = {
       count: currentCount,
       updatedAt: new Date().toISOString(),
@@ -676,7 +692,9 @@ rewriteRoutes.get("/history/:id", async (c) => {
   const row = await db
     .select()
     .from(aiRewriteHistory)
-    .where(and(eq(aiRewriteHistory.id, id), eq(aiRewriteHistory.userId, userId)))
+    .where(
+      and(eq(aiRewriteHistory.id, id), eq(aiRewriteHistory.userId, userId))
+    )
     .get();
 
   if (!row) {
@@ -705,7 +723,12 @@ rewriteRoutes.get("/:id/cards", async (c) => {
   const historyRow = await db
     .select()
     .from(aiRewriteHistory)
-    .where(and(eq(aiRewriteHistory.id, historyId), eq(aiRewriteHistory.userId, userId)))
+    .where(
+      and(
+        eq(aiRewriteHistory.id, historyId),
+        eq(aiRewriteHistory.userId, userId)
+      )
+    )
     .get();
 
   if (!historyRow) {
@@ -735,13 +758,20 @@ rewriteRoutes.post("/:id/save-card", async (c) => {
 
   let body: { phrase: string; translation: string; changeIndex: number };
   try {
-    body = await c.req.json<{ phrase: string; translation: string; changeIndex: number }>();
+    body = await c.req.json<{
+      phrase: string;
+      translation: string;
+      changeIndex: number;
+    }>();
   } catch {
     return c.json({ error: "Invalid request body" }, 400);
   }
 
   if (!body.phrase || !body.translation || Number.isNaN(body.changeIndex)) {
-    return c.json({ error: "phrase, translation, and changeIndex are required" }, 400);
+    return c.json(
+      { error: "phrase, translation, and changeIndex are required" },
+      400
+    );
   }
 
   const db = createDb(c.env.DB);
@@ -750,7 +780,12 @@ rewriteRoutes.post("/:id/save-card", async (c) => {
   const historyRow = await db
     .select()
     .from(aiRewriteHistory)
-    .where(and(eq(aiRewriteHistory.id, historyId), eq(aiRewriteHistory.userId, userId)))
+    .where(
+      and(
+        eq(aiRewriteHistory.id, historyId),
+        eq(aiRewriteHistory.userId, userId)
+      )
+    )
     .get();
 
   if (!historyRow) {

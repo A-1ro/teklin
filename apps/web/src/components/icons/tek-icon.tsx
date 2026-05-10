@@ -27,32 +27,17 @@ export function TekIcon({ size = 24, className, style }: TekIconProps) {
     >
       {/* ── Gem silhouette ─────────────────────────────────────── */}
       {/* Outer body: flat-top pentagon (crown + pavilion) */}
-      <path
-        d="M5.5 3L18.5 3L22 10L12 22L2 10Z"
-        fill="currentColor"
-      />
+      <path d="M5.5 3L18.5 3L22 10L12 22L2 10Z" fill="currentColor" />
 
       {/* ── Crown highlights ────────────────────────────────────── */}
       {/* Table (top center triangle) — brightest face */}
-      <path
-        d="M5.5 3L18.5 3L12 10Z"
-        fill="white"
-        fillOpacity="0.30"
-      />
+      <path d="M5.5 3L18.5 3L12 10Z" fill="white" fillOpacity="0.30" />
       {/* Left crown facet — subtle secondary highlight */}
-      <path
-        d="M2 10L5.5 3L12 10Z"
-        fill="white"
-        fillOpacity="0.10"
-      />
+      <path d="M2 10L5.5 3L12 10Z" fill="white" fillOpacity="0.10" />
 
       {/* ── Pavilion sheen ──────────────────────────────────────── */}
       {/* Right pavilion catches more light */}
-      <path
-        d="M22 10L12 22L12 10Z"
-        fill="white"
-        fillOpacity="0.12"
-      />
+      <path d="M22 10L12 22L12 10Z" fill="white" fillOpacity="0.12" />
 
       {/* ── Facet edge lines ────────────────────────────────────── */}
       {/* Crown dividers: table corners → girdle center */}

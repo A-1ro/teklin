@@ -271,7 +271,13 @@ export function RewritePage() {
       )}
 
       {/* History link */}
-      <div style={{ marginBottom: 16, display: "flex", justifyContent: "flex-end" }}>
+      <div
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
         <Link
           to="/rewrite/history"
           style={{
@@ -386,7 +392,9 @@ export function RewritePage() {
           accent="var(--color-coral)"
           style={{ padding: "14px 18px", marginBottom: 16 }}
         >
-          <p style={{ fontSize: 14, color: "var(--color-coral-fg)", margin: 0 }}>
+          <p
+            style={{ fontSize: 14, color: "var(--color-coral-fg)", margin: 0 }}
+          >
             {error}
           </p>
         </PaperCard>
@@ -496,7 +504,6 @@ export function RewritePage() {
                 </span>
               </div>
             </div>
-
           </PaperCard>
 
           {/* Changes card */}

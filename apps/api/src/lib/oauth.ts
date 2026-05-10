@@ -117,12 +117,9 @@ export async function fetchGitHubUser(
 export async function fetchGoogleUser(
   accessToken: string
 ): Promise<OAuthUserInfo> {
-  const res = await fetch(
-    "https://www.googleapis.com/oauth2/v2/userinfo",
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
-  );
+  const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
 
   if (!res.ok) {
     throw new Error(`Google user fetch failed: ${res.status}`);

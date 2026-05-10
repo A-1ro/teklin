@@ -49,8 +49,7 @@ const RATING_BUTTONS: {
     rating: "again",
     label: "もう一回",
     estimate: "< 1日",
-    color:
-      "border-coral/50 bg-coral-50 text-coral-fg hover:bg-coral-50/80",
+    color: "border-coral/50 bg-coral-50 text-coral-fg hover:bg-coral-50/80",
     activeColor: "bg-coral text-paper",
   },
   {
@@ -65,16 +64,14 @@ const RATING_BUTTONS: {
     rating: "good",
     label: "普通",
     estimate: "7日",
-    color:
-      "border-rule bg-paper-2 text-ink-2 hover:bg-rule",
+    color: "border-rule bg-paper-2 text-ink-2 hover:bg-rule",
     activeColor: "bg-ink text-paper",
   },
   {
     rating: "easy",
     label: "簡単",
     estimate: "14日",
-    color:
-      "border-teal/50 bg-teal-50 text-teal hover:bg-teal-50/80",
+    color: "border-teal/50 bg-teal-50 text-teal hover:bg-teal-50/80",
     activeColor: "bg-teal text-paper",
   },
 ];
@@ -108,9 +105,7 @@ export function ReviewPage() {
   useEffect(() => {
     if (authLoading || !user) return;
 
-    apiFetch<ReviewCardsResponse>(
-      `/api/cards/review?direction=${direction}`
-    )
+    apiFetch<ReviewCardsResponse>(`/api/cards/review?direction=${direction}`)
       .then((res) => {
         setCards(res.cards);
         if (res.cards.length === 0) {
@@ -358,7 +353,13 @@ export function ReviewPage() {
           }}
         >
           <TekIcon size={14} style={{ color: "#fff" }} />
-          <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 16 }}>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontWeight: 700,
+              fontSize: 16,
+            }}
+          >
             +{tekToast} tek
           </span>
         </div>
@@ -411,9 +412,7 @@ export function ReviewPage() {
               transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
               transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
             }}
-            aria-label={
-              isFlipped ? "カードの裏面" : "タップしてカードをめくる"
-            }
+            aria-label={isFlipped ? "カードの裏面" : "タップしてカードをめくる"}
           >
             {/* Card Front */}
             <div
