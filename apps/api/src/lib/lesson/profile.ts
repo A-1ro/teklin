@@ -233,7 +233,7 @@ export async function buildLearnerProfile(
     // 9. Focus phrase appearance history (last 50, newest first)
     db
       .select({
-        phrase: focusAppearances.phrase,
+        phrase: focusAppearances.phraseNormalized,
         context: focusAppearances.context,
         domain: focusAppearances.domain,
         viewpoint: focusAppearances.viewpoint,
@@ -354,7 +354,7 @@ export async function buildLearnerProfile(
       avgScore: Math.round(Number(r.avgScore) || 0),
     }));
 
-  // --- Focus history (group by phrase, keep latest 5 appearances each) ---
+  // --- Focus history (group by normalized phrase, keep latest 5 appearances each) ---
   const phraseMap = new Map<string, FocusAppearance[]>();
   for (const row of focusAppearanceRows) {
     let types: ExerciseType[] = [];

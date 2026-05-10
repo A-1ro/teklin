@@ -393,6 +393,7 @@ export const focusAppearances = sqliteTable(
       .notNull()
       .references(() => lessons.id),
     phrase: text("phrase").notNull(),
+    phraseNormalized: text("phrase_normalized").notNull(),
     // RewriteContext: "commit_message" | "pr_comment" | "github_issue" | "slack" | "general"
     context: text("context").notNull(),
     // Domain: "web" | "infra" | "ml" | "mobile"
