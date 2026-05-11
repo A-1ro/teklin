@@ -11,3 +11,4 @@ export {
   scoreParaphraseWithFeedback,
 } from "./scoring";
 export { recordFocusAppearance, deriveViewpoint } from "./appearances";
+export { normalizePhrase } from "./normalize";

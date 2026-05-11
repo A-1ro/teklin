@@ -393,6 +393,11 @@ export const focusAppearances = sqliteTable(
       .notNull()
       .references(() => lessons.id),
     phrase: text("phrase").notNull(),
+    // Nullable to match the SQLite ALTER TABLE in 0013 (NOT NULL cannot be added
+    // post-hoc without table rebuild). Read paths must fall back via
+    // `?? normalizePhrase(row.phrase)` to handle pre-migration NULLs and rows
+    // written by older Worker instances during rolling deploy.
+    phraseNormalized: text("phrase_normalized"),
     // RewriteContext: "commit_message" | "pr_comment" | "github_issue" | "slack" | "general"
     context: text("context").notNull(),
     // Domain: "web" | "infra" | "ml" | "mobile"

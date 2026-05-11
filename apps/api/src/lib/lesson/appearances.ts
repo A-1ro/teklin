@@ -6,6 +6,7 @@ import type {
   FocusViewpoint,
   Domain,
 } from "@teklin/shared";
+import { normalizePhrase } from "./normalize";
 
 const PHRASE_MAX_LENGTH = 200;
 
@@ -40,13 +41,15 @@ export async function recordFocusAppearance(
   }
 ): Promise<void> {
   const viewpoint = deriveViewpoint(params.context);
+  const sanitized = sanitizePhrase(params.phrase);
   await db
     .insert(focusAppearances)
     .values({
       id: crypto.randomUUID(),
       userId: params.userId,
       lessonId: params.lessonId,
-      phrase: sanitizePhrase(params.phrase),
+      phrase: sanitized,
+      phraseNormalized: normalizePhrase(sanitized),
       context: params.context,
       domain: params.domain,
       viewpoint,
